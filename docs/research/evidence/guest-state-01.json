@@ -1,0 +1,7 @@
+{
+  "beaverplans:font": "modern",
+  "beaverplans:locale": "en",
+  "beaverplans.state.v1": "{\"weeks\":[{\"weekStart\":\"2026-10-05\",\"ended\":false,\"projects\":[{\"id\":\"6647ebce-d41c-4f9d-a5f7-156bf43b1d30\",\"name\":\"Research Alpha\",\"tasks\":[{\"id\":\"fe9a6bf6-c87b-4665-893c-cb535e211740\",\"name\":\"Alpha Task One\",\"subtasks\":[{\"id\":\"822c3354-7eca-4a99-88f6-61f6b4d14ff7\",\"isDone\":false,\"assignedDay\":\"mon\",\"missedDays\":[],\"weight\":1,\"description\":\"A easy Monday\"},{\"id\":\"75a5d791-5c32-4d96-bcfe-ee29ce1d53f5\",\"isDone\":false,\"assignedDay\":\"thu\",\"missedDays\":[],\"weight\":2,\"description\":\"B medium Thursday\"},{\"id\":\"002193fd-9d8c-4668-a7ff-db89123f21c4\",\"isDone\":false,\"assignedDay\":\"thu\",\"missedDays\":[],\"weight\":3,\"description\":\"C hard Thursday\"}],\"deadline\":\"2026-10-10T17:30\",\"description\":\"Research note only\"}]}]}]}",
+  "beaverplans:guide": "yes",
+  "beaverplans:theme": "system"
+}

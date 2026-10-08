@@ -1,0 +1,98 @@
+beaverplans.
+PLAN
+STATS
+WEEKS
+Support
+GUEST
+Sign in
+Next week
+Oct 12 – Oct 18
+Today
+Move work
+End week
+0/17 · 0%
+
+One step ahead of everyone else
+
+PROJECTS
+Copy plan · Paste plan
+SUN OCT 11
+0/1
+0/6
+SAT OCT 10 · 17:30
++
+add task
+0/2
++
+add task
+SUN OCT 11
+0/1
+0/5
+SAT OCT 10 · 17:30
++
+add task
+0/2
++
+add task
++ ADD PROJECT
+Draggable item 42be1794-260a-46d9-b5fe-e698331649e6 was dropped over droppable area 3272aaa3-b259-4e0e-8780-0345af7eb7bb
+THIS WEEK
+click any day to focus it
+MON
+0/1
+RESEARCH ALPHA
+Alpha Task One
+TUE
+0/2
+RESEARCH BETA
+Beta Task Three
+RESEARCH BETA
+Beta Task Three
+WED
+THU
+0/10
+RESEARCH ALPHA
+Alpha Task One
+RESEARCH ALPHA
+Alpha Task One
+RESEARCH ALPHA
+Alpha Task One
+RESEARCH ALPHA
+Alpha Task One
+FRI
+0/4
+RESEARCH ALPHA
+Alpha Task Two
+RESEARCH BETA
+Beta Task Three
+RESEARCH ALPHA
+Alpha Task Two
+RESEARCH BETA
+Beta Task Three
+SAT
+SUN
+RESEARCH ALPHA
+Alpha Task One
+DEADLINE
+Clear
+DAYS
+M
+T
+W
+T
+F
+S
+S
+MONDAY
++ add subtask on Mon
+THURSDAY
++ add subtask on Thu
+FRIDAY
++ add subtask on Fri
+Draggable item 9d35143c-9a3e-4a4a-887f-2e5418c5105c was dropped over droppable area 9d35143c-9a3e-4a4a-887f-2e5418c5105c
+
+Use the dots to set difficulty — harder subtasks count more toward your progress
+
+NOTE
+Cancel
+Save

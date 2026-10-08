@@ -1,0 +1,272 @@
+{
+  "weeks": [
+    {
+      "weekStart": "2026-10-05",
+      "ended": true,
+      "projects": [
+        {
+          "id": "52aad180-a924-4696-b6b3-e5f4d89ef652",
+          "name": "Alpha renamed mobile",
+          "tasks": [
+            {
+              "id": "2aa8eab7-b56b-4e03-a47e-1c26b54698e3",
+              "name": "Alpha Task One",
+              "subtasks": [
+                {
+                  "id": "82ccd391-2ddd-40eb-9436-f0978dccff2c",
+                  "isDone": false,
+                  "assignedDay": "fri",
+                  "missedDays": [],
+                  "weight": 1,
+                  "description": "A easy Monday"
+                },
+                {
+                  "id": "bf6672a7-ae06-4c43-9f0e-f8bdc4f1c4a1",
+                  "isDone": true,
+                  "assignedDay": "thu",
+                  "missedDays": [],
+                  "weight": 3,
+                  "description": "C hard Thursday"
+                },
+                {
+                  "id": "09ac626a-836e-4faa-957b-b821bbef6771",
+                  "isDone": false,
+                  "assignedDay": "thu",
+                  "missedDays": [],
+                  "weight": 2,
+                  "description": "B medium Thursday"
+                }
+              ],
+              "deadline": "2026-10-10T17:30",
+              "description": "Research note only"
+            },
+            {
+              "id": "0cc524b2-2b87-4806-9c54-6a7eadc0cc4e",
+              "name": "Unscheduled research",
+              "isDone": true,
+              "subtasks": []
+            }
+          ],
+          "deadline": "2026-10-11"
+        },
+        {
+          "id": "112d59e6-9b6f-41dd-88e4-99548dc60d0a",
+          "name": "Research Beta",
+          "tasks": [
+            {
+              "id": "96167344-938b-4d47-9ee3-81bb331d9f52",
+              "name": "Beta Task Three",
+              "subtasks": [
+                {
+                  "id": "8e762aa3-cc97-4753-90a4-e04e60651e45",
+                  "isDone": false,
+                  "assignedDay": "tue",
+                  "missedDays": [],
+                  "weight": 1,
+                  "description": "E edited Tuesday"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekStart": "2026-10-12",
+      "ended": true,
+      "projects": [
+        {
+          "id": "5b06355c-e0f4-4ed5-afdd-8e00eee45b72",
+          "name": "Alpha renamed mobile",
+          "tasks": [
+            {
+              "id": "86dc4dc3-1aa3-4d24-bc8d-202a492ce348",
+              "name": "Alpha Task One",
+              "subtasks": [
+                {
+                  "id": "da0df4d7-a104-4ccd-85fe-cee027d94035",
+                  "isDone": true,
+                  "assignedDay": "fri",
+                  "missedDays": [],
+                  "weight": 1,
+                  "description": "A easy Monday"
+                },
+                {
+                  "id": "6d66143c-12e6-4513-8cf2-052e305a2533",
+                  "isDone": true,
+                  "assignedDay": "thu",
+                  "missedDays": [],
+                  "weight": 2,
+                  "description": "B medium Thursday"
+                }
+              ],
+              "deadline": "2026-10-10T17:30",
+              "description": "Research note only"
+            }
+          ],
+          "deadline": "2026-10-11"
+        },
+        {
+          "id": "3c5f6c1c-3e8e-42b2-b91c-63645bad0e96",
+          "name": "Research Beta",
+          "tasks": [
+            {
+              "id": "0f015ffb-cb3a-4123-ae80-e52de8d94eb6",
+              "name": "Beta Task Three",
+              "subtasks": [
+                {
+                  "id": "c30e0199-2a50-45f5-88e5-95f933c451b2",
+                  "isDone": true,
+                  "assignedDay": "tue",
+                  "missedDays": [],
+                  "weight": 1,
+                  "description": "E edited Tuesday"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekStart": "2026-10-19",
+      "ended": false,
+      "projects": [
+        {
+          "id": "5bae6c9b-2bf5-49b1-acac-23e0c7d1a5c3",
+          "name": "Research Beta",
+          "tasks": [
+            {
+              "id": "294510f6-3d0f-4cfd-a6c6-4fdad72e2245",
+              "name": "Beta Task Three",
+              "subtasks": [
+                {
+                  "id": "113a1443-4695-41af-82f4-560f5fed9a6f",
+                  "isDone": false,
+                  "assignedDay": "tue",
+                  "missedDays": [],
+                  "weight": 1,
+                  "description": "E easy Tuesday"
+                },
+                {
+                  "id": "f99a4716-d751-4219-9630-a1cc3924af70",
+                  "isDone": false,
+                  "assignedDay": "fri",
+                  "missedDays": [],
+                  "weight": 1,
+                  "description": "F easy Wednesday"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "0bc8e898-e535-434d-89fe-ef5d35a18db2",
+          "name": "Research Alpha",
+          "tasks": [
+            {
+              "id": "15acbb95-db56-4af1-94b8-1b86d3cc096f",
+              "name": "Alpha Task Two",
+              "subtasks": [
+                {
+                  "id": "ba518e45-6065-4a62-96bc-2af96adfe5b8",
+                  "isDone": false,
+                  "assignedDay": "fri",
+                  "missedDays": [],
+                  "weight": 1,
+                  "description": "D easy Friday"
+                }
+              ]
+            },
+            {
+              "id": "ea77a859-5901-4152-8e1c-e940b9895302",
+              "name": "Alpha Task One",
+              "subtasks": [
+                {
+                  "id": "164d8603-ef1f-419e-a5e1-3de70c8facb9",
+                  "isDone": false,
+                  "assignedDay": "mon",
+                  "missedDays": [],
+                  "weight": 1,
+                  "description": "A easy Monday"
+                },
+                {
+                  "id": "175ef8f9-76a2-4cf4-940e-5baaf75fb51c",
+                  "isDone": false,
+                  "assignedDay": "thu",
+                  "missedDays": [],
+                  "weight": 3,
+                  "description": "C hard Thursday"
+                },
+                {
+                  "id": "336dbaa3-0ca8-4473-840e-8d3c3ef4ecbb",
+                  "isDone": false,
+                  "assignedDay": "thu",
+                  "missedDays": [],
+                  "weight": 2,
+                  "description": "B medium Thursday"
+                }
+              ],
+              "deadline": "2026-10-10T17:30",
+              "description": "Research note only"
+            }
+          ],
+          "deadline": "2026-10-11"
+        },
+        {
+          "id": "87e838ff-6953-43dc-ae5e-804fb0e44453",
+          "name": "Research Alpha",
+          "tasks": [
+            {
+              "id": "a47b14b9-d861-4f5f-8e54-7d57fe96b54e",
+              "name": "Alpha Task Two",
+              "subtasks": [
+                {
+                  "id": "3a6b0e26-b591-4ad5-aa2d-b47cb3374cf2",
+                  "isDone": false,
+                  "assignedDay": "fri",
+                  "missedDays": [],
+                  "weight": 1,
+                  "description": "D easy Friday"
+                }
+              ]
+            },
+            {
+              "id": "57796437-ec92-41fe-b942-9a00dfb9cda9",
+              "name": "Alpha Task One",
+              "subtasks": [
+                {
+                  "id": "885cb3d9-d387-4f99-b553-8941b2c14bf0",
+                  "isDone": false,
+                  "assignedDay": "mon",
+                  "missedDays": [],
+                  "weight": 1,
+                  "description": "A easy Monday"
+                },
+                {
+                  "id": "a39dec53-7d05-4b6a-baaf-dbd534b26456",
+                  "isDone": false,
+                  "assignedDay": "thu",
+                  "missedDays": [],
+                  "weight": 3,
+                  "description": "C hard Thursday"
+                },
+                {
+                  "id": "c49d9e84-53cd-42f9-97b1-4ca679bb19b6",
+                  "isDone": false,
+                  "assignedDay": "thu",
+                  "missedDays": [],
+                  "weight": 2,
+                  "description": "B medium Thursday"
+                }
+              ],
+              "deadline": "2026-10-10T17:30",
+              "description": "Research note only"
+            }
+          ],
+          "deadline": "2026-10-11"
+        }
+      ]
+    }
+  ]
+}

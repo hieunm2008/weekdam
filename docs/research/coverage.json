@@ -1,0 +1,17 @@
+[
+  {"id":1,"status":"verified","evidence":["date-2026-10-05.png","date-2026-10-11.png","date-2026-12-31.png","date-tz-saigon.png","desktop-55-week-after-reload.png"]},
+  {"id":2,"status":"verified","evidence":["desktop-02-create-project.png","desktop-13-project-deadline.png","desktop-29-delete-project.png","mobile-18-project-renamed.png"]},
+  {"id":3,"status":"verified","evidence":["desktop-04-task-editor.png","mobile-14-delete-task.png","mobile-15-task-deleted.png","mobile-17-unscheduled-complete.png"]},
+  {"id":4,"status":"verified","evidence":["desktop-05-subtask-days.png","desktop-06-difficulty.png","mobile-13-subtask-removed-draft.png","mobile-16-subtask-deleted-saved.png"]},
+  {"id":5,"status":"verified","evidence":["desktop-11-day-focus.png","mobile-05-week-planned.png"]},
+  {"id":6,"status":"verified","evidence":["desktop-06-difficulty.png","desktop-08-easy-complete.png","desktop-09-hard-complete.png"]},
+  {"id":7,"status":"verified","evidence":["desktop-10-task-complete.png","mobile-08-completed.png","mobile-17-unscheduled-complete.png"]},
+  {"id":8,"status":"verified","evidence":["desktop-09-hard-complete.png","desktop-42-week-preview.png","mobile-07-show-counts.png"]},
+  {"id":9,"status":"partial","openQuestions":["Q6","U2"],"evidence":["desktop-14-project-mouse-reorder.png","desktop-17-keyboard-reorder-confirmed.png","desktop-56-project-keyboard-reorder.png","desktop-57-subtask-keyboard-reorder.png","mobile-11-touch-reorder.png"]},
+  {"id":10,"status":"verified","evidence":["desktop-21-copy.png","desktop-25-paste-ready.png","desktop-28-paste-repeated.png","mobile-31-copy-selected-project.png","mobile-32-paste-same-week.png"]},
+  {"id":11,"status":"verified","evidence":["desktop-31-move-work-result.png","desktop-32-move-work-destination.png","desktop-34-move-work-complete.png"]},
+  {"id":12,"status":"verified","evidence":["desktop-37-end-week-dialog.png","desktop-38-ended-carried.png","desktop-45-end-clear-all.png","mobile-29-end-complete-dialog.png"]},
+  {"id":13,"status":"partial","openQuestions":["U3"],"evidence":["desktop-39-stats-populated.png","mobile-26-stats.png","mobile-30-stats-two-weeks.png"]},
+  {"id":14,"status":"verified","evidence":["mobile-06-manage.png","mobile-23-clear-board-dialog.png"]},
+  {"id":15,"status":"verified","evidence":["desktop-01-onboarding.png","desktop-03-add-task.png","desktop-04-task-editor.png","mobile-01-onboarding.png","mobile-02-empty-skipped.png","desktop-35-stats-empty.png"]}
+]

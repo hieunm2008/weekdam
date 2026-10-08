@@ -1,0 +1,26 @@
+{
+  "capturedAt": "2026-10-08T17:10:21.033Z",
+  "reference": "https://beaverplans.com/",
+  "browser": "154.0.8037.98",
+  "playwright": "1.62.1",
+  "desktopViewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "mobileViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mobileTouchEmulated": true,
+  "timezone": "Asia/Ho_Chi_Minh",
+  "mobileClockScenarios": [
+    "2026-10-08",
+    "2026-10-15"
+  ],
+  "dateCases": "See date-cases.json and timezone-cases.json",
+  "limitations": [
+    "Android physical device not used",
+    "No authentication or authenticated sync tested",
+    "No reference source or assets downloaded"
+  ]
+}
