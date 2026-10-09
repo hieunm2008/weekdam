@@ -881,7 +881,8 @@ export default function App() {
           </button>
         ))}
       </nav>
-      {store.notice ? (
+      {store.notice &&
+      !(dialog?.kind === "settings" && store.notice === "loginCancelled") ? (
         <div className="toast" role="status">
           <Check size={17} />
           <span>{t(store.notice)}</span>
@@ -1335,6 +1336,11 @@ export default function App() {
             <p className="muted">
               {t(store.configured ? "syncHint" : "syncUnavailable")}
             </p>
+            {store.notice === "loginCancelled" ? (
+              <p className="muted" role="status">
+                {t(store.notice)}
+              </p>
+            ) : null}
             {store.profile ? (
               <button className="secondary" onClick={() => void store.logout()}>
                 {t("logout")}

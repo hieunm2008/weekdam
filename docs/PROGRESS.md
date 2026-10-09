@@ -24,6 +24,7 @@ Yêu cầu tiếp tục các phase không ngắt quãng được áp dụng ngà
 - Ảnh app riêng trong `docs/validation/screens`, khác screenshot research của bản gốc.
 - `npm run deploy`: build production, deploy Hosting/rules/indexes thành công ngày 09/10/2026.
 - Smoke URL production: Guest CRUD/completion/persistence, PWA offline/restart/reconnect, mobile layout, manifest, Firebase auth handler và chặn Firestore read chưa đăng nhập đều PASS. Xem `docs/validation/production-smoke.json` và ảnh `production-desktop.png`, `production-mobile.png`.
+- Hủy Google popup: ca kiểm thử đã thất bại trước khi sửa (app báo nhầm lỗi sync), sau khi deploy bản sửa đã PASS. Hủy đăng nhập có thông báo riêng trong dialog, không báo sync error; popup bị chặn, lỗi mạng, domain/provider chưa cấu hình có hướng dẫn riêng bằng vi/en. `npm test` vẫn 15 PASS; production smoke gồm ca hồi quy này.
 
 Các kết quả trên chưa chứng minh Google sign-in/sync production hoặc cài/mở app trên Android vật lý. Goal toàn bộ app chưa hoàn tất.
 

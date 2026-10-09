@@ -395,7 +395,26 @@ export function usePlanner() {
   }, [persist]);
   const login = useCallback((language: string) => {
     if (!client.current) return;
-    void client.current.login(language).catch(() => setError("syncError"));
+    setError("");
+    setNotice("");
+    void client.current.login(language).catch((failure: unknown) => {
+      const code =
+        typeof failure === "object" && failure !== null && "code" in failure
+          ? String(failure.code)
+          : "";
+      if (code === "auth/cancelled-popup-request") return;
+      if (code === "auth/popup-closed-by-user") {
+        setNotice("loginCancelled");
+        return;
+      }
+      const messages: Record<string, string> = {
+        "auth/popup-blocked": "loginPopupBlocked",
+        "auth/network-request-failed": "loginNetworkError",
+        "auth/unauthorized-domain": "loginDomainError",
+        "auth/operation-not-allowed": "loginProviderError",
+      };
+      setError(messages[code] || "loginError");
+    });
   }, []);
   const logout = useCallback(async () => {
     await queue.current.catch(() => {});

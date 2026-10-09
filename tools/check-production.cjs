@@ -126,6 +126,16 @@ async function main() {
     report.checks.push(
       "Google OAuth popup reaches Google Accounts; no credentials entered",
     );
+    await popup.close();
+    await expect(
+      page.getByRole("dialog", { name: "Cài đặt" }).getByRole("status"),
+    ).toHaveText("Đã hủy đăng nhập Google.", { timeout: 10000 });
+    await expect(
+      page.getByText("Đồng bộ chưa thành công", { exact: true }),
+    ).toHaveCount(0);
+    report.checks.push(
+      "Closing Google popup reports login cancellation without a sync error",
+    );
     expect(errors).toEqual([]);
     report.checks.push("No desktop page errors");
     report.status = "passed";
