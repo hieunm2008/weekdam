@@ -1,6 +1,6 @@
 # weekdam — quyết định và đề xuất kỹ thuật
 
-Ngày kiểm tra nguồn: 08–09/10/2026. Trạng thái: **Phase 0; các đề xuất sản phẩm/kiến trúc chưa được Hieu duyệt tại checkpoint**.
+Ngày kiểm tra nguồn: 08–09/10/2026. Các mặc định được áp dụng theo chỉ thị tiếp tục toàn bộ phase không ngắt quãng ngày 09/10. Trạng thái và bằng chứng mới tại [PROGRESS.md](PROGRESS.md); phần nghiên cứu bên dưới được giữ để đối chiếu.
 
 ## Stack giữ từ yêu cầu
 

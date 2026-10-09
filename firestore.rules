@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function validId(s) {
+      return s is string && s.size() > 0 && s.size() <= 200 && s.matches('^[A-Za-z0-9_.:-]+$') && s != '.' && s != '..' && !s.matches('^__.*__$');
+    }
+    function validDeadline(v) {
+      return !v.keys().hasAny(['deadline']) || (v.deadline is string && (v.deadline == '' || v.deadline.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):[0-5][0-9])?$')));
+    }
+    function validValue(r) {
+      let v = r.value;
+      return v is map && v.id == r.id && (
+        r.deleted ? v.keys().hasOnly(['id']) :
+        r.kind == 'week' ? v.keys().hasAll(['id','start','ended']) && v.keys().hasOnly(['id','start','ended']) && v.start is string && v.start.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$') && r.id == 'week_' + v.start && v.ended is bool :
+        r.kind == 'project' ? v.keys().hasAll(['id','name']) && v.keys().hasOnly(['id','name','deadline']) && v.name is string && v.name.size() > 0 && v.name.size() <= 300 && validDeadline(v) :
+        r.kind == 'task' ? v.keys().hasAll(['id','name','note','done']) && v.keys().hasOnly(['id','name','note','done','deadline']) && v.name is string && v.name.size() > 0 && v.name.size() <= 500 && v.note is string && v.note.size() <= 10000 && v.done is bool && validDeadline(v) :
+        r.kind == 'subtask' && v.keys().hasAll(['id','day','weight','note','done','missed']) && v.keys().hasOnly(['id','day','weight','note','done','missed']) && v.day is int && v.day >= 0 && v.day <= 6 && v.weight in [1,2,3] && v.note is string && v.note.size() <= 10000 && v.done is bool && v.missed is list && v.missed.size() <= 7 && v.missed.hasOnly([0,1,2,3,4,5,6]) && v.missed.toSet().size() == v.missed.size()
+      );
+    }
+    match /users/{uid}/records/{recordId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasAll(['id','kind','parent','order','deleted','value','updatedAt'])
+        && request.resource.data.keys().hasOnly(['id','kind','parent','order','deleted','value','updatedAt'])
+        && request.resource.data.id == recordId && validId(recordId)
+        && request.resource.data.kind in ['week','project','task','subtask']
+        && (request.resource.data.kind == 'week' ? request.resource.data.parent == '' : validId(request.resource.data.parent))
+        && request.resource.data.order is int && request.resource.data.order >= 0 && request.resource.data.order <= 100000
+        && request.resource.data.deleted is bool && request.resource.data.updatedAt == request.time
+        && validValue(request.resource.data);
+      allow delete: if false;
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
