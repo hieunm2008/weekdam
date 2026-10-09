@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { readFile } from "node:fs/promises";
 
 const seed = {
   version: 1,
@@ -50,6 +51,33 @@ const seed = {
     },
   ],
 };
+test("exports a real backup file and imports it without duplicating existing data", async ({
+  page,
+}) => {
+  await loadFixture(page);
+  await page.getByRole("button", { name: "Cài đặt", exact: true }).click();
+  const downloaded = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Xuất JSON", exact: true }).click();
+  const file = await downloaded;
+  const path = await file.path();
+  if (!path) throw new Error("Backup download missing");
+  const backup = JSON.parse(await readFile(path, "utf8"));
+  expect(backup.version).toBe(1);
+  expect(
+    backup.weeks[0].projects[0].tasks.map(
+      (task: { name: string }) => task.name,
+    ),
+  ).toEqual(["Read", "Write"]);
+  await page.getByRole("button", { name: "Nhập JSON", exact: true }).click();
+  await page.getByLabel("JSON", { exact: true }).fill(JSON.stringify(backup));
+  await page.getByRole("button", { name: "Gộp dữ liệu", exact: true }).click();
+  await expect(page.getByTestId("week-progress")).toContainText("0/5");
+  await page
+    .getByRole("button", { name: "Dự án", exact: true })
+    .first()
+    .click();
+  await expect(page.locator(".project-title")).toHaveText(["Study"]);
+});
 async function loadFixture(page: import("@playwright/test").Page) {
   await page.clock.setFixedTime(new Date("2026-10-08T05:00:00Z"));
   await page.goto("/");

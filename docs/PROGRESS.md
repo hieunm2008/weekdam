@@ -15,7 +15,7 @@ Yêu cầu tiếp tục các phase không ngắt quãng được áp dụng ngà
 ## Bằng chứng hiện có
 
 - `npm test`: 15 tests PASS.
-- `npm run test:e2e`: 21 PASS, 3 skip có chủ đích (keyboard/mouse ordering chỉ desktop, touch chỉ mobile).
+- `npm run test:e2e`: 23 PASS, 3 skip có chủ đích (keyboard/mouse ordering chỉ desktop, touch chỉ mobile).
 - `npm run test:rules`: 3 PASS với Firestore Emulator thực.
 - `npm run test:sync`: 3 PASS với Auth + Firestore Emulator: hai thiết bị (gồm mobile), Guest migration qua reload, multi-tab và hai task tạo đồng thời.
 - Axe/WCAG: không có violations trong planner/editor, sáng/tối, desktop/mobile.

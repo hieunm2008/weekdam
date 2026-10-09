@@ -10,7 +10,7 @@ let checks = 0;
 function check(fn) { fn(); checks++; }
 function walk(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e =>
-    e.isDirectory() && e.name !== '.git' ? walk(path.join(dir, e.name)) : e.isFile() ? [path.join(dir, e.name)] : []);
+    e.isDirectory() && !['.git','node_modules','.tools','dist','test-results','playwright-report'].includes(e.name) ? walk(path.join(dir, e.name)) : e.isFile() ? [path.join(dir, e.name)] : []);
 }
 for (const file of ['FEATURES.md','OPEN_QUESTIONS.md','DATA_MODEL.md','SESSION.md','screens/INDEX.md','evidence/environment.json']) {
   check(() => assert(fs.statSync(path.join(root,file)).size > 0, file));
