@@ -48,4 +48,4 @@ Không sử dụng logo/mascot/icon/font asset, marketing text hoặc code của
 
 ## Các cổng nghiệm thu còn mở
 
-Google provider production cần khởi tạo trên Firebase Console, sau đó xác minh đăng nhập, Guest migration và sync/offline reconnect giữa desktop và Android thật. [Checklist Android](validation/ANDROID.md) ghi các bước và bằng chứng cần thu; browser mobile emulation không thay thế thiết bị thật. Mặc định sản phẩm đã chốt theo chỉ thị tiếp tục; [OPEN_QUESTIONS.md](research/OPEN_QUESTIONS.md) giữ câu hỏi ở thời điểm checkpoint để truy vết.
+Authentication đã khởi tạo với subtype `FIREBASE_AUTH` và hai miền Hosting đã được cho phép. Google provider vẫn cần bật trên Firebase Console, sau đó xác minh đăng nhập, Guest migration và sync/offline reconnect giữa desktop và Android thật. [Checklist Android](validation/ANDROID.md) ghi các bước và bằng chứng cần thu; browser mobile emulation không thay thế thiết bị thật. Mặc định sản phẩm đã chốt theo chỉ thị tiếp tục; [OPEN_QUESTIONS.md](research/OPEN_QUESTIONS.md) giữ câu hỏi ở thời điểm checkpoint để truy vết.

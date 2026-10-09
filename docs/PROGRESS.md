@@ -41,6 +41,8 @@ Các kết quả trên chưa chứng minh Google sign-in/sync production hoặc 
 
 Ngày 09/10/2026, thử lại `projects:addfirebase` đã thành công trên `weekdam-hieu-2026`. Web app ID `1:18370042360:web:cfad5a373f1f3446145e0d`; database `(default)` Standard/native ở `asia-southeast1`, `freeTier: true`. Cloud Billing API xác nhận `billingEnabled: false`. Hosting/rules/indexes đã deploy thành công.
 
-Identity Toolkit config vẫn trả 404 `CONFIGURATION_NOT_FOUND`. Hieu cần mở [Authentication providers](https://console.firebase.google.com/project/weekdam-hieu-2026/authentication/providers), chọn Get started nếu có, bật Google, chọn email hỗ trợ và Save. Sau đó kiểm tra domains, Google sign-in và sync trên URL thật. Không dùng API initialize Identity Platform vì endpoint công khai yêu cầu billing; giữ Spark.
+Kiểm tra mới ngày 09/10/2026 xác nhận Authentication đã khởi tạo với subtype `FIREBASE_AUTH`; authorized domains có `localhost`, `weekdam-hieu-2026.firebaseapp.com` và `weekdam-hieu-2026.web.app`. Google provider vẫn chưa có: admin get config trả 404, client `accounts:createAuthUri` trả 400 `OPERATION_NOT_ALLOWED : The identity provider configuration is not found.` Báo cáo đã lọc mã phiên/token trong `docs/validation/production-google-status.json`.
+
+Hieu cần mở [Authentication providers](https://console.firebase.google.com/project/weekdam-hieu-2026/authentication/providers), bật Google, chọn email hỗ trợ và Save. Get started đã hoàn tất. Sau đó xác minh Google sign-in và sync trên URL thật; giữ Spark.
 
 Android vật lý cần mở URL HTTPS/cài PWA và thực hiện offline/reconnect; các browser test hiện có chưa thay thế được bước đó.

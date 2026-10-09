@@ -1,0 +1,8 @@
+{
+  "checkedAt": "2026-10-09T10:43:34.174Z",
+  "projectId": "weekdam-hieu-2026",
+  "provider": "google.com",
+  "httpStatus": 400,
+  "error": "OPERATION_NOT_ALLOWED : The identity provider configuration is not found.",
+  "canStartGoogleFlow": false
+}
