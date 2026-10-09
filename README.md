@@ -39,6 +39,8 @@ Spark có hạn mức; vượt quota có thể tạm dừng dịch vụ đồng 
 
 Mở URL HTTPS Hosting bằng Chrome, chọn Cài ứng dụng/Thêm vào màn hình chính. Mở online ít nhất một lần để cache app. Sau đó thử tạo/sửa việc offline, đóng/mở lại, kết nối mạng và kiểm tra desktop nhận thay đổi. Chỉ coi tiêu chí Android thật hoàn tất sau khi thực hiện trên thiết bị vật lý.
 
+Xem [checklist nghiệm thu Android](docs/validation/ANDROID.md) để kiểm tra cài đặt, tương tác, sync/offline reconnect và cách ghi nhận kết quả.
+
 - [Kết quả tính năng](docs/research/FEATURES.md)
 - [Các quyết định cần duyệt](docs/research/OPEN_QUESTIONS.md)
 - [Mô hình dữ liệu quan sát](docs/research/DATA_MODEL.md)

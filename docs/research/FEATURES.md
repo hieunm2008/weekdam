@@ -1,6 +1,6 @@
 # weekdam — kết quả Phase 0
 
-Trạng thái: **chờ Hieu duyệt checkpoint; chưa bắt đầu Phase 1**.
+Trạng thái khảo sát lịch sử: Phase 0 đã hoàn tất. Sau chỉ thị tiếp tục toàn bộ phase ngày 09/10/2026, các mặc định đã được áp dụng và app đã triển khai/deploy. [Tiến độ hiện tại](../PROGRESS.md) và [bằng chứng nghiệm thu](../validation/ACCEPTANCE.md) phân biệt phần mềm đã kiểm tra với Google sync production/Android vật lý còn mở; bảng dưới giữ hành vi nghiên cứu ở thời điểm checkpoint.
 
 Khảo sát trực tiếp https://beaverplans.com/ bằng Playwright + Chrome/Chromium, phiên Guest sạch, ngày 08–09/10/2026 (Asia/Saigon). Desktop 1440×900; mobile 390×844, mô phỏng cảm ứng. Các ca ngày dùng đồng hồ trình duyệt có kiểm soát, ghi riêng trong `evidence/date-cases.json` và `evidence/timezone-cases.json`. Chưa thử Android thật hoặc đăng nhập.
 

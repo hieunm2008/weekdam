@@ -1,6 +1,6 @@
 # Checkpoint Phase 0 — các quyết định cần Hieu duyệt
 
-Trạng thái: **chưa duyệt**. Không dùng im lặng các đề xuất dưới đây để bắt đầu Phase 1. Phần lớn hành vi Guest đã xác minh; câu hỏi còn lại chủ yếu là chọn phạm vi/chính sách của weekdam.
+Trạng thái lịch sử: các mặc định Q1–Q9 và U3 đã được áp dụng theo chỉ thị tiếp tục toàn bộ phase ngày 09/10/2026. Nội dung dưới lưu câu hỏi/đề xuất ở checkpoint để truy vết; không còn là cổng chặn triển khai. [DECISIONS.md](../DECISIONS.md) ghi quyết định hiện tại, [PROGRESS.md](../PROGRESS.md) ghi các cổng production/Android còn mở.
 
 ## Quyết định sản phẩm
 
