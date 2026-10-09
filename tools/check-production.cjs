@@ -94,6 +94,38 @@ async function main() {
     );
     expect(denied.status).toBe(403);
     report.checks.push("Production Firestore rejects unauthenticated read");
+    await page.getByRole("button", { name: "Cài đặt", exact: true }).click();
+    const popupEvent = page.waitForEvent("popup", { timeout: 30000 });
+    await page
+      .getByRole("button", { name: "Đăng nhập Google", exact: true })
+      .click();
+    const popup = await popupEvent;
+    await popup.waitForURL((u) => u.hostname === "accounts.google.com", {
+      timeout: 30000,
+    });
+    await popup.waitForLoadState("domcontentloaded");
+    await expect(popup.getByRole("heading").first()).toBeVisible();
+    await fs.writeFile(
+      "docs/validation/production-google-popup.json",
+      JSON.stringify(
+        {
+          checkedAt: new Date().toISOString(),
+          projectId: "weekdam-hieu-2026",
+          popupOrigin: new URL(popup.url()).origin,
+          title: await popup.title(),
+          visibleHeadings: await popup.getByRole("heading").allTextContents(),
+          googleSignInCompleted: false,
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    await popup.screenshot({
+      path: "docs/validation/screens/production-google-popup.png",
+    });
+    report.checks.push(
+      "Google OAuth popup reaches Google Accounts; no credentials entered",
+    );
     expect(errors).toEqual([]);
     report.checks.push("No desktop page errors");
     report.status = "passed";

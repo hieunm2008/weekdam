@@ -18,7 +18,7 @@ Ngày kiểm tra nguồn: 09/10/2026. Các mặc định Q1–Q9 và U3 được
 
 Đây là đánh giá khả thi cho một người, không phải cam kết dịch vụ không giới hạn. Khi vượt quota, Spark có thể chặn sản phẩm theo chu kỳ quota thay vì tính phí; offline vẫn cần giữ thay đổi và báo lỗi đồng bộ. Không tự nâng Blaze. Không cần Functions, Cloud Storage, App Hosting hoặc billing-linked trial. Linking billing tự đổi plan sang Blaze; budget alert không phải trần tiền. [Firebase pricing plans](https://firebase.google.com/docs/projects/billing/firebase-pricing-plans)
 
-Project `weekdam-hieu-2026` đã bật Firebase; Web app ID `1:18370042360:web:cfad5a373f1f3446145e0d`. Database `(default)` Standard/native tại `asia-southeast1` được API xác nhận `freeTier: true`; Cloud Billing xác nhận `billingEnabled: false`. Hosting/rules/indexes đã deploy. Google Authentication còn chờ bật trên Console; chưa báo sync production đã đạt.
+Project `weekdam-hieu-2026` đã bật Firebase; Web app ID `1:18370042360:web:cfad5a373f1f3446145e0d`. Database `(default)` Standard/native tại `asia-southeast1` được API xác nhận `freeTier: true`; Cloud Billing xác nhận `billingEnabled: false`. Hosting/rules/indexes đã deploy. Google provider đã bật và OAuth popup tới Google Accounts; chưa báo sync production đã đạt.
 
 ## Local-first và sync đã triển khai
 
@@ -48,4 +48,4 @@ Không sử dụng logo/mascot/icon/font asset, marketing text hoặc code của
 
 ## Các cổng nghiệm thu còn mở
 
-Authentication đã khởi tạo với subtype `FIREBASE_AUTH` và hai miền Hosting đã được cho phép. Google provider vẫn cần bật trên Firebase Console, sau đó xác minh đăng nhập, Guest migration và sync/offline reconnect giữa desktop và Android thật. [Checklist Android](validation/ANDROID.md) ghi các bước và bằng chứng cần thu; browser mobile emulation không thay thế thiết bị thật. Mặc định sản phẩm đã chốt theo chỉ thị tiếp tục; [OPEN_QUESTIONS.md](research/OPEN_QUESTIONS.md) giữ câu hỏi ở thời điểm checkpoint để truy vết.
+Authentication có subtype `FIREBASE_AUTH`, hai miền Hosting đã được cho phép và Google provider đã bật. Còn xác minh hoàn tất đăng nhập, Guest migration và sync/offline reconnect giữa desktop và Android thật. [Checklist Android](validation/ANDROID.md) ghi các bước và bằng chứng cần thu; browser mobile emulation không thay thế thiết bị thật. Mặc định sản phẩm đã chốt theo chỉ thị tiếp tục; [OPEN_QUESTIONS.md](research/OPEN_QUESTIONS.md) giữ câu hỏi ở thời điểm checkpoint để truy vết.

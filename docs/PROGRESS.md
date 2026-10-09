@@ -8,9 +8,9 @@ Yêu cầu tiếp tục các phase không ngắt quãng được áp dụng ngà
 | 1 — shell | Đã triển khai và kiểm tra phần mềm | Responsive, vi/en, light/dark/system, icon riêng, manifest/SW; E2E offline reload và nhớ preferences. Android vật lý còn mở |
 | 2 — local core | Đã triển khai và kiểm tra | CRUD, trọng số, ngày/tuần Saigon, undo, IndexedDB; 15 unit tests và E2E CRUD |
 | 3 — tương tác | Đã triển khai và kiểm tra phần mềm | Mouse/touch/keyboard sensors, mobile day-tab drop/menu move; copy/paste/carry/move, giữ thứ tự editor. Android vật lý còn mở |
-| 4 — sync | Emulator đã kiểm chứng; backend production đã deploy | 3 rules tests và 3 browser sync tests: cross-device, offline reload/reconnect, sign-out isolation, Guest migration, concurrent tabs. Google provider production còn mở |
+| 4 — sync | Emulator đã kiểm chứng; backend production đã deploy | 3 rules tests và 3 browser sync tests: cross-device, offline reload/reconnect, sign-out isolation, Guest migration, concurrent tabs. Google provider đã bật; còn login/sync thật giữa thiết bị |
 | 5 — hoàn thiện | Chức năng và QA phần mềm đã kiểm tra | End/reopen, Stats, history, guide, JSON import/export, focus/dialog, translations; Axe/Lighthouse và các ca biên đã kiểm tra |
-| 6 — deploy | Hosting + Firestore đã deploy | URL HTTPS `weekdam-hieu-2026.web.app`, smoke production PASS; database free tier và billing chưa bật. Còn Google provider, xác thực/sync thật và Android vật lý |
+| 6 — deploy | Hosting + Firestore đã deploy | URL HTTPS `weekdam-hieu-2026.web.app`, smoke production PASS; database free tier và billing chưa bật. Google OAuth popup tới Google Accounts; còn xác thực/sync thật và Android vật lý |
 
 ## Bằng chứng hiện có
 
@@ -41,8 +41,8 @@ Các kết quả trên chưa chứng minh Google sign-in/sync production hoặc 
 
 Ngày 09/10/2026, thử lại `projects:addfirebase` đã thành công trên `weekdam-hieu-2026`. Web app ID `1:18370042360:web:cfad5a373f1f3446145e0d`; database `(default)` Standard/native ở `asia-southeast1`, `freeTier: true`. Cloud Billing API xác nhận `billingEnabled: false`. Hosting/rules/indexes đã deploy thành công.
 
-Kiểm tra mới ngày 09/10/2026 xác nhận Authentication đã khởi tạo với subtype `FIREBASE_AUTH`; authorized domains có `localhost`, `weekdam-hieu-2026.firebaseapp.com` và `weekdam-hieu-2026.web.app`. Google provider vẫn chưa có: admin get config trả 404, client `accounts:createAuthUri` trả 400 `OPERATION_NOT_ALLOWED : The identity provider configuration is not found.` Báo cáo đã lọc mã phiên/token trong `docs/validation/production-google-status.json`.
+Kiểm tra mới ngày 09/10/2026 xác nhận Authentication có subtype `FIREBASE_AUTH`; authorized domains gồm `localhost`, `weekdam-hieu-2026.firebaseapp.com`, `weekdam-hieu-2026.web.app`. Google provider đã bật và có client ID. Client `accounts:createAuthUri` trả HTTP 200, Google origin `https://accounts.google.com`, redirect URI `https://weekdam-hieu-2026.firebaseapp.com/__/auth/handler`; không lưu mã phiên/token trong báo cáo.
 
-Hieu cần mở [Authentication providers](https://console.firebase.google.com/project/weekdam-hieu-2026/authentication/providers), bật Google, chọn email hỗ trợ và Save. Get started đã hoàn tất. Sau đó xác minh Google sign-in và sync trên URL thật; giữ Spark.
+Playwright trên production đã xác nhận nút Đăng nhập Google mở popup và tới trang “Sign in - Google Accounts”. Chưa nhập credentials hoặc hoàn tất đăng nhập. Báo cáo: `production-google-status.json`, `production-google-popup.json`; screenshot `production-google-popup.png`. Đã yêu cầu Hieu đăng nhập cùng account trên desktop/Android và thử task sync/offline restart/reconnect; giữ Spark.
 
 Android vật lý cần mở URL HTTPS/cài PWA và thực hiện offline/reconnect; các browser test hiện có chưa thay thế được bước đó.

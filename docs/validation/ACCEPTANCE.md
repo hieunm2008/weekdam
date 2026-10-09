@@ -14,7 +14,7 @@ Commands: `npm test` (15), `npm run test:e2e` (23 pass/3 intentional skips), `np
 
 ## Not yet verified or performed
 
-- Actual Google sign-in provider and authenticated sync on production.
+- Completed Google sign-in and authenticated sync on production.
 - Desktop + physical Android using the deployed URL, installation/standalone opening, offline restart/reconnect on that device.
 - Actual quota consumption under ongoing personal use.
 
@@ -25,4 +25,6 @@ Commands: `npm test` (15), `npm run test:e2e` (23 pass/3 intentional skips), `np
 - `npm run deploy` completed production build, Hosting release and Firestore rules/indexes release.
 - URL: https://weekdam-hieu-2026.web.app. Production smoke passed Guest CRUD/persistence, HTTPS PWA offline restart/edit/reconnect, mobile layout, manifest, reserved auth handler and unauthenticated Firestore denial, with no desktop page errors. Report: `production-smoke.json`.
 
-The full goal is not complete. Authentication is now initialized as FIREBASE_AUTH and both Hosting domains are authorized. Google provider configuration remains missing: its admin endpoint returns 404 and the public client auth-flow check returns 400 OPERATION_NOT_ALLOWED (see `production-google-status.json`). Enable Google in Firebase Console before authenticated production acceptance. Emulator results are not authenticated production evidence. Physical Android acceptance also remains open.
+- Google provider enabled with an OAuth client ID; public auth-flow endpoint returns HTTP 200 with Google Accounts origin and the expected Firebase auth handler redirect. The app's login button opens the Google Accounts sign-in page in a real browser popup. Reports: `production-google-status.json`, `production-google-popup.json`. No credentials entered; no completed sign-in claimed.
+
+The full goal is not complete. Completed Google sign-in, authenticated sync and physical Android installation/offline/reconnect acceptance remain open. Emulator results and the OAuth popup smoke are not evidence of a completed authenticated production session.

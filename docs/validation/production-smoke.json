@@ -1,6 +1,6 @@
 {
   "url": "https://weekdam-hieu-2026.web.app",
-  "checkedAt": "2026-10-09T10:21:04.560Z",
+  "checkedAt": "2026-10-09T10:53:20.034Z",
   "checks": [
     "Desktop Guest CRUD, completion and persistence",
     "HTTPS PWA offline reload, local edit, restart and reconnect",
@@ -8,6 +8,7 @@
     "Production manifest",
     "Reserved Firebase auth handler served outside SPA",
     "Production Firestore rejects unauthenticated read",
+    "Google OAuth popup reaches Google Accounts; no credentials entered",
     "No desktop page errors"
   ],
   "status": "passed"

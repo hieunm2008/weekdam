@@ -1,8 +1,9 @@
 {
-  "checkedAt": "2026-10-09T10:43:34.174Z",
+  "checkedAt": "2026-10-09T10:50:53.510Z",
   "projectId": "weekdam-hieu-2026",
   "provider": "google.com",
-  "httpStatus": 400,
-  "error": "OPERATION_NOT_ALLOWED : The identity provider configuration is not found.",
-  "canStartGoogleFlow": false
+  "httpStatus": 200,
+  "canStartGoogleFlow": true,
+  "oauthOrigin": "https://accounts.google.com",
+  "redirectUri": "https://weekdam-hieu-2026.firebaseapp.com/__/auth/handler"
 }

@@ -2,7 +2,7 @@
 
 Weekly planner cá nhân cho desktop và Android, định hướng PWA local-first và đồng bộ miễn phí.
 
-App đã deploy tại [weekdam-hieu-2026.web.app](https://weekdam-hieu-2026.web.app): kế hoạch tuần/ngày, project/task/subtask, độ khó 1/2/3, drag chuột/cảm ứng/bàn phím, copy/paste, end/carry/reopen, Stats, lịch sử, undo, JSON backup, vi/en, theme và PWA offline. Firestore rules/indexes đã deploy; database Standard ở Singapore có free tier và billing chưa bật. Đồng bộ đã kiểm thử với Emulator; Google provider production và kiểm tra Android vật lý vẫn còn chờ hoàn tất.
+App đã deploy tại [weekdam-hieu-2026.web.app](https://weekdam-hieu-2026.web.app): kế hoạch tuần/ngày, project/task/subtask, độ khó 1/2/3, drag chuột/cảm ứng/bàn phím, copy/paste, end/carry/reopen, Stats, lịch sử, undo, JSON backup, vi/en, theme và PWA offline. Firestore rules/indexes đã deploy; database Standard ở Singapore có free tier và billing chưa bật. Google provider production đã bật và OAuth popup đã kiểm tra; đồng bộ đã kiểm thử với Emulator. Đăng nhập/sync thật giữa desktop và Android vật lý vẫn còn chờ nghiệm thu.
 
 ## Chạy và kiểm thử
 
@@ -19,7 +19,7 @@ npm run build
 npm run preview -- --port 4173
 ```
 
-`npm run test:production` kiểm tra URL Hosting đã deploy: Guest CRUD/persistence, PWA offline/restart/reconnect, mobile layout, manifest/auth handler và Firestore chặn đọc chưa đăng nhập. Dữ liệu thử chỉ lưu Guest trong browser context tạm; lệnh không đăng nhập hay ghi dữ liệu cloud. Báo cáo nằm trong `docs/validation/production-smoke.json`.
+`npm run test:production` kiểm tra URL Hosting đã deploy: Guest CRUD/persistence, PWA offline/restart/reconnect, mobile layout, manifest/auth handler, Firestore chặn đọc chưa đăng nhập và Google OAuth popup đến trang Google Accounts. Dữ liệu thử chỉ lưu Guest trong browser context tạm; lệnh không nhập credentials, đăng nhập hay ghi dữ liệu cloud. Báo cáo nằm trong `docs/validation/production-smoke.json`.
 
 E2E dùng Chrome đã cài qua Playwright. Rules/sync tests chỉ dùng `demo-weekdam`, không dùng project production. Nếu JDK nằm trong `.tools/jdk/`, wrapper tự tìm; nếu không, đặt `JAVA_HOME` và PATH cho Java 21+. Bản test sync có fixture đăng nhập bằng token Emulator; fixture không được build vào production.
 
