@@ -15,9 +15,12 @@ Yêu cầu tiếp tục các phase không ngắt quãng được áp dụng ngà
 ## Bằng chứng hiện có
 
 - `npm test`: 15 tests PASS.
-- `npm run test:e2e`: 14 PASS, 2 skip có chủ đích (keyboard chỉ desktop, touch chỉ mobile).
+- `npm run test:e2e`: 21 PASS, 3 skip có chủ đích (keyboard/mouse ordering chỉ desktop, touch chỉ mobile).
 - `npm run test:rules`: 3 PASS với Firestore Emulator thực.
-- `npm run test:sync`: 2 PASS với Auth + Firestore Emulator và hai browser contexts, gồm mobile.
+- `npm run test:sync`: 3 PASS với Auth + Firestore Emulator: hai thiết bị (gồm mobile), Guest migration qua reload, multi-tab và hai task tạo đồng thời.
+- Axe/WCAG: không có violations trong planner/editor, sáng/tối, desktop/mobile.
+- Lighthouse production mobile: performance 98, accessibility 100, best practices 100. Xem `docs/validation/lighthouse.html`; không dùng category PWA deprecated.
+- Production dependencies audit: 0 vulnerabilities sau override gRPC 1.14.6. Audit toàn bộ vẫn có 14 cảnh báo trong dev tooling; không dùng force downgrade Firebase/CLI. Reports nằm trong `docs/validation`.
 - Ảnh app riêng trong `docs/validation/screens`, khác screenshot research của bản gốc.
 
 Các kết quả trên chưa chứng minh Google sign-in production, deploy HTTPS thật hoặc cài/mở app trên Android vật lý. Goal toàn bộ app vẫn đang active.
@@ -30,3 +33,8 @@ Các kết quả trên chưa chứng minh Google sign-in production, deploy HTTP
 - Undo dùng patch theo entity, tránh ghi đè những entity không liên quan; tối đa 20 bước trong phiên, không giữ lịch sử undo qua reload.
 - Metadata tuần đang có được giữ khi merge backup; deadline không tự dịch. Unknown authenticated backend của Beaverplans không được dùng làm cơ sở khẳng định hành vi cloud.
 - Firebase CLI thực tế dùng device-code login trên môi trường này; người dùng hoàn tất trong terminal, không chia sẻ authorization code/token qua chat.
+- `npm run deploy` có guard: từ chối config thiếu, project demo/Emulator hoặc CLI project không khớp config frontend. Hiện guard từ chối đúng vì chưa có `.env` và project thật.
+
+## Prerequisite ngoài máy cần hoàn tất
+
+Firebase CLI `login:list` vẫn trả “No authorized accounts”. Hieu chưa có project. Cần chạy `npx firebase login` trong terminal và hoàn tất xác thực Google trực tiếp; sau đó agent mới có thể tạo Spark/project/app, bật Google provider, deploy và kiểm tra production. Android vật lý cần mở URL HTTPS/cài PWA và thực hiện offline/reconnect; các browser test hiện có chưa thay thế được bước đó.

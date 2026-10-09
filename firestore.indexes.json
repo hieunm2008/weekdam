@@ -1,1 +1,6 @@
-{"indexes":[],"fieldOverrides":[{"collectionGroup":"records","fieldPath":"value.note","indexes":[]}]}
+{
+  "indexes": [],
+  "fieldOverrides": [
+    { "collectionGroup": "records", "fieldPath": "value.note", "indexes": [] }
+  ]
+}

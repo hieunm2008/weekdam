@@ -1,10 +1,38 @@
-<!doctype html><html><head><title>Emulator account fixture</title></head><body><p>Preparing emulator account…</p><script type="module">
-import {getFirebaseClient,emulatorMode} from '/src/firebaseClient.ts';
-import {signInWithCustomToken} from 'firebase/auth';
-if(!emulatorMode)throw new Error('This fixture only runs in the emulator build');
-const uid=new URLSearchParams(location.search).get('uid')||'owner';
-const encode=value=>btoa(JSON.stringify(value)).replaceAll('+','-').replaceAll('/','_').replaceAll('=','');
-const now=Math.floor(Date.now()/1000),issuer='test@demo-weekdam.iam.gserviceaccount.com';
-const token=encode({alg:'none',typ:'JWT'})+'.'+encode({uid,iat:now,exp:now+3600,iss:issuer,sub:issuer,aud:'https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit'})+'.';
-const client=await getFirebaseClient();await signInWithCustomToken(client.auth,token);location.replace('/');
-</script></body></html>
+<!doctype html>
+<html>
+  <head>
+    <title>Emulator account fixture</title>
+  </head>
+  <body>
+    <p>Preparing emulator account…</p>
+    <script type="module">
+      import { getFirebaseClient, emulatorMode } from "/src/firebaseClient.ts";
+      import { signInWithCustomToken } from "firebase/auth";
+      if (!emulatorMode)
+        throw new Error("This fixture only runs in the emulator build");
+      const uid = new URLSearchParams(location.search).get("uid") || "owner";
+      const encode = (value) =>
+        btoa(JSON.stringify(value))
+          .replaceAll("+", "-")
+          .replaceAll("/", "_")
+          .replaceAll("=", "");
+      const now = Math.floor(Date.now() / 1000),
+        issuer = "test@demo-weekdam.iam.gserviceaccount.com";
+      const token =
+        encode({ alg: "none", typ: "JWT" }) +
+        "." +
+        encode({
+          uid,
+          iat: now,
+          exp: now + 3600,
+          iss: issuer,
+          sub: issuer,
+          aud: "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit",
+        }) +
+        ".";
+      const client = await getFirebaseClient();
+      await signInWithCustomToken(client.auth, token);
+      location.replace("/");
+    </script>
+  </body>
+</html>
