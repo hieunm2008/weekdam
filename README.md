@@ -2,7 +2,7 @@
 
 Weekly planner cá nhân cho desktop và Android, định hướng PWA local-first và đồng bộ miễn phí.
 
-App đã deploy tại [weekdam-hieu-2026.web.app](https://weekdam-hieu-2026.web.app): kế hoạch tuần/ngày, project/task/subtask, độ khó 1/2/3, drag chuột/cảm ứng/bàn phím, copy/paste, end/carry/reopen, Stats, lịch sử, undo, JSON backup, vi/en, theme và PWA offline. Firestore rules/indexes đã deploy; database Standard ở Singapore có free tier và billing chưa bật. Google provider production đã bật và OAuth popup đã kiểm tra; đồng bộ đã kiểm thử với Emulator. Đăng nhập/sync thật giữa desktop và Android vật lý vẫn còn chờ nghiệm thu.
+App đã deploy tại [weekdam-hieu-2026.web.app](https://weekdam-hieu-2026.web.app): kế hoạch tuần/ngày, project/task/subtask, độ khó 1/2/3, drag chuột/cảm ứng/bàn phím, copy/paste, end/carry/reopen, Stats, lịch sử, undo, JSON backup, vi/en, theme và PWA offline. Firestore rules/indexes đã deploy; database Standard ở Singapore có free tier và billing chưa bật. Google provider production đã bật; ngày 09/10/2026 Hieu xác nhận đồng bộ thực, cài PWA Android và offline/reconnect thành công. Xem `docs/validation/ACCEPTANCE.md` để phân biệt kiểm thử tự động với nghiệm thu từ người dùng.
 
 ## Chạy và kiểm thử
 

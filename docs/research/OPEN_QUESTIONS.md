@@ -1,6 +1,6 @@
 # Checkpoint Phase 0 — các quyết định cần Hieu duyệt
 
-Trạng thái lịch sử: các mặc định Q1–Q9 và U3 đã được áp dụng theo chỉ thị tiếp tục toàn bộ phase ngày 09/10/2026. Nội dung dưới lưu câu hỏi/đề xuất ở checkpoint để truy vết; không còn là cổng chặn triển khai. [DECISIONS.md](../DECISIONS.md) ghi quyết định hiện tại, [PROGRESS.md](../PROGRESS.md) ghi các cổng production/Android còn mở.
+Trạng thái lịch sử: các mặc định Q1–Q9 và U3 đã được áp dụng theo chỉ thị tiếp tục toàn bộ phase ngày 09/10/2026. Nội dung dưới lưu câu hỏi/đề xuất ở checkpoint để truy vết; không còn là cổng chặn triển khai. [DECISIONS.md](../DECISIONS.md) ghi quyết định hiện tại, [PROGRESS.md](../PROGRESS.md) ghi kết quả nghiệm thu production/Android đã được Hieu xác nhận.
 
 ## Quyết định sản phẩm
 

@@ -12,11 +12,11 @@
 
 Commands: `npm test` (15), `npm run test:e2e` (23 pass/3 intentional skips), `npm run test:rules` (3), `npm run test:sync` (3). Production build succeeds. Lighthouse 98/100/100 for performance/accessibility/best practices. Research verifier remains separate.
 
-## Not yet verified or performed
+## User acceptance on 2026-10-09
 
-- Completed Google sign-in and authenticated sync on production.
-- Desktop + physical Android using the deployed URL, installation/standalone opening, offline restart/reconnect on that device.
-- Actual quota consumption under ongoing personal use.
+Hieu reported “đã test và đồng bộ ok”. In response to the explicit Android installation/offline restart/reconnect question, Hieu confirmed “Đã cài PWA và thử offline/reconnect thành công”. This closes the production cross-device sync and physical Android PWA/offline/reconnect gates based on direct user testing. See `ANDROID.md` for the recorded scope; no phone model, browser version or device screenshots were supplied.
+
+Actual quota consumption under ongoing personal use remains an operational consideration, not an unfinished installation task. The project is on the verified free-tier setup with billing disabled.
 
 ## Production verified on 2026-10-09
 
@@ -28,4 +28,6 @@ Commands: `npm test` (15), `npm run test:e2e` (23 pass/3 intentional skips), `np
 - Google provider enabled with an OAuth client ID; public auth-flow endpoint returns HTTP 200 with Google Accounts origin and the expected Firebase auth handler redirect. The app's login button opens the Google Accounts sign-in page in a real browser popup. Reports: `production-google-status.json`, `production-google-popup.json`. No credentials entered; no completed sign-in claimed.
 - Login cancellation regression: closing the real Google popup previously showed a sync failure; the failing UI test reproduced it before the fix. The deployed fix now shows a cancellation status inside Settings and no sync error. Current production smoke passes this check. Other sign-in failures have specific localized guidance; user credentials were not entered during these tests.
 
-The full goal is not complete. Completed Google sign-in, authenticated sync and physical Android installation/offline/reconnect acceptance remain open. Emulator results and the OAuth popup smoke are not evidence of a completed authenticated production session.
+Authenticated production and physical Android acceptance are supported by the user's confirmations above. Emulator results and OAuth popup smoke provide separate software evidence and are not presented as physical-device evidence.
+
+Final regression on 2026-10-09: 15 unit, 23 E2E, 3 rules and 3 sync tests passed (44 total); 3 E2E skips are intentional device-specific cases. An initial sandbox SSR-cache read failed; the same unit suite passed outside sandbox without code changes. Production APIs were rechecked: billing disabled and Standard database still on the free tier. Phases 0–6 and the user acceptance gates are complete.

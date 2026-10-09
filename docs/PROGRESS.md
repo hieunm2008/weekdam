@@ -5,12 +5,12 @@ Yêu cầu tiếp tục các phase không ngắt quãng được áp dụng ngà
 | Phase | Trạng thái hiện tại | Bằng chứng / còn lại |
 |---|---|---|
 | 0 — nghiên cứu | Hoàn tất | Commit `5c3758e`, 106 ảnh; verifier research |
-| 1 — shell | Đã triển khai và kiểm tra phần mềm | Responsive, vi/en, light/dark/system, icon riêng, manifest/SW; E2E offline reload và nhớ preferences. Android vật lý còn mở |
-| 2 — local core | Đã triển khai và kiểm tra | CRUD, trọng số, ngày/tuần Saigon, undo, IndexedDB; 15 unit tests và E2E CRUD |
-| 3 — tương tác | Đã triển khai và kiểm tra phần mềm | Mouse/touch/keyboard sensors, mobile day-tab drop/menu move; copy/paste/carry/move, giữ thứ tự editor. Android vật lý còn mở |
-| 4 — sync | Emulator đã kiểm chứng; backend production đã deploy | 3 rules tests và 3 browser sync tests: cross-device, offline reload/reconnect, sign-out isolation, Guest migration, concurrent tabs. Google provider đã bật; còn login/sync thật giữa thiết bị |
-| 5 — hoàn thiện | Chức năng và QA phần mềm đã kiểm tra | End/reopen, Stats, history, guide, JSON import/export, focus/dialog, translations; Axe/Lighthouse và các ca biên đã kiểm tra |
-| 6 — deploy | Hosting + Firestore đã deploy | URL HTTPS `weekdam-hieu-2026.web.app`, smoke production PASS; database free tier và billing chưa bật. Google OAuth popup tới Google Accounts; còn xác thực/sync thật và Android vật lý |
+| 1 — shell | Hoàn tất | Responsive, vi/en, light/dark/system, icon riêng, manifest/SW; E2E offline reload và nhớ preferences. Hieu đã xác nhận cài PWA Android và offline/reconnect |
+| 2 — local core | Hoàn tất | CRUD, trọng số, ngày/tuần Saigon, undo, IndexedDB; 15 unit tests và E2E CRUD |
+| 3 — tương tác | Hoàn tất | Mouse/touch/keyboard sensors, mobile day-tab drop/menu move; copy/paste/carry/move, giữ thứ tự editor; Hieu đã test app trên Android thật |
+| 4 — sync | Hoàn tất | 3 rules tests và 3 browser sync tests; Google provider production đã bật. Hieu xác nhận đồng bộ thực và offline/reconnect thành công |
+| 5 — hoàn thiện | Hoàn tất | End/reopen, Stats, history, guide, JSON import/export, focus/dialog, translations; Axe/Lighthouse và các ca biên đã kiểm tra |
+| 6 — deploy | Hoàn tất | URL HTTPS `weekdam-hieu-2026.web.app`, smoke production PASS; database free tier và billing chưa bật. Hieu xác nhận cài PWA Android và offline/reconnect thành công |
 
 ## Bằng chứng hiện có
 
@@ -26,7 +26,9 @@ Yêu cầu tiếp tục các phase không ngắt quãng được áp dụng ngà
 - Smoke URL production: Guest CRUD/completion/persistence, PWA offline/restart/reconnect, mobile layout, manifest, Firebase auth handler và chặn Firestore read chưa đăng nhập đều PASS. Xem `docs/validation/production-smoke.json` và ảnh `production-desktop.png`, `production-mobile.png`.
 - Hủy Google popup: ca kiểm thử đã thất bại trước khi sửa (app báo nhầm lỗi sync), sau khi deploy bản sửa đã PASS. Hủy đăng nhập có thông báo riêng trong dialog, không báo sync error; popup bị chặn, lỗi mạng, domain/provider chưa cấu hình có hướng dẫn riêng bằng vi/en. `npm test` vẫn 15 PASS; production smoke gồm ca hồi quy này.
 
-Các kết quả trên chưa chứng minh Google sign-in/sync production hoặc cài/mở app trên Android vật lý. Goal toàn bộ app chưa hoàn tất.
+Hieu đã xác nhận “đã test và đồng bộ ok” và, khi được hỏi rõ tiêu chí Android, “Đã cài PWA và thử offline/reconnect thành công”. Google sign-in/sync production và Android thật được nghiệm thu theo xác nhận trực tiếp của người dùng, không dựa vào mobile emulation. Xem `docs/validation/ANDROID.md`.
+
+Kiểm tra cuối ngày 09/10/2026: 44 tests PASS (15 unit + 23 E2E + 3 rules + 3 sync), 3 skip theo thiết bị có chủ đích. Unit tests trong sandbox gặp lỗi đọc cache SSR ở thư mục temp; chạy lại ngoài sandbox PASS, không cần sửa logic app. Kiểm tra API production cuối xác nhận `billingEnabled: false`, `freeTier: true`, database Standard tại Singapore. Toàn bộ Phase 0–6 đã nghiệm thu.
 
 ## Quyết định triển khai đã cụ thể hóa
 
@@ -38,12 +40,10 @@ Các kết quả trên chưa chứng minh Google sign-in/sync production hoặc 
 - Firebase CLI thực tế dùng device-code login trên môi trường này; người dùng hoàn tất trong terminal, không chia sẻ authorization code/token qua chat.
 - `npm run deploy` có guard: từ chối config thiếu, project demo/Emulator hoặc CLI project không khớp config frontend. Production `.env` đã lấy từ Web app; `.firebaserc` chọn project thật và guard đã PASS.
 
-## Prerequisite ngoài máy cần hoàn tất
+## Production và nghiệm thu thực tế
 
 Ngày 09/10/2026, thử lại `projects:addfirebase` đã thành công trên `weekdam-hieu-2026`. Web app ID `1:18370042360:web:cfad5a373f1f3446145e0d`; database `(default)` Standard/native ở `asia-southeast1`, `freeTier: true`. Cloud Billing API xác nhận `billingEnabled: false`. Hosting/rules/indexes đã deploy thành công.
 
 Kiểm tra mới ngày 09/10/2026 xác nhận Authentication có subtype `FIREBASE_AUTH`; authorized domains gồm `localhost`, `weekdam-hieu-2026.firebaseapp.com`, `weekdam-hieu-2026.web.app`. Google provider đã bật và có client ID. Client `accounts:createAuthUri` trả HTTP 200, Google origin `https://accounts.google.com`, redirect URI `https://weekdam-hieu-2026.firebaseapp.com/__/auth/handler`; không lưu mã phiên/token trong báo cáo.
 
-Playwright trên production đã xác nhận nút Đăng nhập Google mở popup và tới trang “Sign in - Google Accounts”. Chưa nhập credentials hoặc hoàn tất đăng nhập. Báo cáo: `production-google-status.json`, `production-google-popup.json`; screenshot `production-google-popup.png`. Đã yêu cầu Hieu đăng nhập cùng account trên desktop/Android và thử task sync/offline restart/reconnect; giữ Spark.
-
-Android vật lý cần mở URL HTTPS/cài PWA và thực hiện offline/reconnect; các browser test hiện có chưa thay thế được bước đó.
+Playwright trên production đã xác nhận nút Đăng nhập Google mở popup và tới trang “Sign in - Google Accounts”; test tự động không nhập credentials. Báo cáo: `production-google-status.json`, `production-google-popup.json`; screenshot `production-google-popup.png`. Hieu sau đó xác nhận đồng bộ giữa thiết bị và cài PWA/offline restart/reconnect trên Android thật thành công ngày 09/10/2026. Giữ Spark; không có yêu cầu nâng billing.

@@ -1,6 +1,14 @@
 # Nghiệm thu Android thật
 
-Trạng thái: chưa thực hiện trên thiết bị vật lý. Hosting đã deploy tại https://weekdam-hieu-2026.web.app; browser smoke không chứng minh cài PWA hay sync thật trên Android.
+Trạng thái: **đã nghiệm thu theo xác nhận của Hieu ngày 09/10/2026** trên bản Hosting https://weekdam-hieu-2026.web.app. Đây là kết quả kiểm thử do người dùng thực hiện trên thiết bị thật, tách biệt với browser smoke.
+
+## Kết quả đã xác nhận
+
+- Hieu báo: “đã test và đồng bộ ok”.
+- Khi hỏi rõ về cài PWA trên Android và luồng sửa offline → đóng/mở lại → bật mạng để desktop nhận thay đổi, Hieu xác nhận: “Đã cài PWA và thử offline/reconnect thành công”.
+- Cài PWA Android, giữ dữ liệu sau offline restart và đồng bộ sau reconnect được chấp nhận dựa trên hai xác nhận trực tiếp này. Model điện thoại, phiên bản Android/Chrome và ảnh thiết bị chưa được cung cấp; không suy diễn hoặc gán kết quả cho thử nghiệm tự động.
+
+Các bước bên dưới giữ làm hướng dẫn kiểm tra lại sau các lần cập nhật.
 
 ## Chuẩn bị
 

@@ -18,7 +18,7 @@ Ngày kiểm tra nguồn: 09/10/2026. Các mặc định Q1–Q9 và U3 được
 
 Đây là đánh giá khả thi cho một người, không phải cam kết dịch vụ không giới hạn. Khi vượt quota, Spark có thể chặn sản phẩm theo chu kỳ quota thay vì tính phí; offline vẫn cần giữ thay đổi và báo lỗi đồng bộ. Không tự nâng Blaze. Không cần Functions, Cloud Storage, App Hosting hoặc billing-linked trial. Linking billing tự đổi plan sang Blaze; budget alert không phải trần tiền. [Firebase pricing plans](https://firebase.google.com/docs/projects/billing/firebase-pricing-plans)
 
-Project `weekdam-hieu-2026` đã bật Firebase; Web app ID `1:18370042360:web:cfad5a373f1f3446145e0d`. Database `(default)` Standard/native tại `asia-southeast1` được API xác nhận `freeTier: true`; Cloud Billing xác nhận `billingEnabled: false`. Hosting/rules/indexes đã deploy. Google provider đã bật và OAuth popup tới Google Accounts; chưa báo sync production đã đạt.
+Project `weekdam-hieu-2026` đã bật Firebase; Web app ID `1:18370042360:web:cfad5a373f1f3446145e0d`. Database `(default)` Standard/native tại `asia-southeast1` được API xác nhận `freeTier: true`; Cloud Billing xác nhận `billingEnabled: false`. Hosting/rules/indexes đã deploy. Google provider đã bật; Hieu xác nhận sync production và PWA Android offline/reconnect thành công ngày 09/10/2026.
 
 ## Local-first và sync đã triển khai
 
@@ -46,6 +46,6 @@ Tuần bắt đầu Thứ Hai; timezone kế hoạch cố định Asia/Ho_Chi_Mi
 
 Không sử dụng logo/mascot/icon/font asset, marketing text hoặc code của bản gốc. Các screenshot nghiên cứu không được import vào bundle app.
 
-## Các cổng nghiệm thu còn mở
+## Nghiệm thu
 
-Authentication có subtype `FIREBASE_AUTH`, hai miền Hosting đã được cho phép và Google provider đã bật. Còn xác minh hoàn tất đăng nhập, Guest migration và sync/offline reconnect giữa desktop và Android thật. [Checklist Android](validation/ANDROID.md) ghi các bước và bằng chứng cần thu; browser mobile emulation không thay thế thiết bị thật. Mặc định sản phẩm đã chốt theo chỉ thị tiếp tục; [OPEN_QUESTIONS.md](research/OPEN_QUESTIONS.md) giữ câu hỏi ở thời điểm checkpoint để truy vết.
+Authentication có subtype `FIREBASE_AUTH`, hai miền Hosting đã được cho phép và Google provider đã bật. Guest migration/account isolation đã kiểm thử với Emulator; Hieu xác nhận đồng bộ thực và cài PWA/offline restart/reconnect trên Android thật. [Checklist Android](validation/ANDROID.md) ghi phạm vi xác nhận và hướng dẫn thử lại; không coi mobile emulation là bằng chứng thiết bị thật. Mặc định sản phẩm đã chốt theo chỉ thị tiếp tục; [OPEN_QUESTIONS.md](research/OPEN_QUESTIONS.md) giữ câu hỏi ở thời điểm checkpoint để truy vết.
