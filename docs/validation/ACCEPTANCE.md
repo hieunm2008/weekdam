@@ -14,8 +14,15 @@ Commands: `npm test` (15), `npm run test:e2e` (23 pass/3 intentional skips), `np
 
 ## Not yet verified or performed
 
-- Real Firebase Spark project creation, actual Google sign-in provider, production Firestore/Hosting deployment.
+- Actual Google sign-in provider and authenticated sync on production.
 - Desktop + physical Android using the deployed URL, installation/standalone opening, offline restart/reconnect on that device.
-- Actual project quotas and billing state after creation; current proposal uses Spark, no billing, provider subdomain.
+- Actual quota consumption under ongoing personal use.
 
-These are explicit remaining gates. The full goal is not complete. Deployment is currently blocked by missing Firebase CLI authentication/project configuration, not by a passing emulator test being treated as production evidence.
+## Production verified on 2026-10-09
+
+- Firebase project `weekdam-hieu-2026` enabled; Web app created and `.env` configured with its public SDK configuration.
+- Firestore `(default)` is STANDARD/FIRESTORE_NATIVE in `asia-southeast1`, with `freeTier: true`; Cloud Billing reports `billingEnabled: false`.
+- `npm run deploy` completed production build, Hosting release and Firestore rules/indexes release.
+- URL: https://weekdam-hieu-2026.web.app. Production smoke passed Guest CRUD/persistence, HTTPS PWA offline restart/edit/reconnect, mobile layout, manifest, reserved auth handler and unauthenticated Firestore denial, with no desktop page errors. Report: `production-smoke.json`.
+
+The full goal is not complete. Identity Toolkit config still returns 404 CONFIGURATION_NOT_FOUND; Google provider initialization needs to be completed in Firebase Console before authenticated production acceptance. Emulator results are not authenticated production evidence. Physical Android acceptance also remains open.

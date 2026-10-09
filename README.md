@@ -2,7 +2,7 @@
 
 Weekly planner cá nhân cho desktop và Android, định hướng PWA local-first và đồng bộ miễn phí.
 
-App đã có bản chạy cục bộ: kế hoạch tuần/ngày, project/task/subtask, độ khó 1/2/3, drag chuột/cảm ứng/bàn phím, copy/paste, end/carry/reopen, Stats, lịch sử, undo, JSON backup, vi/en, theme và PWA offline. Đồng bộ Google/Firestore đã nối và kiểm thử với Emulator. Deploy thật và kiểm tra Android vật lý còn chờ tài khoản Firebase/thiết bị của Hieu.
+App đã deploy tại [weekdam-hieu-2026.web.app](https://weekdam-hieu-2026.web.app): kế hoạch tuần/ngày, project/task/subtask, độ khó 1/2/3, drag chuột/cảm ứng/bàn phím, copy/paste, end/carry/reopen, Stats, lịch sử, undo, JSON backup, vi/en, theme và PWA offline. Firestore rules/indexes đã deploy; database Standard ở Singapore có free tier và billing chưa bật. Đồng bộ đã kiểm thử với Emulator; Google provider production và kiểm tra Android vật lý vẫn còn chờ hoàn tất.
 
 ## Chạy và kiểm thử
 
@@ -19,15 +19,17 @@ npm run build
 npm run preview -- --port 4173
 ```
 
+`npm run test:production` kiểm tra URL Hosting đã deploy: Guest CRUD/persistence, PWA offline/restart/reconnect, mobile layout, manifest/auth handler và Firestore chặn đọc chưa đăng nhập. Dữ liệu thử chỉ lưu Guest trong browser context tạm; lệnh không đăng nhập hay ghi dữ liệu cloud. Báo cáo nằm trong `docs/validation/production-smoke.json`.
+
 E2E dùng Chrome đã cài qua Playwright. Rules/sync tests chỉ dùng `demo-weekdam`, không dùng project production. Nếu JDK nằm trong `.tools/jdk/`, wrapper tự tìm; nếu không, đặt `JAVA_HOME` và PATH cho Java 21+. Bản test sync có fixture đăng nhập bằng token Emulator; fixture không được build vào production.
 
 ## Bật đồng bộ và deploy
 
-1. Đăng nhập Firebase CLI: `npx firebase login`. Mật khẩu/mã xác thực nhập vào Google/terminal trực tiếp, không gửi vào chat.
+1. Trong thư mục dự án, đăng nhập Firebase CLI: `npm run firebase -- login`. Script dùng CLI từ package `firebase-tools` đã cài qua `npm ci`. Mật khẩu/mã xác thực nhập vào Google/terminal trực tiếp, không gửi vào chat.
 2. Tạo Firebase project gói **Spark**, không liên kết billing; không cần Analytics, Functions hoặc Cloud Storage. Tạo Firestore Standard native database, đề xuất region `asia-southeast1`.
 3. Tạo Web app; copy `.env.example` thành `.env`, điền 4 trường cấu hình web. Đây là cấu hình frontend công khai; không thêm service-account/private key. Production phải để `VITE_USE_FIREBASE_EMULATORS=false`.
 4. Bật Google trong Authentication; thêm tên miền Hosting vào Authorized domains. Nếu dùng authDomain cùng miền `project-id.web.app`, Google OAuth client phải cho phép redirect URI `https://project-id.web.app/__/auth/handler`. Service worker không intercept đường dẫn `/__/`.
-5. Chọn project: `npx firebase use --add`, rồi chạy `npm run deploy`. Hosting public directory là `dist`; rules/indexes được deploy cùng app. Không deploy bản Emulator.
+5. Chọn project: `npm run firebase -- use --add`, rồi chạy `npm run deploy`. Hosting public directory là `dist`; rules/indexes được deploy cùng app. Không deploy bản Emulator.
 
 Firestore chỉ cho mỗi UID đọc/ghi `users/{uid}/records`. Mỗi week/project/task/subtask là một document, LWW theo document; không lưu cả tuần trong một document. Xóa bằng tombstone không giữ note/nội dung. IndexedDB giữ outbox theo project+UID với revision để retry không xóa nhầm thay đổi mới. First login tự upload Guest khi cloud trống; cloud có dữ liệu thì hỏi merge/cloud. Bản Guest vẫn giữ để sao lưu.
 

@@ -8,9 +8,9 @@ Yêu cầu tiếp tục các phase không ngắt quãng được áp dụng ngà
 | 1 — shell | Đã triển khai và kiểm tra phần mềm | Responsive, vi/en, light/dark/system, icon riêng, manifest/SW; E2E offline reload và nhớ preferences. Android vật lý còn mở |
 | 2 — local core | Đã triển khai và kiểm tra | CRUD, trọng số, ngày/tuần Saigon, undo, IndexedDB; 15 unit tests và E2E CRUD |
 | 3 — tương tác | Đã triển khai và kiểm tra phần mềm | Mouse/touch/keyboard sensors, mobile day-tab drop/menu move; copy/paste/carry/move, giữ thứ tự editor. Android vật lý còn mở |
-| 4 — sync | Emulator đã kiểm chứng | 3 rules tests và 2 browser sync tests: cross-device, offline reload/reconnect, sign-out isolation, Guest migration qua reload. Google provider thật/production project còn mở |
-| 5 — hoàn thiện | Phần chức năng đã có, đang QA | End/reopen, Stats, history, guide, JSON import/export, focus/dialog, translations; tiếp tục accessibility/Lighthouse và ca biên |
-| 6 — deploy | Đang chuẩn bị, chưa triển khai thật | CLI chưa đăng nhập; Hieu chưa có Firebase project. Đã chuẩn bị Hosting/rules/indexes/env example; cần đăng nhập, tạo Spark, cấu hình Google và kiểm tra Android thật |
+| 4 — sync | Emulator đã kiểm chứng; backend production đã deploy | 3 rules tests và 3 browser sync tests: cross-device, offline reload/reconnect, sign-out isolation, Guest migration, concurrent tabs. Google provider production còn mở |
+| 5 — hoàn thiện | Chức năng và QA phần mềm đã kiểm tra | End/reopen, Stats, history, guide, JSON import/export, focus/dialog, translations; Axe/Lighthouse và các ca biên đã kiểm tra |
+| 6 — deploy | Hosting + Firestore đã deploy | URL HTTPS `weekdam-hieu-2026.web.app`, smoke production PASS; database free tier và billing chưa bật. Còn Google provider, xác thực/sync thật và Android vật lý |
 
 ## Bằng chứng hiện có
 
@@ -22,8 +22,10 @@ Yêu cầu tiếp tục các phase không ngắt quãng được áp dụng ngà
 - Lighthouse production mobile: performance 98, accessibility 100, best practices 100. Xem `docs/validation/lighthouse.html`; không dùng category PWA deprecated.
 - Production dependencies audit: 0 vulnerabilities sau override gRPC 1.14.6. Audit toàn bộ vẫn có 14 cảnh báo trong dev tooling; không dùng force downgrade Firebase/CLI. Reports nằm trong `docs/validation`.
 - Ảnh app riêng trong `docs/validation/screens`, khác screenshot research của bản gốc.
+- `npm run deploy`: build production, deploy Hosting/rules/indexes thành công ngày 09/10/2026.
+- Smoke URL production: Guest CRUD/completion/persistence, PWA offline/restart/reconnect, mobile layout, manifest, Firebase auth handler và chặn Firestore read chưa đăng nhập đều PASS. Xem `docs/validation/production-smoke.json` và ảnh `production-desktop.png`, `production-mobile.png`.
 
-Các kết quả trên chưa chứng minh Google sign-in production, deploy HTTPS thật hoặc cài/mở app trên Android vật lý. Goal toàn bộ app vẫn đang active.
+Các kết quả trên chưa chứng minh Google sign-in/sync production hoặc cài/mở app trên Android vật lý. Goal toàn bộ app chưa hoàn tất.
 
 ## Quyết định triển khai đã cụ thể hóa
 
@@ -33,8 +35,12 @@ Các kết quả trên chưa chứng minh Google sign-in production, deploy HTTP
 - Undo dùng patch theo entity, tránh ghi đè những entity không liên quan; tối đa 20 bước trong phiên, không giữ lịch sử undo qua reload.
 - Metadata tuần đang có được giữ khi merge backup; deadline không tự dịch. Unknown authenticated backend của Beaverplans không được dùng làm cơ sở khẳng định hành vi cloud.
 - Firebase CLI thực tế dùng device-code login trên môi trường này; người dùng hoàn tất trong terminal, không chia sẻ authorization code/token qua chat.
-- `npm run deploy` có guard: từ chối config thiếu, project demo/Emulator hoặc CLI project không khớp config frontend. Hiện guard từ chối đúng vì chưa có `.env` và project thật.
+- `npm run deploy` có guard: từ chối config thiếu, project demo/Emulator hoặc CLI project không khớp config frontend. Production `.env` đã lấy từ Web app; `.firebaserc` chọn project thật và guard đã PASS.
 
 ## Prerequisite ngoài máy cần hoàn tất
 
-Firebase CLI `login:list` vẫn trả “No authorized accounts”. Hieu chưa có project. Cần chạy `npx firebase login` trong terminal và hoàn tất xác thực Google trực tiếp; sau đó agent mới có thể tạo Spark/project/app, bật Google provider, deploy và kiểm tra production. Android vật lý cần mở URL HTTPS/cài PWA và thực hiện offline/reconnect; các browser test hiện có chưa thay thế được bước đó.
+Ngày 09/10/2026, thử lại `projects:addfirebase` đã thành công trên `weekdam-hieu-2026`. Web app ID `1:18370042360:web:cfad5a373f1f3446145e0d`; database `(default)` Standard/native ở `asia-southeast1`, `freeTier: true`. Cloud Billing API xác nhận `billingEnabled: false`. Hosting/rules/indexes đã deploy thành công.
+
+Identity Toolkit config vẫn trả 404 `CONFIGURATION_NOT_FOUND`. Hieu cần mở [Authentication providers](https://console.firebase.google.com/project/weekdam-hieu-2026/authentication/providers), chọn Get started nếu có, bật Google, chọn email hỗ trợ và Save. Sau đó kiểm tra domains, Google sign-in và sync trên URL thật. Không dùng API initialize Identity Platform vì endpoint công khai yêu cầu billing; giữ Spark.
+
+Android vật lý cần mở URL HTTPS/cài PWA và thực hiện offline/reconnect; các browser test hiện có chưa thay thế được bước đó.

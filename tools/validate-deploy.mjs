@@ -17,7 +17,7 @@ if (
   throw new Error("An emulator build cannot be deployed");
 if (!fs.existsSync(".firebaserc"))
   throw new Error(
-    "Select the real Firebase project using npx firebase use --add",
+    "Select the real Firebase project using npm run firebase -- use --add",
   );
 const project = JSON.parse(fs.readFileSync(".firebaserc", "utf8")).projects
   ?.default;
