@@ -766,6 +766,8 @@ textarea {
   color: var(--muted);
 }
 .app-shell .modal {
+  --modal-padding-x: 22px;
+  --modal-padding-y: 22px;
   background: var(--surface);
   backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-line);
@@ -789,11 +791,13 @@ textarea {
   letter-spacing: -0.4px;
 }
 .modal-body {
-  padding: 22px;
+  padding: var(--modal-padding-y) var(--modal-padding-x);
 }
 .modal .dialog-actions {
   background: var(--surface-solid);
-  padding-bottom: 8px;
+  margin-inline: calc(-1 * var(--modal-padding-x));
+  margin-bottom: calc(-1 * var(--modal-padding-y));
+  padding: 18px var(--modal-padding-x) var(--modal-padding-y);
 }
 .section-label {
   font-size: 15px;
@@ -1374,6 +1378,8 @@ textarea {
   }
   .app-shell .modal,
   .app-shell .modal.wide {
+    --modal-padding-x: 16px;
+    --modal-padding-y: 18px;
     width: calc(100vw - 24px);
     max-height: calc(100dvh - 24px);
     border-radius: 16px;
@@ -1385,7 +1391,7 @@ textarea {
     font-size: 20px;
   }
   .modal-body {
-    padding: 18px 16px;
+    padding: var(--modal-padding-y) var(--modal-padding-x);
   }
   .form-grid {
     grid-template-columns: 1fr;
@@ -1527,6 +1533,10 @@ textarea {
   }
 }
 @media (max-width: 359px) {
+  .app-shell .modal {
+    --modal-padding-x: 12px;
+    --modal-padding-y: 16px;
+  }
   .app-shell .main-content {
     padding-left: 12px;
     padding-right: 12px;
@@ -1564,7 +1574,7 @@ textarea {
     gap: 3px;
   }
   .modal-body {
-    padding: 16px 12px;
+    padding: var(--modal-padding-y) var(--modal-padding-x);
   }
   .week-history {
     grid-template-columns: minmax(0, 1fr);

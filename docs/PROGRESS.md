@@ -2,7 +2,7 @@
 
 ## Bản kính mờ — 10/10/2026
 
-Mockup đã được Hieu duyệt trước khi triển khai. Đã deploy toàn bộ giao diện, kéo thân thẻ, thứ tự ngày độc lập và đồng bộ tại URL hiện tại. 41 unit + 41 E2E + 4 rules + 8 sync = 94 PASS; 7 E2E skip theo thiết bị. Axe planner/editor/Stats/Weeks sáng/tối không có violations. 36 ảnh frontend ở 1440/1366/390/320, vi/en, light/dark không tràn page/toolbar, fonts tải đủ; có kiểm tra font offline, reduced motion và mô phỏng fallback đặc. Lighthouse mobile production 96 performance,100 accessibility,100 best practices. Production smoke gồm thứ tự offline và popup Google PASS. API xác nhận billing vẫn tắt và database freeTier true. [Bằng chứng chi tiết](design/glass-v1/IMPLEMENTATION.md).
+Mockup đã được Hieu duyệt trước khi triển khai. Đã deploy toàn bộ giao diện, kéo thân thẻ, thứ tự ngày độc lập và đồng bộ tại URL hiện tại. 41 unit + 43 E2E + 4 rules + 8 sync = 96 PASS; 7 E2E skip theo thiết bị. Axe planner/editor/Stats/Weeks sáng/tối không có violations. 36 ảnh frontend ở 1440/1366/390/320, vi/en, light/dark không tràn page/toolbar, fonts tải đủ; có kiểm tra font offline, reduced motion và mô phỏng fallback đặc. Lighthouse mobile production 96 performance,100 accessibility,100 best practices. Production smoke gồm thứ tự offline và popup Google PASS. API xác nhận billing vẫn tắt và database freeTier true. [Bằng chứng chi tiết](design/glass-v1/IMPLEMENTATION.md).
 
 Còn nghiệm thu bản mới trên Android thật: kéo thẻ, đổi thứ tự offline, đóng/mở lại và reconnect để desktop nhận đúng thứ tự. Xác nhận Android ngày 09/10 bên dưới chỉ áp dụng phiên bản cũ; không được dùng để đóng gate mới.
 

@@ -72,14 +72,16 @@ export function glassPlan(legacy = false): Plan {
     ],
   };
 }
-export async function loadGlass(page: Page, legacy = false) {
+export async function loadGlass(
+  page: Page,
+  legacy = false,
+  sample: Plan = glassPlan(legacy),
+) {
   await page.clock.setFixedTime(new Date("2026-10-08T05:00:00Z"));
   await page.goto("/");
   await page.getByRole("button", { name: "Cài đặt", exact: true }).click();
   await page.getByRole("button", { name: "Nhập JSON", exact: true }).click();
-  await page
-    .getByLabel("JSON", { exact: true })
-    .fill(JSON.stringify(glassPlan(legacy)));
+  await page.getByLabel("JSON", { exact: true }).fill(JSON.stringify(sample));
   await page.getByRole("button", { name: "Gộp dữ liệu", exact: true }).click();
 }
 export async function ordered(page: Page, names: string[], day = 3) {

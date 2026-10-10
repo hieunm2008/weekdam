@@ -14,7 +14,7 @@ Hieu duyệt bộ 6 mockup và yêu cầu bắt đầu triển khai ngày 09/10/
 
 ## Kiểm tra ngày 10/10/2026
 
-41 unit, 41 E2E (7 skip theo thiết bị), 4 rules và 8 sync PASS: 94 kiểm thử. E2E có cả vuốt cuộn thật bằng touch events, thả trước/sau/ngoài vùng, keyboard lên/xuống/đổi ngày/trở lại/hủy, filter, undo/reload, font offline và Axe trên planner/editor/Stats/Weeks sáng/tối. Sync gồm thay đổi offline qua reload, Guest migration, cùng khoảng rank và LWW cùng document. Bộ E2E và sync đã chạy lại sau tối ưu tải đầu.
+41 unit, 43 E2E (7 skip theo thiết bị), 4 rules và 8 sync PASS: 96 kiểm thử. E2E có cả vuốt cuộn thật bằng touch events, thả trước/sau/ngoài vùng, keyboard lên/xuống/đổi ngày/trở lại/hủy, filter, undo/reload, font offline và Axe trên planner/editor/Stats/Weeks sáng/tối. Sync gồm thay đổi offline qua reload, Guest migration, cùng khoảng rank và LWW cùng document. Bộ E2E và sync đã chạy lại sau tối ưu tải đầu.
 
 36 ảnh frontend thật và báo cáo `rendered/measurements.json` xác nhận không tràn ngang page/toolbar ở 1440, 1366, 390 và 320 px, vi/en, light/dark; Inter tải thành công, không có page errors. Đã sửa header editor quá dài và hai bố cục bị bó hẹp tại320 px. Fallback không blur được mô phỏng bằng CSS ghi rõ trong báo cáo; reduced motion dùng browser media emulation.
 
