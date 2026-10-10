@@ -36,8 +36,14 @@ export function useDndAccessibility(): ComponentProps<
         lastDestination.current = null;
         return t("dragPicked", { name: target(active.data.current) });
       },
-      onDragMove: ({ over }) => announceDestination(over?.data.current),
-      onDragOver: ({ over }) => announceDestination(over?.data.current),
+      onDragMove: ({ active, over }) =>
+        over?.id !== active.id
+          ? announceDestination(over?.data.current)
+          : undefined,
+      onDragOver: ({ active, over }) =>
+        over?.id !== active.id
+          ? announceDestination(over?.data.current)
+          : undefined,
       onDragEnd: ({ over }) =>
         over
           ? t("dragDropped", { name: destination(over.data.current) })

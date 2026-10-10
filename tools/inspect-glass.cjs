@@ -541,13 +541,28 @@ async function main() {
               await closeDialog(page, labels);
 
               await page.emulateMedia({ reducedMotion: "reduce" });
-              // Simulate the existing opaque @supports fallback; this is not an unsupported engine.
+              // Execute the actual fallback cascade; this is not an unsupported engine.
+              const fallbackRules = await page.evaluate(() => {
+                const found = Array.from(document.styleSheets)
+                  .flatMap((sheet) => Array.from(sheet.cssRules))
+                  .find(
+                    (rule) =>
+                      rule instanceof CSSSupportsRule &&
+                      rule.conditionText.includes("backdrop-filter") &&
+                      rule.conditionText.startsWith("not"),
+                  );
+                if (!(found instanceof CSSSupportsRule))
+                  throw Error("App no-blur fallback missing");
+                return Array.from(found.cssRules)
+                  .map((rule) => rule.cssText)
+                  .join("\n");
+              });
               const fallback = await page.addStyleTag({
                 content: `
+              ${fallbackRules}
             .app-shell .work-card,.app-shell .sidebar,.project-panel,.app-shell .modal,
             .stat-strip,.chart-section,.week-history,.mobile-nav {
               backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
-              background:var(--surface-solid)!important;box-shadow:var(--shadow)!important;
             }`,
               });
               await capture(

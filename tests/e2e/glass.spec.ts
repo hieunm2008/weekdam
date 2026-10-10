@@ -10,6 +10,68 @@ async function filter(page: Page, value: string) {
   await select.selectOption(value);
 }
 
+test("keeps completed glass cards opaque in the actual no-blur fallback cascade", async ({
+  page,
+}) => {
+  await loadGlass(page);
+  await page.locator('[data-step-id="glass-b1"] input').check();
+  // Execute the app's fallback declarations through a matching media rule.
+  // Preserve selector specificity; an !important test override would hide bugs.
+  const fallback = await page.evaluate(() => {
+    const found = Array.from(document.styleSheets)
+      .flatMap((sheet) => Array.from(sheet.cssRules))
+      .find(
+        (rule) =>
+          rule instanceof CSSSupportsRule &&
+          rule.conditionText.includes("backdrop-filter") &&
+          rule.conditionText.startsWith("not"),
+      );
+    if (!(found instanceof CSSSupportsRule))
+      throw Error("App no-blur fallback missing");
+    return Array.from(found.cssRules)
+      .map((rule) => rule.cssText)
+      .join("\n");
+  });
+  await page.addStyleTag({ content: `@media all { ${fallback} }` });
+  for (const id of ["glass-a", "glass-b1"]) {
+    const card = page.locator(`[data-step-id="${id}"]`);
+    expect(
+      await card.evaluate((node) => getComputedStyle(node).backgroundColor),
+    ).toMatch(/^rgb\(/);
+  }
+});
+
+test("announces keyboard insertion and keeps grip focus after drop, cancel and day change", async ({
+  page,
+}) => {
+  await loadGlass(page);
+  const grip = (id: string) =>
+    page.locator(`[data-step-id="${id}"] .drag-handle`);
+  const live = page.locator('[id^="DndLiveRegion"]');
+  await grip("glass-b2").focus();
+  await page.keyboard.press("Space");
+  await expect(live).toContainText("Đã nhấc Beta 2");
+  await page.keyboard.press("ArrowUp");
+  await expect(live).toContainText("trước Gamma");
+  await page.keyboard.press("Space");
+  await expect(live).toContainText("Đã thả tại trước Gamma");
+  await expect(grip("glass-b2")).toBeFocused();
+  await page.keyboard.press("Space");
+  await page.keyboard.press("ArrowDown");
+  await expect(live).toContainText("sau Gamma");
+  await page.keyboard.press("Escape");
+  await expect(live).toHaveText("Đã hủy di chuyển");
+  await expect(grip("glass-b2")).toBeFocused();
+  await keyboardMove(page, "glass-b2", "ArrowRight");
+  await expect(grip("glass-b2")).toBeFocused();
+  await expect(
+    page.locator('[data-day="4"] [data-step-id="glass-b2"]'),
+  ).toBeVisible();
+  await page.keyboard.press("Space");
+  await expect(live).toContainText("Đã nhấc Beta 2");
+  await page.keyboard.press("Escape");
+});
+
 test("drags card bodies across projects and preserves rank through reload and undo", async ({
   page,
 }, info) => {
@@ -71,6 +133,7 @@ test("drags card bodies across projects and preserves rank through reload and un
   );
   await page.mouse.up();
   await ordered(page, ["Beta 1", "Gamma", "Beta 2", "Alpha"]);
+  await page.locator('[data-step-id="glass-a"]').scrollIntoViewIfNeeded();
   const cancel = await page
     .locator('[data-step-id="glass-a"] .project-tag')
     .boundingBox();
@@ -295,6 +358,10 @@ test("keeps the page bounded at narrow widths and honors reduced motion", async 
         page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       )
       .toBe(true);
+    if (width < 900) {
+      const home = await page.locator(".wordmark").boundingBox();
+      expect(home?.height).toBeGreaterThanOrEqual(44);
+    }
   }
   await expect(page.locator(".day-tabs")).toBeVisible();
   await keyboardMove(page, "glass-b1", "ArrowUp");

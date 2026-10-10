@@ -1151,6 +1151,9 @@ textarea {
   }
   .wordmark {
     font-size: 21px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
   }
   .workspace-status {
     font-size: 12px;
@@ -1633,6 +1636,7 @@ button:focus-visible:active {
 }
 @supports not (backdrop-filter: blur(1px)) {
   .app-shell .work-card,
+  .app-shell .work-card.is-done,
   .app-shell .sidebar,
   .project-panel,
   .app-shell .modal,

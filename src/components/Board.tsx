@@ -277,6 +277,7 @@ const Card = memo(function Card({
             </button>
             <button
               className="drag-handle"
+              ref={drag.setActivatorNodeRef}
               aria-label={
                 t("drag") + " · " + cardName + " · " + row.project.name
               }
@@ -724,7 +725,10 @@ export function Board(
           )}
         </div>
       </div>
-      <DragOverlay dropAnimation={reduced || keyboardDrag ? null : transition}>
+      <DragOverlay
+        style={{ pointerEvents: "none" }}
+        dropAnimation={reduced || keyboardDrag ? null : transition}
+      >
         {activeRow ? (
           <div className="drag-preview" data-overlay-id={activeRow.step.id}>
             <span>{activeRow.project.name}</span>
