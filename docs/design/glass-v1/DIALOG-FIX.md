@@ -8,5 +8,6 @@ Sửa bằng padding variables theo breakpoint và negative margins cho footer; 
 - `npm run test:e2e -- --workers=2`: 43 PASS, 7 skip theo thiết bị. Lượt 6 worker gặp Chrome crash khi tạo context trước lúc mở app; không sửa logic app để xử lý lỗi môi trường này.
 - Ảnh kiểm tra ở `validation/dialogs/`: desktop sáng/tối 125% và mobile 320px.
 - Build production và guard project PASS; Hosting đã phát hành bản CSS mới cùng URL hiện tại. Backend, dữ liệu và thứ tự thẻ không bị sửa bởi bản vá này.
+- Lighthouse đo lại trực tiếp trên production sau bản vá: 99 performance, 100 accessibility, 100 best practices. Báo cáo đầy đủ tại `validation/lighthouse.json` và HTML cùng thư mục.
 
 Tổng bằng chứng phần mềm hiện tại: 41 unit + 43 E2E + 4 rules + 8 sync = 96. Nghiệm thu Android thật vẫn riêng biệt và đang chờ theo câu trả lời “Chưa thử”.
