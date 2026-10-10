@@ -43,6 +43,7 @@ function Step({
   const { t } = useTranslation();
   const sortable = useSortable({
     id: step.id,
+    transition: { duration: 180, easing: "cubic-bezier(.2,.8,.2,1)" },
     data: { label: step.note || names[step.day] },
   });
   return (
@@ -141,7 +142,11 @@ export function TaskEditor({
       onSave({ ...draft, name: draft.name.trim() }, pid);
   };
   return (
-    <Modal title={task.name || t("newTask")} onClose={onClose} wide>
+    <Modal
+      title={task.name ? t("editTaskHeading") : t("newTask")}
+      onClose={onClose}
+      wide
+    >
       <form onSubmit={submit}>
         <label>
           {t("taskName")}

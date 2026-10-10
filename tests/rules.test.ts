@@ -93,3 +93,31 @@ it("rejects unexpected fields, invalid values, forged IDs and client timestamps"
   await assertFails(deleteDoc(ref));
   await assertFails(setDoc(doc(db, "public/p-study"), record()));
 });
+it("accepts legacy and fractional day order while rejecting malformed placement ranks", async () => {
+  const db = env.authenticatedContext("owner").firestore();
+  const ref = doc(db, "users/owner/records/p-study");
+  const value = {
+    id: "p-study",
+    day: 0,
+    weight: 1,
+    note: "",
+    done: false,
+    missed: [],
+  };
+  const subtask = { ...record(), kind: "subtask", parent: "t-study", value };
+  await assertSucceeds(setDoc(ref, subtask));
+  await assertSucceeds(
+    setDoc(ref, { ...subtask, value: { ...value, dayOrder: 1024.5 } }),
+  );
+  for (const dayOrder of [-1, 1_000_000_001, NaN, Infinity, "bad", null]) {
+    await assertFails(
+      setDoc(ref, { ...subtask, value: { ...value, dayOrder } }),
+    );
+  }
+  await assertFails(
+    setDoc(ref, {
+      ...subtask,
+      value: { ...value, dayOrder: 4, privateOrder: 2 },
+    }),
+  );
+});

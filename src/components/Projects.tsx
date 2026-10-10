@@ -22,13 +22,46 @@ import { id, progress, taskDone, type Project, type Task } from "../domain";
 import { Modal } from "./Modal";
 import { useDndAccessibility } from "./dndAccessibility";
 
-const managerCollision:CollisionDetection=args=>closestCenter({...args,droppableContainers:args.droppableContainers.filter(container=>container.data.current?.kind===args.active.data.current?.kind&&container.data.current?.parent===args.active.data.current?.parent)});
-const managerKeyboard:KeyboardCoordinateGetter=(event,args)=>{
-  if(!['ArrowUp','ArrowDown'].includes(event.code))return;
-  const active=args.context.active;if(!active)return;
-  const items=args.context.droppableContainers.getEnabled().filter(container=>container.data.current?.kind===active.data.current?.kind&&container.data.current?.parent===active.data.current?.parent).sort((a,b)=>(args.context.droppableRects.get(a.id)?.top??0)-(args.context.droppableRects.get(b.id)?.top??0));
-  const overIndex=items.findIndex(item=>item.id===(args.context.over?.id??active.id));const index=Math.max(0,Math.min(items.length-1,Math.max(0,overIndex)+(event.code==='ArrowDown'?1:-1)));const rect=args.context.droppableRects.get(items[index]?.id);
-  if(rect){event.preventDefault();return {x:rect.left,y:rect.top};}
+const managerCollision: CollisionDetection = (args) =>
+  closestCenter({
+    ...args,
+    droppableContainers: args.droppableContainers.filter(
+      (container) =>
+        container.data.current?.kind === args.active.data.current?.kind &&
+        container.data.current?.parent === args.active.data.current?.parent,
+    ),
+  });
+const managerKeyboard: KeyboardCoordinateGetter = (event, args) => {
+  if (!["ArrowUp", "ArrowDown"].includes(event.code)) return;
+  const active = args.context.active;
+  if (!active) return;
+  const items = args.context.droppableContainers
+    .getEnabled()
+    .filter(
+      (container) =>
+        container.data.current?.kind === active.data.current?.kind &&
+        container.data.current?.parent === active.data.current?.parent,
+    )
+    .sort(
+      (a, b) =>
+        (args.context.droppableRects.get(a.id)?.top ?? 0) -
+        (args.context.droppableRects.get(b.id)?.top ?? 0),
+    );
+  const overIndex = items.findIndex(
+    (item) => item.id === (args.context.over?.id ?? active.id),
+  );
+  const index = Math.max(
+    0,
+    Math.min(
+      items.length - 1,
+      Math.max(0, overIndex) + (event.code === "ArrowDown" ? 1 : -1),
+    ),
+  );
+  const rect = args.context.droppableRects.get(items[index]?.id);
+  if (rect) {
+    event.preventDefault();
+    return { x: rect.left, y: rect.top };
+  }
 };
 
 export function ProjectEditor({
@@ -132,6 +165,7 @@ function TaskRow({
   const { t } = useTranslation(),
     drag = useSortable({
       id: task.id,
+      transition: { duration: 180, easing: "cubic-bezier(.2,.8,.2,1)" },
       disabled: ended,
       data: { kind: "task", parent: pid, label: task.name },
     }),
@@ -163,7 +197,7 @@ function TaskRow({
           onChange={onToggle}
         />
       </label>
-      <button className="manager-task-name" onClick={onEdit}>
+      <button className="manager-task-name" title={task.name} onClick={onEdit}>
         {task.name}
       </button>
       <span className="muted">
@@ -197,6 +231,7 @@ function ProjectBlock({
   const { t } = useTranslation(),
     drag = useSortable({
       id: project.id,
+      transition: { duration: 180, easing: "cubic-bezier(.2,.8,.2,1)" },
       disabled: ended,
       data: { kind: "project", label: project.name },
     }),

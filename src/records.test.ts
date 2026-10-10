@@ -1,4 +1,5 @@
 import { expect, it } from "vitest";
+import type { Plan } from "./domain";
 import {
   encodeRecords,
   decodeRecords,
@@ -85,4 +86,63 @@ it("canonicalizes week identities and emits only changed or deleted entities", (
       value: { id: "p" },
     },
   ]);
+});
+it("round-trips a day rank and emits only its subtask for a rank-only change", () => {
+  const original: Plan = {
+    version: 1,
+    weeks: [
+      {
+        id: "week_2026-10-05",
+        start: "2026-10-05",
+        ended: false,
+        projects: [
+          {
+            id: "project",
+            name: "Project",
+            tasks: [
+              {
+                id: "task",
+                name: "Task",
+                note: "",
+                done: false,
+                subtasks: [
+                  {
+                    id: "step",
+                    day: 0,
+                    weight: 1,
+                    note: "",
+                    done: false,
+                    missed: [],
+                    dayOrder: 0,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  };
+  expect(decodeRecords(encodeRecords(original))).toEqual(original);
+  const changed = structuredClone(original);
+  changed.weeks[0].projects[0].tasks[0].subtasks[0].dayOrder = 1_000_000_000;
+  expect(diffRecords(original, changed)).toEqual([
+    {
+      id: "step",
+      kind: "subtask",
+      parent: "task",
+      order: 0,
+      deleted: false,
+      value: {
+        id: "step",
+        day: 0,
+        weight: 1,
+        note: "",
+        done: false,
+        missed: [],
+        dayOrder: 1_000_000_000,
+      },
+    },
+  ]);
+  expect(decodeRecords(encodeRecords(changed))).toEqual(changed);
 });

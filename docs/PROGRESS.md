@@ -1,16 +1,24 @@
 # Tiến độ weekdam
 
+## Bản kính mờ — 10/10/2026
+
+Mockup đã được Hieu duyệt trước khi triển khai. Đã deploy toàn bộ giao diện, kéo thân thẻ, thứ tự ngày độc lập và đồng bộ tại URL hiện tại. 41 unit + 37 E2E + 4 rules + 8 sync = 90 PASS; 7 E2E skip theo thiết bị. Axe planner/editor/Stats/Weeks sáng/tối không có violations. 36 ảnh frontend ở 1440/1366/390/320, vi/en, light/dark không tràn page/toolbar, fonts tải đủ; có kiểm tra font offline, reduced motion và mô phỏng fallback đặc. Lighthouse mobile production 96 performance,100 accessibility,100 best practices. Production smoke gồm thứ tự offline và popup Google PASS. API xác nhận billing vẫn tắt và database freeTier true. [Bằng chứng chi tiết](design/glass-v1/IMPLEMENTATION.md).
+
+Còn nghiệm thu bản mới trên Android thật: kéo thẻ, đổi thứ tự offline, đóng/mở lại và reconnect để desktop nhận đúng thứ tự. Xác nhận Android ngày 09/10 bên dưới chỉ áp dụng phiên bản cũ; không được dùng để đóng gate mới.
+
+## Bản đầu tiên — lịch sử nghiệm thu
+
 Yêu cầu tiếp tục các phase không ngắt quãng được áp dụng ngày 09/10/2026: dùng các mặc định Q1–Q9 và U3 trong checkpoint, không chờ trả lời riêng từng câu. Tài liệu Phase 0 giữ tính lịch sử của khảo sát, không được dùng để ngăn triển khai sau chỉ thị mới này.
 
-| Phase | Trạng thái hiện tại | Bằng chứng / còn lại |
-|---|---|---|
-| 0 — nghiên cứu | Hoàn tất | Commit `5c3758e`, 106 ảnh; verifier research |
-| 1 — shell | Hoàn tất | Responsive, vi/en, light/dark/system, icon riêng, manifest/SW; E2E offline reload và nhớ preferences. Hieu đã xác nhận cài PWA Android và offline/reconnect |
-| 2 — local core | Hoàn tất | CRUD, trọng số, ngày/tuần Saigon, undo, IndexedDB; 15 unit tests và E2E CRUD |
-| 3 — tương tác | Hoàn tất | Mouse/touch/keyboard sensors, mobile day-tab drop/menu move; copy/paste/carry/move, giữ thứ tự editor; Hieu đã test app trên Android thật |
-| 4 — sync | Hoàn tất | 3 rules tests và 3 browser sync tests; Google provider production đã bật. Hieu xác nhận đồng bộ thực và offline/reconnect thành công |
-| 5 — hoàn thiện | Hoàn tất | End/reopen, Stats, history, guide, JSON import/export, focus/dialog, translations; Axe/Lighthouse và các ca biên đã kiểm tra |
-| 6 — deploy | Hoàn tất | URL HTTPS `weekdam-hieu-2026.web.app`, smoke production PASS; database free tier và billing chưa bật. Hieu xác nhận cài PWA Android và offline/reconnect thành công |
+| Phase          | Trạng thái hiện tại | Bằng chứng / còn lại                                                                                                                                                |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0 — nghiên cứu | Hoàn tất            | Commit `5c3758e`, 106 ảnh; verifier research                                                                                                                        |
+| 1 — shell      | Hoàn tất            | Responsive, vi/en, light/dark/system, icon riêng, manifest/SW; E2E offline reload và nhớ preferences. Hieu đã xác nhận cài PWA Android và offline/reconnect         |
+| 2 — local core | Hoàn tất            | CRUD, trọng số, ngày/tuần Saigon, undo, IndexedDB; 15 unit tests và E2E CRUD                                                                                        |
+| 3 — tương tác  | Hoàn tất            | Mouse/touch/keyboard sensors, mobile day-tab drop/menu move; copy/paste/carry/move, giữ thứ tự editor; Hieu đã test app trên Android thật                           |
+| 4 — sync       | Hoàn tất            | 3 rules tests và 3 browser sync tests; Google provider production đã bật. Hieu xác nhận đồng bộ thực và offline/reconnect thành công                                |
+| 5 — hoàn thiện | Hoàn tất            | End/reopen, Stats, history, guide, JSON import/export, focus/dialog, translations; Axe/Lighthouse và các ca biên đã kiểm tra                                        |
+| 6 — deploy     | Hoàn tất            | URL HTTPS `weekdam-hieu-2026.web.app`, smoke production PASS; database free tier và billing chưa bật. Hieu xác nhận cài PWA Android và offline/reconnect thành công |
 
 ## Bằng chứng hiện có
 

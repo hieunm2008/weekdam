@@ -1,6 +1,7 @@
 {
   "indexes": [],
   "fieldOverrides": [
-    { "collectionGroup": "records", "fieldPath": "value.note", "indexes": [] }
+    { "collectionGroup": "records", "fieldPath": "value.note", "indexes": [] },
+    { "collectionGroup": "records", "fieldPath": "value.dayOrder", "indexes": [] }
   ]
 }

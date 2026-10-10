@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   DndContext,
@@ -12,11 +12,11 @@ import {
   closestCenter,
   type KeyboardCoordinateGetter,
   type CollisionDetection,
+  type DragMoveEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   useSortable,
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -25,8 +25,16 @@ import {
   MoreHorizontal,
   Plus,
   CalendarClock,
+  StickyNote,
 } from "lucide-react";
-import { shiftDate, type Project, type Task, type Subtask } from "../domain";
+import {
+  dayCards,
+  shiftDate,
+  type Project,
+  type Task,
+  type Subtask,
+  type BoardAnchor,
+} from "../domain";
 import { useDndAccessibility } from "./dndAccessibility";
 
 interface Row {
@@ -36,48 +44,32 @@ interface Row {
   missed: boolean;
   displayDay: number;
 }
-const rowsFor = (projects: Project[], day: number): Row[] =>
-  projects.flatMap((project) =>
+interface Insertion {
+  day: number;
+  anchor?: BoardAnchor;
+}
+const transition = { duration: 180, easing: "cubic-bezier(.2,.8,.2,1)" };
+function rowsFor(projects: Project[], day: number): Row[] {
+  const real = dayCards(projects, day).map((row) => ({
+    ...row,
+    missed: false,
+    displayDay: day,
+  }));
+  const history = projects.flatMap((project) =>
     project.tasks.flatMap((task) =>
       task.subtasks
-        .filter((s) => s.day === day || s.missed.includes(day))
+        .filter((step) => step.day !== day && step.missed.includes(day))
         .map((step) => ({
           project,
           task,
           step,
-          missed: step.day !== day,
+          missed: true,
           displayDay: day,
         })),
     ),
   );
-const keyboardCoordinates: KeyboardCoordinateGetter = (event, args) => {
-  if (
-    args.context.active?.data.current?.type === "step" &&
-    ["ArrowLeft", "ArrowRight"].includes(event.code)
-  ) {
-    const currentDay = Number(
-      args.context.over?.data.current?.day ??
-        args.context.active.data.current.day,
-    );
-    const target = Math.max(
-      0,
-      Math.min(6, currentDay + (event.code === "ArrowRight" ? 1 : -1)),
-    );
-    const rect =
-      args.context.droppableRects.get("day-" + target) ??
-      args.context.droppableRects.get("tab-day-" + target);
-    const active = args.context.active.rect.current.translated;
-    if (rect && active) {
-      event.preventDefault();
-      return {
-        x: rect.left + rect.width / 2 - active.width / 2,
-        y: rect.top + Math.min(90, rect.height / 2 - active.height / 2),
-      };
-    }
-  }
-  return sortableKeyboardCoordinates(event, args);
-};
-// A tall empty column must outrank a shorter card in the original column.
+  return [...real, ...history];
+}
 const boardCollision: CollisionDetection = (args) => {
   const x =
     args.pointerCoordinates?.x ??
@@ -88,6 +80,7 @@ const boardCollision: CollisionDetection = (args) => {
   const day = args.droppableContainers.find((container) => {
     const rect = args.droppableRects.get(container.id);
     return (
+      !container.disabled &&
       container.data.current?.type === "day" &&
       rect &&
       x >= rect.left &&
@@ -98,43 +91,110 @@ const boardCollision: CollisionDetection = (args) => {
   });
   if (!day) return [];
   const steps = args.droppableContainers.filter(
-    (c) =>
-      c.data.current?.type === "step" &&
-      c.data.current.day === day.data.current?.day &&
-      c.id !== args.active.id,
+    (container) =>
+      !container.disabled &&
+      container.data.current?.type === "step" &&
+      container.data.current.day === day.data.current?.day &&
+      container.id !== args.active.id,
   );
-  return steps.length
-    ? closestCenter({ ...args, droppableContainers: steps })
+  const lastBottom = Math.max(
+    ...steps.map(
+      (container) => args.droppableRects.get(container.id)?.bottom ?? 0,
+    ),
+  );
+  return steps.length && y <= lastBottom + 8
+    ? closestCenter({
+        ...args,
+        collisionRect: {
+          left: x,
+          right: x,
+          top: y,
+          bottom: y,
+          width: 0,
+          height: 0,
+        },
+        droppableContainers: steps,
+      })
     : [{ id: day.id, data: { droppableContainer: day, value: 0 } }];
 };
-function Card({
+
+function Weight({ value }: { value: number }) {
+  const { t } = useTranslation();
+  return (
+    <span
+      role="img"
+      className={"weight weight-" + value}
+      aria-label={
+        t("difficulty") + ": " + t(["easy", "medium", "hard"][value - 1])
+      }
+    >
+      {[1, 2, 3].map((i) => (
+        <i key={i} className={i <= value ? "filled" : ""} />
+      ))}
+    </span>
+  );
+}
+const Card = memo(function Card({
   row,
   ended,
+  instant,
   onCheck,
   onEdit,
   onMove,
   onClearMissed,
   overdue,
+  insertion,
 }: {
   row: Row;
   ended: boolean;
+  instant: boolean;
   onCheck: () => void;
   onEdit: () => void;
   onMove: () => void;
   onClearMissed: () => void;
   overdue: boolean;
+  insertion?: "before" | "after";
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const ordinal =
+    row.task.subtasks.findIndex((step) => step.id === row.step.id) + 1;
+  const cardName =
+    row.task.name +
+    (row.task.subtasks.length > 1
+      ? " · " +
+        t("stepPosition", { index: ordinal, total: row.task.subtasks.length })
+      : "");
   const drag = useSortable({
     id: row.missed
       ? "history-" + row.step.id + "-" + row.displayDay
       : row.step.id,
     disabled: ended || row.missed,
-    data: { type: "step", day: row.step.day },
+    transition: instant ? null : transition,
+    data: {
+      type: "step",
+      day: row.step.day,
+      label: cardName + " · " + row.project.name,
+    },
   });
+  const canStart = (target: EventTarget | null) =>
+    target instanceof Element &&
+    !target.closest(
+      "button,input,textarea,select,a,label,[contenteditable],[data-no-drag]",
+    );
+  const deadline = row.task.deadline || row.project.deadline;
+  const deadlineText = deadline
+    ? new Intl.DateTimeFormat(i18n.language === "vi" ? "vi-VN" : "en-GB", {
+        day: "numeric",
+        month: "numeric",
+        timeZone: "UTC",
+      }).format(new Date(deadline.slice(0, 10) + "T12:00:00Z"))
+    : "";
   return (
     <article
       ref={drag.setNodeRef}
+      data-step-id={row.missed ? undefined : row.step.id}
+      data-insertion={insertion}
+      data-dragging={drag.isDragging || undefined}
       className={
         "work-card" +
         (row.step.done && !row.missed ? " is-done" : "") +
@@ -145,28 +205,18 @@ function Card({
         transition: drag.transition,
         opacity: drag.isDragging ? 0.3 : 1,
       }}
+      onMouseDown={(event) => {
+        if (canStart(event.target)) drag.listeners?.onMouseDown?.(event);
+      }}
+      onTouchStart={(event) => {
+        if (canStart(event.target)) drag.listeners?.onTouchStart?.(event);
+      }}
     >
-      <div className="card-top">
-        <span className="project-tag">{row.project.name}</span>
-        <span
-          role="img"
-          className={"weight weight-" + row.step.weight}
-          aria-label={
-            t("difficulty") +
-            ": " +
-            t(["easy", "medium", "hard"][row.step.weight - 1])
-          }
-        >
-          {[1, 2, 3].map((i) => (
-            <i key={i} className={i <= row.step.weight ? "filled" : ""} />
-          ))}
-        </span>
-      </div>
       <div className="card-title">
         <label className="check-target">
           <input
             type="checkbox"
-            aria-label={row.task.name}
+            aria-label={cardName}
             checked={row.step.done && !row.missed}
             disabled={ended || row.missed}
             onChange={onCheck}
@@ -174,13 +224,70 @@ function Card({
         </label>
         <button
           className="task-title"
-          aria-label={t("editTask", { name: row.task.name })}
+          aria-label={t("editTask", { name: cardName })}
+          title={row.task.name}
           onClick={onEdit}
         >
           {row.task.name}
         </button>
       </div>
-      {row.step.note ? <p className="step-note">{row.step.note}</p> : null}
+      <div className="card-footer">
+        <div className="card-info">
+          <div className="card-project">
+            <span className="project-tag" title={row.project.name}>
+              {row.project.name}
+            </span>
+            {row.task.subtasks.length > 1 ? (
+              <span className="step-position">
+                {t("stepPosition", {
+                  index: ordinal,
+                  total: row.task.subtasks.length,
+                })}
+              </span>
+            ) : null}
+          </div>
+          <div className="card-meta">
+            <Weight value={row.step.weight} />
+            {deadlineText ? (
+              <span className="card-deadline" title={deadline}>
+                <CalendarClock size={14} />
+                {deadlineText}
+              </span>
+            ) : null}
+            {row.step.note ? (
+              <span
+                className="note-indicator"
+                role="img"
+                aria-label={t("hasNote")}
+                title={t("hasNote")}
+              >
+                <StickyNote size={14} />
+              </span>
+            ) : null}
+          </div>
+        </div>
+        {!ended && !row.missed ? (
+          <>
+            <button
+              className="icon-button card-menu"
+              aria-label={t("moveDay") + " · " + cardName}
+              onClick={onMove}
+            >
+              <MoreHorizontal size={18} />
+            </button>
+            <button
+              className="drag-handle"
+              aria-label={
+                t("drag") + " · " + cardName + " · " + row.project.name
+              }
+              {...drag.attributes}
+              {...drag.listeners}
+            >
+              <GripVertical size={16} />
+            </button>
+          </>
+        ) : null}
+      </div>
       {row.missed ? (
         <span className="missed-label">{t("missed")}</span>
       ) : overdue ? (
@@ -189,74 +296,63 @@ function Card({
           {t("overdue")}
         </span>
       ) : null}
-      {!ended ? (
-        <div className="card-actions">
-          {row.missed ? (
-            <button className="text-button" onClick={onClearMissed}>
-              {t("clearMissed")}
-            </button>
-          ) : (
-            <>
-              <button
-                className="drag-handle"
-                aria-label={t("drag")}
-                {...drag.attributes}
-                {...drag.listeners}
-              >
-                <GripVertical size={17} />
-              </button>
-              <button
-                className="icon-button"
-                aria-label={t("moveDay")}
-                onClick={onMove}
-              >
-                <MoreHorizontal size={19} />
-              </button>
-            </>
-          )}
-        </div>
+      {!ended && row.missed ? (
+        <button className="text-button clear-missed" onClick={onClearMissed}>
+          {t("clearMissed")}
+        </button>
       ) : null}
     </article>
   );
-}
-function Day({
-  day,
-  start,
-  projects,
-  ended,
-  todayDate,
-  onCheck,
-  onEdit,
-  onMove,
-  onAdd,
-  onClearMissed,
-}: {
+});
+interface DayProps {
   day: number;
   start: string;
   projects: Project[];
   ended: boolean;
   todayDate: string;
-  onCheck: (s: string) => void;
-  onEdit: (t: Task, p: string) => void;
-  onMove: (s: string) => void;
+  instant: boolean;
+  insertion?: BoardAnchor;
+  appendTarget?: boolean;
+  onCheck: (id: string) => void;
+  onEdit: (task: Task, pid: string) => void;
+  onMove: (id: string) => void;
   onAdd: (day: number) => void;
-  onClearMissed: (s: string, day: number) => void;
-}) {
-  const { t } = useTranslation();
+  onClearMissed: (id: string, day: number) => void;
+  onFocus?: (day: number) => void;
+  mobile?: boolean;
+}
+const Day = memo(function Day({
+  day,
+  start,
+  projects,
+  ended,
+  todayDate,
+  instant,
+  insertion,
+  appendTarget,
+  onCheck,
+  onEdit,
+  onMove,
+  onAdd,
+  onClearMissed,
+  onFocus,
+  mobile,
+}: DayProps) {
+  const { t, i18n } = useTranslation();
   const drop = useDroppable({
     id: "day-" + day,
     data: { type: "day", day },
     disabled: ended,
   });
-  const rows = rowsFor(projects, day),
-    real = rows.filter((r) => !r.missed),
-    done = real.filter((r) => r.step.done).length,
-    units = real.reduce((sum, row) => sum + row.step.weight, 0),
-    doneUnits = real.reduce(
-      (sum, row) => sum + (row.step.done ? row.step.weight : 0),
-      0,
-    ),
-    date = shiftDate(start, day);
+  const rows = useMemo(() => rowsFor(projects, day), [projects, day]);
+  const real = rows.filter((row) => !row.missed),
+    done = real.filter((row) => row.step.done).length;
+  const units = real.reduce((n, row) => n + row.step.weight, 0);
+  const doneUnits = real.reduce(
+    (n, row) => n + (row.step.done ? row.step.weight : 0),
+    0,
+  );
+  const date = shiftDate(start, day);
   return (
     <section
       ref={drop.setNodeRef}
@@ -268,10 +364,28 @@ function Day({
       data-day={day}
     >
       <header className="day-head">
-        <div>
-          <h3>{t("mobileShort").split(",")[day]}</h3>
-          <span className="date-number">{Number(date.slice(-2))}</span>
-        </div>
+        <button
+          className="day-heading"
+          onClick={() => onFocus?.(day)}
+          aria-label={t("focusDay", { day: t("dayNames").split(",")[day] })}
+        >
+          <span>
+            {mobile
+              ? new Intl.DateTimeFormat(
+                  i18n.language === "vi" ? "vi-VN" : "en-GB",
+                  {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    timeZone: "UTC",
+                  },
+                ).format(new Date(date + "T12:00:00Z"))
+              : t("mobileShort").split(",")[day]}
+          </span>
+          {!mobile ? (
+            <strong className="date-number">{Number(date.slice(-2))}</strong>
+          ) : null}
+        </button>
         <span className="day-total">
           {done}/{real.length}
           <small>
@@ -280,7 +394,7 @@ function Day({
         </span>
       </header>
       <SortableContext
-        items={real.map((r) => r.step.id)}
+        items={real.map((row) => row.step.id)}
         strategy={verticalListSortingStrategy}
       >
         <div className="day-cards">
@@ -289,6 +403,12 @@ function Day({
               key={row.step.id + (row.missed ? "-missed-" + day : "")}
               row={row}
               ended={ended}
+              instant={instant}
+              insertion={
+                !row.missed && insertion?.id === row.step.id
+                  ? insertion.edge
+                  : undefined
+              }
               overdue={!row.step.done && date < todayDate}
               onCheck={() => onCheck(row.step.id)}
               onEdit={() => onEdit(row.task, row.project.id)}
@@ -298,6 +418,9 @@ function Day({
           ))}
         </div>
       </SortableContext>
+      {appendTarget ? (
+        <div className="drop-indicator" aria-hidden="true" />
+      ) : null}
       {!rows.length ? <p className="empty-day">{t("emptyDay")}</p> : null}
       {!ended ? (
         <button
@@ -311,20 +434,26 @@ function Day({
       ) : null}
     </section>
   );
-}
+});
 function DayTarget({
   day,
   start,
   selected,
+  ended,
   onSelect,
 }: {
   day: number;
   start: string;
   selected: boolean;
+  ended: boolean;
   onSelect: () => void;
 }) {
-  const { t } = useTranslation(),
-    drop = useDroppable({ id: "tab-day-" + day, data: { type: "day", day } });
+  const { t } = useTranslation();
+  const drop = useDroppable({
+    id: "tab-day-" + day,
+    data: { type: "day", day },
+    disabled: ended,
+  });
   return (
     <button
       ref={drop.setNodeRef}
@@ -340,76 +469,267 @@ function DayTarget({
     </button>
   );
 }
+
 export function Board(
-  props: Omit<Parameters<typeof Day>[0], "day"> & {
+  props: Omit<DayProps, "day" | "instant" | "insertion" | "appendTarget"> & {
     focus: number | null;
     mobile?: boolean;
-    onFocus?: (day: number) => void;
-    onDrop: (id: string, day: number, beforeId?: string) => void;
+    onShowWeek?: () => void;
+    onDrop: (id: string, day: number, anchor?: BoardAnchor) => void;
   },
 ) {
-  const [active, setActive] = useState<string | null>(null);
+  const { t } = useTranslation();
+  const [active, setActive] = useState<string | null>(null),
+    [insertion, setInsertion] = useState<Insertion | null>(null);
+  const [keyboardDrag, setKeyboardDrag] = useState(false),
+    [reduced, setReduced] = useState(
+      () => matchMedia("(prefers-reduced-motion: reduce)").matches,
+    );
+  const navigation = useRef<{
+    id: string;
+    day: number;
+    edge?: "before" | "after";
+  } | null>(null);
+  const latestInsertion = useRef<Insertion | null>(null);
+  const pointer = useRef<{ x: number; y: number } | null>(null);
+  useEffect(() => {
+    const query = matchMedia("(prefers-reduced-motion: reduce)");
+    const change = () => setReduced(query.matches);
+    query.addEventListener("change", change);
+    return () => query.removeEventListener("change", change);
+  }, []);
+  const keyboardCoordinates: KeyboardCoordinateGetter = (event, args) => {
+    const current = navigation.current;
+    const activeRect = args.context.active?.rect.current.translated;
+    if (!current || !activeRect) return;
+    let id = current.id,
+      day = current.day,
+      edge = current.edge;
+    if (["ArrowLeft", "ArrowRight"].includes(event.code)) {
+      day = Math.max(
+        0,
+        Math.min(6, day + (event.code === "ArrowRight" ? 1 : -1)),
+      );
+      id = args.context.droppableRects.has("day-" + day)
+        ? "day-" + day
+        : "tab-day-" + day;
+      edge = undefined;
+    } else if (["ArrowUp", "ArrowDown"].includes(event.code)) {
+      const items = args.context.droppableContainers
+        .getEnabled()
+        .filter(
+          (container) =>
+            container.data.current?.type === "step" &&
+            container.data.current.day === day,
+        )
+        .sort(
+          (a, b) =>
+            (args.context.droppableRects.get(a.id)?.top ?? 0) -
+            (args.context.droppableRects.get(b.id)?.top ?? 0),
+        );
+      const index = items.findIndex((item) => item.id === id);
+      const target =
+        items[
+          Math.max(
+            0,
+            Math.min(
+              items.length - 1,
+              (index < 0 ? 0 : index) + (event.code === "ArrowDown" ? 1 : -1),
+            ),
+          )
+        ];
+      if (!target) return;
+      id = String(target.id);
+      edge =
+        target.id === args.context.active?.id
+          ? undefined
+          : event.code === "ArrowDown"
+            ? "after"
+            : "before";
+    } else return;
+    const rect = args.context.droppableRects.get(id);
+    if (!rect) return;
+    event.preventDefault();
+    navigation.current = { id, day, edge };
+    const selected =
+      id === args.context.active?.id
+        ? null
+        : { day, anchor: edge ? { id, edge } : undefined };
+    latestInsertion.current = selected;
+    setInsertion(selected);
+    return {
+      x: rect.left + rect.width / 2 - activeRect.width / 2,
+      y:
+        rect.top +
+        (id.startsWith("day-")
+          ? Math.min(90, rect.height / 2)
+          : rect.height / 2) -
+        activeRect.height / 2,
+    };
+  };
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, {
       activationConstraint: { delay: 250, tolerance: 8 },
     }),
-    useSensor(KeyboardSensor, { coordinateGetter: keyboardCoordinates }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: keyboardCoordinates,
+      scrollBehavior: "auto",
+    }),
   );
-  const activeRow = props.projects
-    .flatMap((p) =>
-      p.tasks.flatMap((t) => t.subtasks.map((s) => ({ p, t, s }))),
-    )
-    .find((r) => r.s.id === active);
+  const collision: CollisionDetection = (args) => {
+    pointer.current = args.pointerCoordinates;
+    if (navigation.current) {
+      const container = args.droppableContainers.find(
+        (item) => item.id === navigation.current!.id,
+      );
+      return container
+        ? [
+            {
+              id: container.id,
+              data: { droppableContainer: container, value: 0 },
+            },
+          ]
+        : [];
+    }
+    return boardCollision(args);
+  };
+  const updateInsertion = ({ active, over }: DragMoveEvent) => {
+    let next: Insertion | null = null;
+    const selected = navigation.current;
+    if (selected && selected.id !== active.id) {
+      next = {
+        day: selected.day,
+        anchor: selected.edge
+          ? { id: selected.id, edge: selected.edge }
+          : undefined,
+      };
+      if (over?.data.current) over.data.current.insertionEdge = selected.edge;
+    } else if (!selected && over?.data.current && over.id !== active.id) {
+      const day = Number(over.data.current.day);
+      if (over.data.current.type === "step") {
+        const center = active.rect.current.translated;
+        const edge =
+          navigation.current?.edge ??
+          ((pointer.current?.y ??
+            (center ? center.top + center.height / 2 : 0)) >
+          over.rect.top + over.rect.height / 2
+            ? "after"
+            : "before");
+        next = { day, anchor: { id: String(over.id), edge } };
+      } else next = { day };
+      over.data.current.insertionEdge = next.anchor?.edge;
+    }
+    latestInsertion.current = next;
+    setInsertion((previous) =>
+      previous?.day === next?.day &&
+      previous?.anchor?.id === next?.anchor?.id &&
+      previous?.anchor?.edge === next?.anchor?.edge
+        ? previous
+        : next,
+    );
+  };
+  const reset = () => {
+    setActive(null);
+    setInsertion(null);
+    latestInsertion.current = null;
+    navigation.current = null;
+    pointer.current = null;
+  };
+  const activeRow = useMemo(
+    () =>
+      props.projects
+        .flatMap((project) =>
+          project.tasks.flatMap((task) =>
+            task.subtasks.map((step) => ({ project, task, step })),
+          ),
+        )
+        .find((row) => row.step.id === active),
+    [props.projects, active],
+  );
   const accessibility = useDndAccessibility();
   return (
     <DndContext
-      accessibility={accessibility}
       sensors={sensors}
-      collisionDetection={boardCollision}
-      onDragStart={({ active }) => setActive(String(active.id))}
-      onDragCancel={() => setActive(null)}
-      onDragEnd={({ active, over }) => {
-        setActive(null);
-        if (over && over.data.current) {
-          const day = Number(over.data.current.day);
-          props.onDrop(
-            String(active.id),
-            day,
-            over.data.current.type === "step" ? String(over.id) : undefined,
-          );
-          if (props.mobile) props.onFocus?.(day);
+      collisionDetection={collision}
+      accessibility={accessibility}
+      onDragStart={({ active, activatorEvent }) => {
+        const keyboard = activatorEvent instanceof KeyboardEvent;
+        navigation.current = keyboard
+          ? { id: String(active.id), day: Number(active.data.current?.day) }
+          : null;
+        setKeyboardDrag(keyboard);
+        setActive(String(active.id));
+      }}
+      onDragMove={updateInsertion}
+      onDragOver={(event) => updateInsertion(event)}
+      onDragCancel={reset}
+      onDragEnd={(event) => {
+        updateInsertion(event);
+        const target = latestInsertion.current,
+          keyboard = !!navigation.current,
+          id = String(event.active.id);
+        if ((event.over || keyboard) && target) {
+          props.onDrop(id, target.day, target.anchor);
+          if (props.mobile) props.onFocus?.(target.day);
         }
+        reset();
+        if (keyboard)
+          requestAnimationFrame(() =>
+            document
+              .querySelector<HTMLButtonElement>(
+                `[data-step-id="${window.CSS.escape(id)}"] .drag-handle`,
+              )
+              ?.focus(),
+          );
       }}
     >
-      {props.mobile ? (
+      {props.mobile || props.focus !== null ? (
         <div className="day-tabs">
           {Array.from({ length: 7 }, (_, day) => (
             <DayTarget
               key={day}
               day={day}
               start={props.start}
+              ended={props.ended}
               selected={props.focus === day}
               onSelect={() => props.onFocus?.(day)}
             />
           ))}
+          {!props.mobile ? (
+            <button className="all-days" onClick={props.onShowWeek}>
+              {t("allDays")}
+            </button>
+          ) : null}
         </div>
       ) : null}
-      <div
-        className={"week-grid" + (props.focus !== null ? " focused" : "")}
-        data-testid="day-work"
-      >
-        {Array.from({ length: 7 }, (_, day) =>
-          props.focus === null || props.focus === day ? (
-            <Day key={day} {...props} day={day} />
-          ) : null,
-        )}
+      <div className="week-scroll">
+        <div
+          className={"week-grid" + (props.focus !== null ? " focused" : "")}
+          data-testid="day-work"
+        >
+          {Array.from({ length: 7 }, (_, day) =>
+            props.focus === null || props.focus === day ? (
+              <Day
+                key={day}
+                {...props}
+                day={day}
+                instant={reduced || keyboardDrag}
+                insertion={
+                  insertion?.day === day ? insertion.anchor : undefined
+                }
+                appendTarget={insertion?.day === day && !insertion.anchor}
+              />
+            ) : null,
+          )}
+        </div>
       </div>
-      <DragOverlay>
+      <DragOverlay dropAnimation={reduced || keyboardDrag ? null : transition}>
         {activeRow ? (
-          <div className="drag-preview">
-            <span>{activeRow.p.name}</span>
-            <strong>{activeRow.t.name}</strong>
+          <div className="drag-preview" data-overlay-id={activeRow.step.id}>
+            <span>{activeRow.project.name}</span>
+            <strong>{activeRow.task.name}</strong>
+            <Weight value={activeRow.step.weight} />
           </div>
         ) : null}
       </DragOverlay>

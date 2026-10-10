@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>weekdam · Xem trước thiết kế kính mờ</title>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#252521;background:#f4f0e8;color-scheme:light}
+    *{box-sizing:border-box}body{margin:0}button,a{font:inherit}button{cursor:pointer}a{color:inherit}
+    .page{max-width:1600px;margin:auto;padding:28px 24px 32px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:22px}
+    .brand{font-weight:750;font-size:20px;letter-spacing:-.6px}h1{font-size:23px;letter-spacing:-.6px;margin:6px 0 8px;font-weight:650}
+    p{margin:0;color:#69675f;font-size:14px;line-height:1.6}.label{font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+    .tools{display:flex;align-items:center;gap:12px;white-space:nowrap}.original{border:1px solid #d3cec3;background:#fff9;padding:10px 15px;border-radius:10px;text-decoration:none;font-size:13px;min-height:44px;display:flex;align-items:center}
+    .tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;margin-bottom:14px}
+    .tabs button{border:1px solid #d3cec3;color:#55534d;background:#fffa;border-radius:10px;min-height:44px;padding:10px 16px;white-space:nowrap;font-size:13px}
+    .tabs button[aria-selected=true]{background:#292823;color:#f4f0e8;border-color:#292823}
+    button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px solid #8b7e67;outline-offset:3px}
+    .stage{margin:0;background:#e9e4da;border:1px solid #d6d0c5;border-radius:16px;overflow:hidden;min-height:360px;display:flex;justify-content:center;align-items:flex-start}
+    .stage img{display:block;width:100%;height:auto}.stage.mobile{padding:24px;background:radial-gradient(ellipse at 50% 30%,#fcf9f2,#e3dccf)}
+    .stage.mobile img{width:min(390px,100%);border-radius:12px;box-shadow:0 12px 48px #30271918}
+    footer{display:flex;justify-content:space-between;gap:20px;padding:18px 2px 0}footer p{font-size:13px}.count{font-variant-numeric:tabular-nums;color:#69675f;font-size:13px}
+    @media(max-width:700px){.page{padding:20px 14px}header{display:block}.tools{margin-top:16px;justify-content:space-between}h1{font-size:21px}.stage{min-height:220px;border-radius:12px}.stage.mobile{padding:12px}.tabs button{padding:10px 13px}footer{display:block}footer p+p{margin-top:8px}}
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div>
+        <div class="brand">weekdam</div>
+        <h1>Hướng thiết kế kính mờ</h1>
+        <p>Ảnh mockup · dữ liệu minh họa · chưa áp dụng lên app</p>
+      </div>
+      <div class="tools"><span class="count" id="count">1 / 6</span><a class="original" id="original" href="desktop-light.png" target="_blank" rel="noopener">Mở ảnh gốc ↗</a></div>
+    </header>
+    <nav class="tabs" role="tablist" aria-label="Các màn hình mockup">
+      <button id="tab-desktop-light" role="tab" aria-selected="true" aria-controls="screen" tabindex="0" data-screen="desktop-light">Desktop · sáng</button>
+      <button id="tab-android" role="tab" aria-selected="false" aria-controls="screen" tabindex="-1" data-screen="android">Android</button>
+      <button id="tab-task-editor" role="tab" aria-selected="false" aria-controls="screen" tabindex="-1" data-screen="task-editor">Editor công việc</button>
+      <button id="tab-stats" role="tab" aria-selected="false" aria-controls="screen" tabindex="-1" data-screen="stats">Thống kê</button>
+      <button id="tab-weeks" role="tab" aria-selected="false" aria-controls="screen" tabindex="-1" data-screen="weeks">Lịch tuần</button>
+      <button id="tab-desktop-dark" role="tab" aria-selected="false" aria-controls="screen" tabindex="-1" data-screen="desktop-dark">Desktop · tối</button>
+    </nav>
+    <figure class="stage" id="screen" role="tabpanel" aria-labelledby="tab-desktop-light" tabindex="0">
+      <img id="mockup" src="desktop-light.png" alt="Mockup desktop sáng: bảng tuần 7 cột với thẻ kính mờ, nền kem và chữ than đen">
+    </figure>
+    <footer>
+      <p id="description">Bảng tuần 7 cột, rail điều hướng gọn và thẻ công việc riêng.</p>
+      <p>Kéo/thả và animation sẽ được triển khai sau khi bạn duyệt thiết kế.</p>
+    </footer>
+  </main>
+  <script>
+    const screens={
+      'desktop-light':{alt:'Mockup desktop sáng: bảng tuần 7 cột với thẻ kính mờ, nền kem và chữ than đen',description:'Bảng tuần 7 cột, rail điều hướng gọn và thẻ công việc riêng.'},
+      android:{alt:'Mockup Android: một ngày với tab tuần và ba thẻ kính mờ',description:'Một ngày với tab tuần, thẻ rộng và thanh điều hướng dưới.'},
+      'task-editor':{alt:'Mockup editor công việc với các bước, ngày và độ khó',description:'Editor đồng bộ phong cách, giữ rõ tên việc, ghi chú, ngày và độ khó.'},
+      stats:{alt:'Mockup Thống kê với tiến độ tuần, heatmap và phân bổ theo ngày',description:'Thống kê dùng màu trung tính, chữ rõ và biểu đồ gọn. Số liệu chỉ để minh họa.'},
+      weeks:{alt:'Mockup Lịch tuần với bảy tuần và tiến độ từng tuần',description:'Lịch tuần dạng danh sách, nhìn rõ trạng thái và tiến độ.'},
+      'desktop-dark':{alt:'Mockup desktop tối: thẻ kính tối, nền than ấm và chữ ngà',description:'Theme tối cùng bố cục, chất liệu kính và phân cấp thông tin.'}
+    };
+    const tabs=[...document.querySelectorAll('[role=tab]')];
+    function select(tab){
+      const key=tab.dataset.screen;
+      tabs.forEach(item=>{const selected=item===tab;item.setAttribute('aria-selected',String(selected));item.tabIndex=selected?0:-1;});
+      const img=document.getElementById('mockup');img.src=key+'.png';img.alt=screens[key].alt;
+      const stage=document.getElementById('screen');stage.classList.toggle('mobile',key==='android');stage.setAttribute('aria-labelledby',tab.id);
+      document.getElementById('original').href=key+'.png';document.getElementById('count').textContent=(tabs.indexOf(tab)+1)+' / '+tabs.length;
+      document.getElementById('description').textContent=screens[key].description;
+    }
+    tabs.forEach((tab,index)=>{
+      tab.addEventListener('click',()=>select(tab));
+      tab.addEventListener('keydown',event=>{
+        let next;if(event.key==='ArrowRight')next=(index+1)%tabs.length;if(event.key==='ArrowLeft')next=(index+tabs.length-1)%tabs.length;if(event.key==='Home')next=0;if(event.key==='End')next=tabs.length-1;
+        if(next!==undefined){event.preventDefault();select(tabs[next]);tabs[next].focus();tabs[next].scrollIntoView({block:'nearest',inline:'nearest'});}
+      });
+    });
+  </script>
+</body>
+</html>

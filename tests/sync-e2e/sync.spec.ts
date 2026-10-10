@@ -78,8 +78,8 @@ test("imports the saved Guest workspace after the authentication redirect reload
   await page.waitForURL("http://127.0.0.1:4280/");
   await expect(page.getByTestId("sync-status")).toContainText("Đã đồng bộ");
   await expect(
-    page.getByText("Saved Guest work", { exact: true }),
-  ).toBeVisible();
+    page.getByRole("combobox", { name: "Lọc dự án", exact: true }),
+  ).toContainText("Saved Guest work");
   await context.close();
 });
 test("shares one account across tabs without losing independent task edits", async ({
@@ -99,7 +99,9 @@ test("shares one account across tabs without losing independent task edits", asy
     .click();
   await a.getByLabel("Tên dự án", { exact: true }).fill("Shared tabs");
   await a.getByRole("button", { name: "Lưu", exact: true }).click();
-  await expect(b.getByText("Shared tabs", { exact: true })).toBeVisible();
+  await expect(
+    b.getByRole("combobox", { name: "Lọc dự án", exact: true }),
+  ).toContainText("Shared tabs");
   await Promise.all([
     a
       .getByRole("button", { name: "Thêm công việc", exact: true })

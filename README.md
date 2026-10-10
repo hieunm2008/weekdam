@@ -6,6 +6,8 @@ App đã deploy tại [weekdam-hieu-2026.web.app](https://weekdam-hieu-2026.web.
 
 ## Chạy và kiểm thử
 
+Bản giao diện kính mờ đã deploy ngày 10/10/2026: nền kem/than ấm, Inter cục bộ, rail với panel dự án, thẻ kéo bằng thân, thứ tự tự do qua project/task, animation và reduced motion. `Subtask.dayOrder` lưu/sync riêng thứ tự ngày; dữ liệu cũ, backup v1 và IndexedDB v2 tương thích. 90 kiểm thử đã đạt; Lighthouse mobile production 96/100/100. Nghiệm thu kéo/thả và thứ tự offline trên Android thật của bản mới còn chờ xác nhận. Xem [plan và bằng chứng giao diện](docs/design/glass-v1/IMPLEMENTATION.md).
+
 Yêu cầu Node 24 LTS (hoặc phiên bản đáp ứng engines của dependencies), npm; Java 21+ cho Emulator.
 
 ```sh

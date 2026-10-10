@@ -1,0 +1,11 @@
+{
+  "projectId": "weekdam-hieu-2026",
+  "checkedAt": "2026-10-10T01:59:06.094Z",
+  "billingEnabled": false,
+  "database": {
+    "edition": "STANDARD",
+    "type": "FIRESTORE_NATIVE",
+    "location": "asia-southeast1",
+    "freeTier": true
+  }
+}

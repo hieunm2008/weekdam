@@ -86,6 +86,13 @@ async function loadFixture(page: import("@playwright/test").Page) {
   await page.getByLabel("JSON", { exact: true }).fill(JSON.stringify(seed));
   await page.getByRole("button", { name: "Gộp dữ liệu", exact: true }).click();
 }
+async function weekAction(page: import("@playwright/test").Page, name: string) {
+  await page.getByRole("button", { name: "Quản lý tuần", exact: true }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name, exact: true })
+    .click();
+}
 
 test("creates a project and task, finishes work, and restores deletion with undo", async ({
   page,
@@ -153,6 +160,14 @@ test("remembers language/theme and reloads the PWA while offline", async ({
     page.getByRole("button", { name: "New project", exact: true }).first(),
   ).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  await page.evaluate(() => document.fonts.ready);
+  expect(
+    await page.evaluate(() =>
+      Array.from(document.fonts).some(
+        (font) => font.family.includes("Inter") && font.status === "loaded",
+      ),
+    ),
+  ).toBe(true);
 });
 
 test("copies across weeks, resets completion, carries pending work and updates stats", async ({
@@ -166,13 +181,11 @@ test("copies across weeks, resets completion, carries pending work and updates s
     .getByRole("checkbox", { name: "Read" })
     .check();
   await expect(page.getByTestId("week-progress")).toContainText("60%");
-  await page
-    .getByRole("button", { name: "Sao chép kế hoạch", exact: true })
-    .click();
+  await weekAction(page, "Sao chép kế hoạch");
   await page.getByRole("button", { name: "Sao chép", exact: true }).click();
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   await page.getByRole("button", { name: "Tuần sau", exact: true }).click();
-  await page.getByRole("button", { name: "Dán kế hoạch", exact: true }).click();
+  await weekAction(page, "Dán kế hoạch");
   await page.getByLabel("Nội dung kế hoạch", { exact: true }).fill(copied);
   await page
     .getByRole("button", { name: "Thêm vào tuần", exact: true })
@@ -226,8 +239,7 @@ test("moves a step to the next day with keyboard drag and cancels a second drag"
   );
   await loadFixture(page);
   const handle = page.locator('[data-day="0"]').getByRole("button", {
-    name: "Kéo hoặc nhấn Space để di chuyển",
-    exact: true,
+    name: /^Kéo hoặc nhấn Space để di chuyển · Read/,
   });
   await handle.focus();
   await page.keyboard.press("Space");
@@ -238,8 +250,7 @@ test("moves a step to the next day with keyboard drag and cancels a second drag"
     page.locator('[data-day="1"]').getByRole("checkbox", { name: "Read" }),
   ).toBeVisible();
   const moved = page.locator('[data-day="1"]').getByRole("button", {
-    name: "Kéo hoặc nhấn Space để di chuyển",
-    exact: true,
+    name: /^Kéo hoặc nhấn Space để di chuyển · Read/,
   });
   await moved.focus();
   await page.keyboard.press("Space");
@@ -311,10 +322,7 @@ test("moves a step with a touch drag onto a mobile day tab", async ({
     "Touch is exercised on the mobile viewport.",
   );
   await loadFixture(page);
-  const handle = page.locator('[data-day="3"]').getByRole("button", {
-    name: "Kéo hoặc nhấn Space để di chuyển",
-    exact: true,
-  });
+  const handle = page.locator('[data-day="3"] .project-tag').first();
   const source = await handle.boundingBox(),
     target = await page
       .getByRole("button", { name: "Thứ Sáu", exact: true })
@@ -438,7 +446,7 @@ test("reports invalid JSON inside its dialog without replacing the plan", async 
   page,
 }) => {
   await loadFixture(page);
-  await page.getByRole("button", { name: "Dán kế hoạch", exact: true }).click();
+  await weekAction(page, "Dán kế hoạch");
   await page
     .getByLabel("Nội dung kế hoạch", { exact: true })
     .fill('{"format":"wrong"}');

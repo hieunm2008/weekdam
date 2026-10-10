@@ -14,7 +14,7 @@ service cloud.firestore {
         r.kind == 'week' ? v.keys().hasAll(['id','start','ended']) && v.keys().hasOnly(['id','start','ended']) && v.start is string && v.start.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$') && r.id == 'week_' + v.start && v.ended is bool :
         r.kind == 'project' ? v.keys().hasAll(['id','name']) && v.keys().hasOnly(['id','name','deadline']) && v.name is string && v.name.size() > 0 && v.name.size() <= 300 && validDeadline(v) :
         r.kind == 'task' ? v.keys().hasAll(['id','name','note','done']) && v.keys().hasOnly(['id','name','note','done','deadline']) && v.name is string && v.name.size() > 0 && v.name.size() <= 500 && v.note is string && v.note.size() <= 10000 && v.done is bool && validDeadline(v) :
-        r.kind == 'subtask' && v.keys().hasAll(['id','day','weight','note','done','missed']) && v.keys().hasOnly(['id','day','weight','note','done','missed']) && v.day is int && v.day >= 0 && v.day <= 6 && v.weight in [1,2,3] && v.note is string && v.note.size() <= 10000 && v.done is bool && v.missed is list && v.missed.size() <= 7 && v.missed.hasOnly([0,1,2,3,4,5,6]) && v.missed.toSet().size() == v.missed.size()
+        r.kind == 'subtask' && v.keys().hasAll(['id','day','weight','note','done','missed']) && v.keys().hasOnly(['id','day','weight','note','done','missed','dayOrder']) && v.day is int && v.day >= 0 && v.day <= 6 && v.weight in [1,2,3] && v.note is string && v.note.size() <= 10000 && v.done is bool && v.missed is list && v.missed.size() <= 7 && v.missed.hasOnly([0,1,2,3,4,5,6]) && v.missed.toSet().size() == v.missed.size() && (!v.keys().hasAny(['dayOrder']) || (v.dayOrder is number && v.dayOrder >= 0 && v.dayOrder <= 1000000000))
       );
     }
     match /users/{uid}/records/{recordId} {

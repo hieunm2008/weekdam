@@ -1,3 +1,17 @@
+import {
+  appendBoardProjects,
+  assignCopiedDayOrder,
+  validDayOrder,
+  withoutDayOrder,
+} from "./boardOrder";
+export {
+  dayCards,
+  moveBoardCard,
+  appendBoardProjects,
+  placeEditedTask,
+  preserveBoardOrder,
+} from "./boardOrder";
+export type { BoardAnchor, DayCard } from "./boardOrder";
 export type Weight = 1 | 2 | 3;
 export interface Subtask {
   id: string;
@@ -6,6 +20,7 @@ export interface Subtask {
   note: string;
   done: boolean;
   missed: number[];
+  dayOrder?: number;
 }
 export interface Task {
   id: string;
@@ -122,7 +137,7 @@ export function taskDone(task: Task): boolean {
   return task.subtasks.length ? task.subtasks.every((s) => s.done) : task.done;
 }
 export function copyProjects(projects: Project[], keep: boolean): Project[] {
-  return projects.map((p) => ({
+  const copies = projects.map((p) => ({
     ...clone(p),
     id: id(),
     tasks: p.tasks.map((t) => ({
@@ -137,6 +152,7 @@ export function copyProjects(projects: Project[], keep: boolean): Project[] {
       })),
     })),
   }));
+  return assignCopiedDayOrder(projects, copies);
 }
 export function endWeek(data: Plan, start: string, carry: boolean): Plan {
   let result = clone(data);
@@ -156,7 +172,10 @@ export function endWeek(data: Plan, start: string, carry: boolean): Plan {
     if (pending.length) {
       const next = weekAt(result, shiftDate(start, 7));
       if (next.ended) throw new Error("destination-ended");
-      next.projects.push(...copyProjects(pending, false));
+      next.projects = appendBoardProjects(
+        next.projects,
+        copyProjects(pending, false),
+      );
       result = replaceWeek(result, next);
     }
   }
@@ -261,7 +280,8 @@ export function parseBackup(raw: string): Plan {
             typeof s.done !== "boolean" ||
             !Array.isArray(s.missed) ||
             s.missed.some((d) => !Number.isInteger(d) || d < 0 || d > 6) ||
-            new Set(s.missed).size !== s.missed.length
+            new Set(s.missed).size !== s.missed.length ||
+            (s.dayOrder !== undefined && !validDayOrder(s.dayOrder))
           )
             throw new Error("invalid-subtask");
           acceptId(s);
@@ -295,9 +315,12 @@ export function mergePlans(local: Plan, incoming: Plan): Plan {
       };
       result.weeks.push(target);
     }
+    const addedSources: Project[] = [],
+      addedCopies: Project[] = [];
     for (const project of source.projects) {
       const same = projectIds.get(project.id);
-      if (same && sameContent(same, project)) continue;
+      if (same && sameContent(withoutDayOrder(same), withoutDayOrder(project)))
+        continue;
       const entities = [
         project.id,
         ...project.tasks.flatMap((t) => [t.id, ...t.subtasks.map((s) => s.id)]),
@@ -305,13 +328,19 @@ export function mergePlans(local: Plan, incoming: Plan): Plan {
       const copy = entities.some((key) => used.has(key))
         ? copyProjects([project], true)[0]
         : clone(project);
-      target.projects.push(copy);
+      addedSources.push(project);
+      addedCopies.push(copy);
       for (const key of [
         copy.id,
         ...copy.tasks.flatMap((t) => [t.id, ...t.subtasks.map((s) => s.id)]),
       ])
         used.add(key);
     }
+    if (addedCopies.length)
+      target.projects = appendBoardProjects(
+        target.projects,
+        assignCopiedDayOrder(addedSources, addedCopies),
+      );
   }
   return {
     ...result,

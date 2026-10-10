@@ -8,7 +8,6 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useRegisterSW } from "virtual:pwa-register/react";
-import { arrayMove } from "@dnd-kit/sortable";
 import { getISOWeek, parseISO } from "date-fns";
 import {
   CalendarDays,
@@ -37,6 +36,10 @@ import {
   id,
   mergePlans,
   moveWeek,
+  moveBoardCard,
+  appendBoardProjects,
+  placeEditedTask,
+  preserveBoardOrder,
   parseBackup,
   progress,
   replaceWeek,
@@ -48,14 +51,37 @@ import {
   type Project,
   type Task,
   type Week,
+  type BoardAnchor,
 } from "./domain";
 import { usePlanner } from "./usePlanner";
 import { Modal } from "./components/Modal";
-import { ProjectEditor, ProjectsManager } from "./components/Projects";
-import { TaskEditor } from "./components/TaskEditor";
-import { Board } from "./components/Board";
+import { Navigation } from "./components/Navigation";
 import i18n from "./i18n";
 const Stats = lazy(() => import("./components/Stats"));
+const Board = lazy(() =>
+  import("./components/Board").then((module) => ({ default: module.Board })),
+);
+const TaskEditor = lazy(() =>
+  import("./components/TaskEditor").then((module) => ({
+    default: module.TaskEditor,
+  })),
+);
+const ProjectEditor = lazy(() =>
+  import("./components/Projects").then((module) => ({
+    default: module.ProjectEditor,
+  })),
+);
+const ProjectsManager = lazy(() =>
+  import("./components/Projects").then((module) => ({
+    default: module.ProjectsManager,
+  })),
+);
+function arrayMove<T>(items: T[], from: number, to: number): T[] {
+  if (from < 0 || to < 0) return items;
+  const next = [...items];
+  next.splice(to, 0, ...next.splice(from, 1));
+  return next;
+}
 type Dialog = {
   kind: string;
   project?: Project;
@@ -71,8 +97,34 @@ const formatDay = (day: string, lang: string) =>
     month: "short",
     timeZone: "UTC",
   }).format(new Date(day + "T12:00:00Z"));
-const range = (start: string, lang: string) =>
-  formatDay(start, lang) + " – " + formatDay(shiftDate(start, 6), lang);
+const range = (start: string, lang: string) => {
+  const a = new Date(start + "T12:00:00Z"),
+    b = new Date(shiftDate(start, 6) + "T12:00:00Z");
+  const locale = lang === "vi" ? "vi-VN" : "en-GB";
+  const month = new Intl.DateTimeFormat(locale, {
+    month: "long",
+    timeZone: "UTC",
+  }).format(b);
+  if (
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCFullYear() === b.getUTCFullYear()
+  )
+    return `${a.getUTCDate()}–${b.getUTCDate()} ${lang === "vi" ? month.toLocaleLowerCase("vi-VN") : month}${lang === "vi" ? "," : ""} ${b.getUTCFullYear()}`;
+  return (
+    new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      month: "long",
+      timeZone: "UTC",
+    }).format(a) +
+    " – " +
+    new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(b)
+  );
+};
 
 function CopyDialog({
   source,
@@ -289,11 +341,33 @@ export default function App() {
     localStorage.setItem("weekdam:viewed-week", start);
   }, [start]);
   useEffect(() => {
+    const setInput = (method: string) => {
+      if (document.documentElement.dataset.inputMethod !== method)
+        document.documentElement.dataset.inputMethod = method;
+    };
+    const keyboard = () => setInput("keyboard"),
+      pointer = () => setInput("pointer");
+    document.addEventListener("keydown", keyboard, true);
+    document.addEventListener("pointerdown", pointer, true);
+    return () => {
+      document.removeEventListener("keydown", keyboard, true);
+      document.removeEventListener("pointerdown", pointer, true);
+    };
+  }, []);
+  useEffect(() => {
     const query = matchMedia("(prefers-color-scheme: dark)");
     const apply = () => {
       document.documentElement.dataset.theme =
         theme === "system" ? (query.matches ? "dark" : "light") : theme;
       document.documentElement.lang = i18n.language;
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute(
+          "content",
+          document.documentElement.dataset.theme === "dark"
+            ? "#171816"
+            : "#f4f0e8",
+        );
     };
     apply();
     query.addEventListener("change", apply);
@@ -317,7 +391,9 @@ export default function App() {
         editing ||
         dialog ||
         e.defaultPrevented ||
-        (e.target as HTMLElement)?.closest("[aria-roledescription]")
+        (e.target as HTMLElement)?.closest(
+          "[aria-roledescription],#project-panel",
+        )
       )
         return;
       if ((e.ctrlKey || e.metaKey) && e.key === "z") {
@@ -385,24 +461,14 @@ export default function App() {
       }
     });
   }
-  function moveStep(sid: string, day: number, before?: string, missed = false) {
-    mutate((w) => {
-      for (const p of w.projects)
-        for (const task of p.tasks) {
-          const index = task.subtasks.findIndex((s) => s.id === sid);
-          if (index < 0) continue;
-          const step = task.subtasks[index];
-          if (missed && step.day !== day && !step.missed.includes(step.day))
-            step.missed.push(step.day);
-          step.day = day;
-          step.missed = step.missed.filter((d) => d !== day);
-          if (before && before !== sid) {
-            const destination = task.subtasks.findIndex((s) => s.id === before);
-            if (destination >= 0)
-              task.subtasks = arrayMove(task.subtasks, index, destination);
-          }
-        }
-    });
+  function moveStep(
+    sid: string,
+    day: number,
+    anchor?: BoardAnchor,
+    missed = false,
+  ) {
+    const moved = moveBoardCard(week, sid, day, anchor, missed);
+    if (moved !== week) store.commit(replaceWeek(store.plan, moved));
   }
   function openMove(sid: string) {
     const step = week.projects
@@ -416,6 +482,7 @@ export default function App() {
   }
   function saveTask(task: Task, pid: string) {
     mutate((w) => {
+      const previous = clone(w.projects);
       const target = w.projects.find((p) => p.id === pid);
       if (!target) return;
       const index = target.tasks.findIndex((old) => old.id === task.id);
@@ -426,6 +493,7 @@ export default function App() {
         );
         target.tasks.push(task);
       }
+      w.projects = placeEditedTask(previous, w.projects, task.id);
     });
     close();
   }
@@ -462,9 +530,12 @@ export default function App() {
           ],
         }),
       );
-      mutate((w) =>
-        w.projects.push(...copyProjects(parsed.weeks[0].projects, keep)),
-      );
+      mutate((w) => {
+        w.projects = appendBoardProjects(
+          w.projects,
+          copyProjects(parsed.weeks[0].projects, keep),
+        );
+      });
       close();
     } catch {
       store.setError("invalid");
@@ -475,6 +546,84 @@ export default function App() {
     { key: "stats", icon: ChartNoAxesColumn },
     { key: "weeks", icon: Archive },
   ];
+  const weekNavigation = (
+    <div className="week-navigation">
+      <button
+        className="icon-button"
+        aria-label={t("previous")}
+        onClick={() => navigate(shiftDate(start, -7))}
+      >
+        <ChevronLeft size={19} />
+      </button>
+      <button
+        className="secondary compact"
+        onClick={() => navigate(currentStart)}
+      >
+        {t("today")}
+      </button>
+      <button
+        className="icon-button"
+        aria-label={t("next")}
+        onClick={() => navigate(shiftDate(start, 7))}
+      >
+        <ChevronRight size={19} />
+      </button>
+    </div>
+  );
+  const weekHint = week.ended
+    ? t("ended")
+    : remaining
+      ? t("daysLeft", { count: remaining })
+      : t("endWeek");
+  const projectSelector = (
+    <select
+      className="project-select"
+      aria-label={t("projectFilter")}
+      value={activeFilter}
+      onChange={(event) => {
+        setFilter(event.target.value);
+        if (dialog?.kind === "manage") close();
+      }}
+    >
+      <option value="">{t("allProjects")}</option>
+      {week.projects.map((project) => (
+        <option key={project.id} value={project.id}>
+          {project.name}
+        </option>
+      ))}
+    </select>
+  );
+  const weekActions = (
+    <div className="toolbar-actions">
+      <button
+        className="secondary compact"
+        onClick={() => setDialog({ kind: "projects" })}
+      >
+        <Folder size={16} />
+        {t("projects")}
+      </button>
+      <button
+        className="icon-button"
+        aria-label={t("manage")}
+        onClick={() => setDialog({ kind: "manage" })}
+      >
+        <MoreHorizontal size={22} />
+      </button>
+    </div>
+  );
+  const progressIndicator = (
+    <div className="progress-row">
+      <div className="progress-track">
+        <i style={{ transform: `scaleX(${count.percent / 100})` }} />
+      </div>
+      <span data-testid="week-progress">
+        <strong>{count.percent}%</strong>
+        <small>
+          {count.done}/{count.total} {t("units")}
+        </small>
+      </span>
+    </div>
+  );
   if (!store.ready && !store.mergeRequest)
     return (
       <div className="loading-screen">
@@ -483,110 +632,76 @@ export default function App() {
       </div>
     );
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <a
-          className="brand"
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            setRoute("plan");
-          }}
-        >
-          <img src="/icon.svg" width={34} height={34} alt="" />
-          weekdam<span>{t("workspace")}</span>
-        </a>
-        <nav className="desktop-nav" aria-label={t("plan")}>
-          {nav.map(({ key, icon: Icon }) => (
-            <button
-              key={key}
-              className={route === key ? "active" : ""}
-              onClick={() => setRoute(key)}
-            >
-              <Icon size={19} />
-              {t(key)}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-projects">
-          <div className="sidebar-heading">
-            <span>{t("projects")}</span>
-            <button
-              className="icon-button"
-              aria-label={t("newProject")}
-              onClick={() => setDialog({ kind: "project" })}
-            >
-              <Plus size={17} />
-            </button>
-          </div>
-          <button
-            className={!filter ? "project-filter selected" : "project-filter"}
-            onClick={() => setFilter("")}
-          >
-            <Folder size={16} />
-            {t("allProjects")}
-          </button>
-          {week.projects.map((p, i) => (
-            <button
-              key={p.id}
-              className={
-                filter === p.id ? "project-filter selected" : "project-filter"
-              }
-              onClick={() => {
-                setFilter(p.id);
-                setRoute("plan");
-              }}
-            >
-              <i className={"project-dot color-" + (i % 4)} />
-              <span>{p.name}</span>
-              <small>{p.tasks.length}</small>
-            </button>
-          ))}
-          {week.projects.length ? (
-            <button
-              className="text-button"
-              onClick={() => setDialog({ kind: "projects" })}
-            >
-              {t("projects")}
-              <ArrowRight size={15} />
-            </button>
-          ) : null}
-        </div>
-        <div className="sidebar-bottom">
-          <div className="sync-label">
-            {store.online ? <Check size={15} /> : <CloudOff size={15} />}
-            <span>{t(store.status)}</span>
-          </div>
-          <button
-            className="settings-button"
-            aria-label={t("settings")}
-            onClick={() => setDialog({ kind: "settings" })}
-          >
-            <Settings size={19} />
-            {t("settings")}
-          </button>
-        </div>
-      </aside>
+    <div className="app-shell" data-view={route}>
+      <Navigation
+        key={store.scope}
+        route={route}
+        projects={week.projects}
+        filter={activeFilter}
+        online={store.online}
+        status={store.status}
+        onRoute={setRoute}
+        onFilter={(pid) => {
+          setFilter(pid);
+          setRoute("plan");
+        }}
+        onCreate={() => setDialog({ kind: week.ended ? "reopen" : "project" })}
+        onManage={() => setDialog({ kind: "projects" })}
+        onSettings={() => setDialog({ kind: "settings" })}
+      />
       <main className="main-content">
-        <header className="page-header">
-          <div>
+        <div className="workspace-header">
+          <a
+            className="wordmark"
+            href="#"
+            onClick={(event) => {
+              event.preventDefault();
+              setRoute("plan");
+            }}
+          >
+            weekdam
+          </a>
+          <div className="workspace-summary">
+            {!mobile && route === "plan" ? (
+              <div className="workspace-progress">{progressIndicator}</div>
+            ) : null}
             <span
-              className="mobile-sync"
+              className="workspace-status"
               data-testid="sync-status"
               aria-live="polite"
             >
+              {store.online ? <Check size={14} /> : <CloudOff size={14} />}
               {t(store.status)}
             </span>
+            <button
+              className="icon-button mobile-settings"
+              aria-label={t("settings")}
+              onClick={() => setDialog({ kind: "settings" })}
+            >
+              <Settings size={21} />
+            </button>
+          </div>
+        </div>
+        <header className="page-header">
+          <div>
             <p className="eyebrow">
               {route === "plan"
-                ? t(start === currentStart ? "thisWeek" : "week") +
+                ? t("week") +
                   " " +
-                  getISOWeek(parseISO(start))
-                : t("welcome")}
+                  getISOWeek(parseISO(start)) +
+                  (!mobile ? " · " + weekHint : "")
+                : t(route === "stats" ? "statsSubtitle" : "weeksSubtitle")}
             </p>
             <h1>{route === "plan" ? range(start, i18n.language) : t(route)}</h1>
           </div>
           <div className="header-actions">
+            {!mobile && route === "plan" ? (
+              <>
+                {weekNavigation}
+                {projectSelector}
+                {weekActions}
+              </>
+            ) : null}
             {install ? (
               <button
                 className="secondary"
@@ -599,13 +714,6 @@ export default function App() {
                 {t("install")}
               </button>
             ) : null}
-            <button
-              className="icon-button mobile-settings"
-              aria-label={t("settings")}
-              onClick={() => setDialog({ kind: "settings" })}
-            >
-              <Settings size={20} />
-            </button>
             {route === "plan" ? (
               <button
                 className="primary new-task-button"
@@ -627,86 +735,16 @@ export default function App() {
         ) : null}
         {route === "plan" ? (
           <>
-            <div className="week-toolbar">
-              <div className="week-navigation">
-                <button
-                  className="icon-button"
-                  aria-label={t("previous")}
-                  onClick={() => navigate(shiftDate(start, -7))}
-                >
-                  <ChevronLeft size={19} />
-                </button>
-                <button
-                  className="secondary compact"
-                  onClick={() => navigate(currentStart)}
-                >
-                  {t("today")}
-                </button>
-                <button
-                  className="icon-button"
-                  aria-label={t("next")}
-                  onClick={() => navigate(shiftDate(start, 7))}
-                >
-                  <ChevronRight size={19} />
-                </button>
-              </div>
-              <div className="toolbar-actions">
-                <button
-                  className="secondary compact"
-                  onClick={() => setDialog({ kind: "projects" })}
-                >
-                  <Folder size={16} />
-                  {t("projects")}
-                </button>
-                <button
-                  className="icon-button"
-                  aria-label={t("manage")}
-                  onClick={() => setDialog({ kind: "manage" })}
-                >
-                  <MoreHorizontal size={22} />
-                </button>
-              </div>
-            </div>
-            <div className="progress-row">
-              <div className="progress-track">
-                <i style={{ width: count.percent + "%" }} />
-              </div>
-              <span data-testid="week-progress">
-                <strong>{count.percent}%</strong>
-                <small>
-                  {count.done}/{count.total} {t("units")}
-                </small>
-              </span>
-            </div>
-            <div className="week-meta">
-              <span>
-                {week.ended
-                  ? t("ended")
-                  : remaining
-                    ? t("daysLeft", { count: remaining })
-                    : t("endWeek")}
-              </span>
-              <div>
-                {!week.ended && week.projects.length ? (
-                  <button
-                    className="text-button"
-                    onClick={() => setDialog({ kind: "copy" })}
-                  >
-                    <Copy size={15} />
-                    {t("copy")}
-                  </button>
-                ) : null}
-                {!week.ended ? (
-                  <button
-                    className="text-button"
-                    onClick={() => setDialog({ kind: "paste" })}
-                  >
-                    <ClipboardPaste size={15} />
-                    {t("paste")}
-                  </button>
-                ) : null}
-              </div>
-            </div>
+            {mobile ? (
+              <>
+                <div className="week-toolbar">
+                  {weekNavigation}
+                  {weekActions}
+                </div>
+                {progressIndicator}
+                <p className="week-hint">{weekHint}</p>
+              </>
+            ) : null}
             {!week.projects.length ? (
               <div className="onboarding">
                 <div className="onboarding-mark">
@@ -741,34 +779,21 @@ export default function App() {
                 ) : null}
               </div>
             ) : (
-              <>
-                <div className={"day-tabs" + (mobile ? " desktop-only" : " ")}>
-                  {shortNames.map((name, day) => (
-                    <button
-                      key={day}
-                      className={
-                        (mobile ? selectedDay : focus) === day ? "selected" : ""
-                      }
-                      aria-label={dayNames[day]}
-                      aria-pressed={(mobile ? selectedDay : focus) === day}
-                      onClick={() => {
-                        setSelectedDay(day);
-                        setFocus(day);
-                      }}
-                    >
-                      {name}
-                      <span>{Number(shiftDate(start, day).slice(-2))}</span>
-                    </button>
-                  ))}
-                  {!mobile ? (
-                    <button className="all-days" onClick={() => setFocus(null)}>
-                      {t("allDays")}
-                    </button>
-                  ) : null}
-                </div>
+              <Suspense fallback={<p role="status">{t("loading")}</p>}>
                 <Board
+                  key={
+                    store.scope +
+                    start +
+                    activeFilter +
+                    (week.ended ? "-closed" : "-open") +
+                    (mobile ? "-mobile" : "-desktop")
+                  }
                   mobile={mobile}
-                  onFocus={setSelectedDay}
+                  onFocus={(day) => {
+                    setSelectedDay(day);
+                    if (!mobile) setFocus(day);
+                  }}
+                  onShowWeek={() => setFocus(null)}
                   projects={shown}
                   start={start}
                   ended={week.ended}
@@ -798,7 +823,7 @@ export default function App() {
                   }
                   onDrop={moveStep}
                 />
-              </>
+              </Suspense>
             )}
           </>
         ) : route === "stats" ? (
@@ -816,22 +841,41 @@ export default function App() {
                   const p = progress(w.projects);
                   return (
                     <article className="week-history" key={w.id}>
-                      <div>
-                        <span className="muted">
-                          {w.start.slice(0, 4)} ·{" "}
-                          {w.ended ? t("ended") : t("plan")}
-                        </span>
+                      <div className="history-heading">
+                        <span className="muted">{w.start.slice(0, 4)}</span>
                         <button
                           className="history-title"
                           onClick={() => navigate(w.start)}
                         >
                           {range(w.start, i18n.language)}
                         </button>
-                        <p>
-                          {p.done}/{p.total} {t("units")} · {p.percent}%
-                        </p>
                       </div>
-                      <div>
+                      <div className="history-progress">
+                        <p>
+                          {p.done}/{p.total} {t("units")}{" "}
+                          <strong>{p.percent}%</strong>
+                        </p>
+                        <div
+                          className="progress-track"
+                          role="progressbar"
+                          aria-label={range(w.start, i18n.language)}
+                          aria-valuenow={p.percent}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                        >
+                          <span
+                            style={{ transform: `scaleX(${p.percent / 100})` }}
+                          />
+                        </div>
+                      </div>
+                      <span
+                        className={
+                          "history-status" + (w.ended ? " is-ended" : "")
+                        }
+                      >
+                        {w.ended ? t("ended") : t("openWeek")}
+                      </span>
+                      <div className="history-actions">
                         <button
                           className="secondary"
                           onClick={() => navigate(w.start)}
@@ -874,6 +918,7 @@ export default function App() {
           <button
             key={key}
             className={route === key ? "active" : ""}
+            aria-current={route === key ? "page" : undefined}
             onClick={() => setRoute(key)}
           >
             <Icon size={20} />
@@ -931,98 +976,108 @@ export default function App() {
           </div>
         </Modal>
       ) : null}
-      {dialog?.kind === "project" ? (
-        <ProjectEditor
-          project={dialog.project}
-          onClose={close}
-          onSave={(p) => {
-            mutate((w) => {
-              const index = w.projects.findIndex((old) => old.id === p.id);
-              if (index < 0) w.projects.push(p);
-              else w.projects[index] = p;
-            });
-            close();
-          }}
-          onDelete={
-            dialog.project
-              ? () => {
-                  mutate(
-                    (w) =>
-                      (w.projects = w.projects.filter(
-                        (p) => p.id !== dialog.project!.id,
-                      )),
-                    "deleted",
+      <Suspense
+        fallback={
+          <p className="sr-only" role="status">
+            {t("loading")}
+          </p>
+        }
+      >
+        {dialog?.kind === "project" ? (
+          <ProjectEditor
+            project={dialog.project}
+            onClose={close}
+            onSave={(p) => {
+              mutate((w) => {
+                const index = w.projects.findIndex((old) => old.id === p.id);
+                if (index < 0) w.projects.push(p);
+                else w.projects[index] = p;
+              });
+              close();
+            }}
+            onDelete={
+              dialog.project
+                ? () => {
+                    mutate(
+                      (w) =>
+                        (w.projects = w.projects.filter(
+                          (p) => p.id !== dialog.project!.id,
+                        )),
+                      "deleted",
+                    );
+                    setFilter("");
+                    close();
+                  }
+                : undefined
+            }
+          />
+        ) : null}
+        {dialog?.kind === "task" ? (
+          <TaskEditor
+            task={dialog.task!}
+            projectId={dialog.pid!}
+            projects={week.projects}
+            onClose={close}
+            onSave={saveTask}
+            onDelete={
+              week.projects.some((p) =>
+                p.tasks.some((task) => task.id === dialog.task?.id),
+              )
+                ? () => {
+                    mutate(
+                      (w) =>
+                        w.projects.forEach(
+                          (p) =>
+                            (p.tasks = p.tasks.filter(
+                              (task) => task.id !== dialog.task!.id,
+                            )),
+                        ),
+                      "deleted",
+                    );
+                    close();
+                  }
+                : undefined
+            }
+          />
+        ) : null}
+        {dialog?.kind === "projects" ? (
+          <ProjectsManager
+            onCreate={() => setDialog({ kind: "project" })}
+            projects={week.projects}
+            ended={week.ended}
+            onClose={close}
+            onEdit={(p) =>
+              week.ended
+                ? setDialog({ kind: "reopen" })
+                : setDialog({ kind: "project", project: p })
+            }
+            onAdd={(pid) => newTask(selectedDay, pid)}
+            onTask={editTask}
+            onToggle={toggleTask}
+            onReorder={(key, target, kind, parent) =>
+              mutate((w) => {
+                const previous = clone(w.projects);
+                if (kind === "project")
+                  w.projects = arrayMove(
+                    w.projects,
+                    w.projects.findIndex((p) => p.id === key),
+                    w.projects.findIndex((p) => p.id === target),
                   );
-                  setFilter("");
-                  close();
+                else {
+                  const p = w.projects.find((p) => p.id === parent);
+                  if (p)
+                    p.tasks = arrayMove(
+                      p.tasks,
+                      p.tasks.findIndex((task) => task.id === key),
+                      p.tasks.findIndex((task) => task.id === target),
+                    );
                 }
-              : undefined
-          }
-        />
-      ) : null}
-      {dialog?.kind === "task" ? (
-        <TaskEditor
-          task={dialog.task!}
-          projectId={dialog.pid!}
-          projects={week.projects}
-          onClose={close}
-          onSave={saveTask}
-          onDelete={
-            week.projects.some((p) =>
-              p.tasks.some((task) => task.id === dialog.task?.id),
-            )
-              ? () => {
-                  mutate(
-                    (w) =>
-                      w.projects.forEach(
-                        (p) =>
-                          (p.tasks = p.tasks.filter(
-                            (task) => task.id !== dialog.task!.id,
-                          )),
-                      ),
-                    "deleted",
-                  );
-                  close();
-                }
-              : undefined
-          }
-        />
-      ) : null}
-      {dialog?.kind === "projects" ? (
-        <ProjectsManager
-          onCreate={() => setDialog({ kind: "project" })}
-          projects={week.projects}
-          ended={week.ended}
-          onClose={close}
-          onEdit={(p) =>
-            week.ended
-              ? setDialog({ kind: "reopen" })
-              : setDialog({ kind: "project", project: p })
-          }
-          onAdd={(pid) => newTask(selectedDay, pid)}
-          onTask={editTask}
-          onToggle={toggleTask}
-          onReorder={(key, target, kind, parent) =>
-            mutate((w) => {
-              if (kind === "project")
-                w.projects = arrayMove(
-                  w.projects,
-                  w.projects.findIndex((p) => p.id === key),
-                  w.projects.findIndex((p) => p.id === target),
-                );
-              else {
-                const p = w.projects.find((p) => p.id === parent);
-                if (p)
-                  p.tasks = arrayMove(
-                    p.tasks,
-                    p.tasks.findIndex((task) => task.id === key),
-                    p.tasks.findIndex((task) => task.id === target),
-                  );
-              }
-            })
-          }
-        />
-      ) : null}
+                w.projects = preserveBoardOrder(previous, w.projects);
+              })
+            }
+          />
+        ) : null}
+      </Suspense>
       {dialog?.kind === "copy" ? (
         <CopyDialog
           source={dialog.source ?? week}
@@ -1059,6 +1114,26 @@ export default function App() {
           error={store.error ? t(store.error) : undefined}
         >
           <div className="action-list">
+            {mobile && week.projects.length > 1 ? (
+              <label className="menu-project-filter">
+                {t("projectFilter")}
+                {projectSelector}
+              </label>
+            ) : null}
+            <button
+              disabled={!week.projects.length}
+              onClick={() => setDialog({ kind: "copy" })}
+            >
+              {t("copy")}
+              <Copy size={18} />
+            </button>
+            {!week.ended ? (
+              <button onClick={() => setDialog({ kind: "paste" })}>
+                {t("paste")}
+                <ClipboardPaste size={18} />
+              </button>
+            ) : null}
+
             {week.ended ? (
               <button onClick={() => setDialog({ kind: "reopen" })}>
                 {t("reopen")}

@@ -15,8 +15,8 @@ export default defineConfig(({ mode }) => ({
         name: "weekdam",
         short_name: "weekdam",
         description: "Your week, one small step at a time.",
-        theme_color: "#16715e",
-        background_color: "#f6f8f7",
+        theme_color: "#f4f0e8",
+        background_color: "#f4f0e8",
         display: "standalone",
         start_url: "/",
         icons: [

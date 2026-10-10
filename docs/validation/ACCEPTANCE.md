@@ -1,5 +1,13 @@
 # Acceptance evidence
 
+## Glass redesign on 2026-10-10
+
+Approved mockups were implemented and deployed to the existing Hosting project. Fresh verification:41 unit,37 E2E (7 device-specific skips),4 rules and8 sync tests pass (90 total). Rank tests cover legacy/bounds/ties/normalization/copy/carry/import/diff/undo; browser tests cover pointer before/after/invalid drops, touch scroll and day tabs, keyboard both directions/cancel/reversal, filtered anchors and offline fonts. Auth/Firestore Emulator tests cover offline rank reload/reconnect, cross-device order, equal ranks and explicit same-document LWW.
+
+36 screenshots and measurements cover four agreed widths, themes, languages, dense/long/sparse content and editor/Stats/Weeks/settings/projects. No page/toolbar overflow, font failures or page errors. Axe WCAG AA checks pass on planner/editor/Stats/Weeks. Opaque fallback is a documented CSS simulation; reduced motion uses browser media emulation. Production Lighthouse96/100/100 and smoke PASS, including Guest rank persistence offline and real Google popup cancellation. Billing remains disabled; Standard/native Singapore database retains freeTier true. Reports are under `../design/glass-v1/validation`.
+
+Physical Android acceptance for the redesigned dragging/order flow is **pending**. The 2026-10-09 confirmation below applies to the earlier app. A new explicit question was sent after deployment; no new device result is claimed.
+
 ## Software verified
 
 - Local CRUD project/task/subtask; task checkbox, step checkbox; weighted units, separate per-day counts/units; persist/reload.

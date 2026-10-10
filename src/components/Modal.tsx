@@ -15,7 +15,8 @@ export function Modal({
   error?: string;
 }) {
   const ref = useRef<HTMLDialogElement>(null),
-    label = useId();
+    label = useId(),
+    openingInput = useRef(document.documentElement.dataset.inputMethod);
   const { t } = useTranslation();
   useEffect(() => {
     const dialog = ref.current;
@@ -27,6 +28,7 @@ export function Modal({
   return (
     <dialog
       ref={ref}
+      data-input-method={openingInput.current}
       className={wide ? "modal wide" : "modal"}
       aria-labelledby={label}
       onCancel={(e) => {

@@ -10,11 +10,11 @@ Ngày kiểm tra nguồn: 09/10/2026. Các mặc định Q1–Q9 và U3 được
 
 Đã chọn **Firebase Hosting**, Auth Google và Firestore Standard trên **Spark**, không liên kết billing. Hosting tại [weekdam-hieu-2026.web.app](https://weekdam-hieu-2026.web.app). Nguồn [Firebase Pricing](https://firebase.google.com/pricing), kiểm tra lại 09/10/2026:
 
-| Sản phẩm | Spark / hạn mức miễn phí |
-|---|---|
-| Auth social sign-in | Có trên Spark; không cần SMS/phone auth |
-| Firestore Standard | 1 GiB lưu trữ; 50.000 reads/ngày; 20.000 writes/ngày; 20.000 deletes/ngày; 10 GiB egress/tháng |
-| Firebase Hosting | 10 GB storage; 360 MB transfer/ngày; SSL |
+| Sản phẩm            | Spark / hạn mức miễn phí                                                                       |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
+| Auth social sign-in | Có trên Spark; không cần SMS/phone auth                                                        |
+| Firestore Standard  | 1 GiB lưu trữ; 50.000 reads/ngày; 20.000 writes/ngày; 20.000 deletes/ngày; 10 GiB egress/tháng |
+| Firebase Hosting    | 10 GB storage; 360 MB transfer/ngày; SSL                                                       |
 
 Đây là đánh giá khả thi cho một người, không phải cam kết dịch vụ không giới hạn. Khi vượt quota, Spark có thể chặn sản phẩm theo chu kỳ quota thay vì tính phí; offline vẫn cần giữ thay đổi và báo lỗi đồng bộ. Không tự nâng Blaze. Không cần Functions, Cloud Storage, App Hosting hoặc billing-linked trial. Linking billing tự đổi plan sang Blaze; budget alert không phải trần tiền. [Firebase pricing plans](https://firebase.google.com/docs/projects/billing/firebase-pricing-plans)
 
@@ -49,3 +49,14 @@ Không sử dụng logo/mascot/icon/font asset, marketing text hoặc code của
 ## Nghiệm thu
 
 Authentication có subtype `FIREBASE_AUTH`, hai miền Hosting đã được cho phép và Google provider đã bật. Guest migration/account isolation đã kiểm thử với Emulator; Hieu xác nhận đồng bộ thực và cài PWA/offline restart/reconnect trên Android thật. [Checklist Android](validation/ANDROID.md) ghi phạm vi xác nhận và hướng dẫn thử lại; không coi mobile emulation là bằng chứng thiết bị thật. Mặc định sản phẩm đã chốt theo chỉ thị tiếp tục; [OPEN_QUESTIONS.md](research/OPEN_QUESTIONS.md) giữ câu hỏi ở thời điểm checkpoint để truy vết.
+
+# Bổ sung thiết kế glass và thứ tự thẻ — 10/10/2026
+
+Mockup được Hieu duyệt trước khi sửa app. Nguồn thiết kế và phạm vi triển khai nằm tại `docs/design/glass-v1/PLAN.md`; không thêm lịch ngoài hay kéo nguyên task/xuyên tuần.
+
+- `Subtask.dayOrder` là số hữu hạn tùy chọn trong khoảng 0–1e9. Backup vẫn version 1 và IndexedDB vẫn version 2. Ngày chưa có rank giữ thứ tự cây; chỉ ngày có thao tác được khởi tạo/chuẩn hóa. Khoảng cách mặc định 1024, chèn midpoint, rank trùng phân xử theo ASCII ID.
+- Drop dùng ID neo trước/sau trên danh sách đầy đủ của ngày, nên filter không làm đổi thứ tự tương đối của thẻ ẩn. Thứ tự board độc lập với cây project/task/editor. Hoàn thành không di chuyển thẻ. Thẻ mới/chuyển ngày nối cuối; copy/carry/import giữ thứ tự nội bộ rồi nối sau.
+- Dedup backup bỏ qua riêng rank; record diff và undo vẫn giữ rank. Firestore rules bổ sung trường tùy chọn, giữ UID isolation và LWW theo document. Rules được phát hành trước frontend; rollback giao diện phải giữ rules chấp nhận rank đã ghi.
+- SDK serialize toàn bộ thao tác ghi theo UID, bao gồm mọi chunk 100 records. Kiểm thử hồi quy 101 records chứng minh thao tác rank cũ không thể ghi chunk cuối sau thao tác mới của cùng client. Các thiết bị vẫn dùng LWW; batch nhiều chunk không trở thành giao dịch nguyên tử.
+- Font Inter Latin/Vietnamese được đóng gói và cache offline. Animation chỉ dùng transform/opacity: nút 120ms, panel/dialog/board 180ms; reduced motion và kéo bằng bàn phím tắt chuyển động. Nền đặc thay kính khi trình duyệt không hỗ trợ blur.
+- Rail 64 px và panel overlay giữ rộng board; 7 cột ít nhất168 px với gap12 px. Menu ở chân thẻ dành chỗ cho vùng chạm44 px mà không bó hẹp tên việc. Android một ngày với tab tuần và điều hướng dưới.
