@@ -1,0 +1,12 @@
+{
+  "method": "Two isolated authenticated browser contexts using local Firebase Auth/Firestore emulators only",
+  "before": {
+    "newTaskOnA": 1,
+    "completedOnB": true
+  },
+  "after": {
+    "newTaskOnB": 0,
+    "completedOnB": false
+  },
+  "confirmed": true
+}

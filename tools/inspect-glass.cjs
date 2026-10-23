@@ -442,7 +442,10 @@ async function main() {
     );
     return;
   }
-  const target = new URL(process.env.GLASS_BASE_URL || "http://127.0.0.1:4300");
+  const target = new URL(
+    process.env.GLASS_BASE_URL || "http://127.0.0.1:4300/app",
+  );
+  if (target.pathname === "/") target.pathname = "/app";
   if (
     !["localhost", "127.0.0.1", "[::1]"].includes(target.hostname) ||
     !["http:", "https:"].includes(target.protocol)

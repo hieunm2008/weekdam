@@ -2,7 +2,31 @@
 
 Weekly planner cá nhân cho desktop và Android, định hướng PWA local-first và đồng bộ miễn phí.
 
+Mã nguồn mở theo [MIT License](LICENSE), tại [hieunm2008/weekdam](https://github.com/hieunm2008/weekdam). Xem [hướng dẫn đóng góp](CONTRIBUTING.md) và [ghi nhận bên thứ ba](THIRD_PARTY_NOTICES.md).
+
 App đã deploy tại [weekdam-hieu-2026.web.app](https://weekdam-hieu-2026.web.app): kế hoạch tuần/ngày, project/task/subtask, độ khó 1/2/3, drag chuột/cảm ứng/bàn phím, copy/paste, end/carry/reopen, Stats, lịch sử, undo, JSON backup, vi/en, theme và PWA offline. Firestore rules/indexes đã deploy; database Standard ở Singapore có free tier và billing chưa bật. Google provider production đã bật; ngày 09/10/2026 Hieu xác nhận đồng bộ thực, cài PWA Android và offline/reconnect thành công. Xem `docs/validation/ACCEPTANCE.md` để phân biệt kiểm thử tự động với nghiệm thu từ người dùng.
+
+## Landing page và hướng dẫn — đã deploy 11/10/2026
+
+Trang `/` giới thiệu weekdam với bản xem trước tương tác, `/guide` có sáu chủ đề hướng dẫn, tìm kiếm không phân biệt dấu và liên kết đến từng mục. `/app` mở kế hoạch hiện có; bản PWA đã cài mở thẳng đường dẫn này và giữ identity cũ. Có Việt/Anh, sáng/tối, bố cục mobile, animation xuất hiện theo cuộn và hỗ trợ giảm chuyển động. Dữ liệu mẫu trên landing không ghi vào kế hoạch cá nhân.
+
+Mở [landing page](https://weekdam-hieu-2026.web.app/), [hướng dẫn](https://weekdam-hieu-2026.web.app/guide) hoặc [kế hoạch](https://weekdam-hieu-2026.web.app/app). Chạy cục bộ bằng `npm run dev`. [Thiết kế và hình tham chiếu](docs/design/landing-v1/DESIGN.md); [bằng chứng phát hành và kiểm tra website public](docs/design/landing-v1/DEPLOYMENT.md).
+
+## Lịch theo giờ — đã deploy 11/10/2026
+
+Chọn **Lịch theo giờ** để liệt kê công việc của tuần đang xem trước khi xếp lịch. Có thể nhập nhanh một việc hoặc dán nhiều tên, mỗi dòng một việc. Chọn **Lên lịch** để đặt ngày, giờ bắt đầu/kết thúc, ghi chú và độ khó; một công việc có thể có nhiều khung giờ. Kéo công việc vào lịch để tạo khung giờ, hoặc kéo khung giờ đang có để đổi ngày/giờ và giữ nguyên thời lượng. Trên điện thoại, vuốt để cuộn, giữ để kéo; nút Lên lịch/Sửa lịch dùng được bằng bàn phím.
+
+**Chọn tuần** và các nút tuần trước/sau cho phép lập lịch trong tương lai. Mỗi tuần có danh sách công việc riêng. Việc cũ chưa đặt giờ vẫn nằm ở khu vực **Chưa có giờ**; **Bảng theo ngày** vẫn dùng được. Các phiên chồng giờ hiện cạnh nhau; màu pastel cho biết độ khó. Giờ bắt đầu/kết thúc nằm trong cùng ngày. Xóa khung giờ giữ lại công việc trong danh sách, còn bỏ giờ giữ phiên làm việc trong ngày.
+
+Bản này đã deploy cùng quy tắc Firestore kiểm tra giờ. `Subtask.startTime/endTime` là hai trường tùy chọn đi cùng nhau; backup v1, thứ tự ngày, undo và lưu offline được giữ tương thích. Kiểm tra đồng bộ Emulator và lịch Guest trên website public đã đạt; xem [bằng chứng phát hành](docs/design/landing-v1/DEPLOYMENT.md).
+
+## Pomodoro — đã deploy 12/10/2026
+
+Chọn **Pomodoro** để tập trung tự do hoặc chọn một công việc trong tuần đang xem. Có thể mở nhanh từ thẻ trên bảng hoặc danh sách công việc trong lịch. Bộ đếm nhỏ vẫn hiện khi quay về kế hoạch; hoàn thành Pomodoro không tự đánh dấu công việc đã xong.
+
+Mặc định tập trung 25 phút, nghỉ ngắn 5 phút, nghỉ dài 15 phút sau 4 phiên đủ giờ; có thể tùy chỉnh. Mỗi giai đoạn chỉ bắt đầu khi bạn bấm tiếp. Tạm dừng không cộng thời gian; dừng/đặt lại sớm vẫn lưu thời gian thực, nhưng không tăng số phiên hoàn thành. Có chuông, tùy chọn thông báo trình duyệt, thống kê hôm nay/7 ngày và lịch sử.
+
+Runtime và cấu hình nằm trên thiết bị, tách theo Guest/tài khoản; các tab cùng scope dùng chung bộ đếm. Lịch sử lưu offline và đồng bộ khi đăng nhập, có trong backup v1 và được giữ khi Undo kế hoạch hoặc xóa công việc. Khi app mở lại, bộ đếm khôi phục theo mốc kết thúc; chuông/thông báo nền chịu giới hạn của trình duyệt và hệ điều hành. Mở [Pomodoro trên production](https://weekdam-hieu-2026.web.app/app#pomodoro). Xem [triển khai và nghiệm thu Pomodoro](docs/design/pomodoro-v1/IMPLEMENTATION.md).
 
 ## Chạy và kiểm thử
 
@@ -11,6 +35,8 @@ Bản giao diện kính mờ đã deploy ngày 10/10/2026: nền kem/than ấm, 
 Yêu cầu Node 24 LTS (hoặc phiên bản đáp ứng engines của dependencies), npm; Java 21+ cho Emulator.
 
 ```sh
+git clone https://github.com/hieunm2008/weekdam.git
+cd weekdam
 npm ci
 npm run dev
 npm test
@@ -20,6 +46,8 @@ npm run test:sync
 npm run build
 npm run preview -- --port 4173
 ```
+
+Chế độ Guest chạy ngay khi chưa có cấu hình Firebase. Chỉ cần tạo `.env` từ `.env.example` khi muốn bật đồng bộ với Firebase project của bạn. `.env`, dependencies, build, cache và log được loại khỏi Git.
 
 `npm run test:production` kiểm tra URL Hosting đã deploy: Guest CRUD/persistence, PWA offline/restart/reconnect, mobile layout, manifest/auth handler, Firestore chặn đọc chưa đăng nhập và Google OAuth popup đến trang Google Accounts. Dữ liệu thử chỉ lưu Guest trong browser context tạm; lệnh không nhập credentials, đăng nhập hay ghi dữ liệu cloud. Báo cáo nằm trong `docs/validation/production-smoke.json`.
 

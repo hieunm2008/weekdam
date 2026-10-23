@@ -1,0 +1,467 @@
+{
+  "observedAt": "2026-10-11T02:02:32.443Z",
+  "domain": {
+    "moveAndRecreateSource": [
+      {
+        "id": "week_2026-10-05",
+        "start": "2026-10-05",
+        "projects": [
+          "New work in source week"
+        ]
+      },
+      {
+        "id": "week_2026-10-05",
+        "start": "2026-10-12",
+        "projects": [
+          "Moved work"
+        ]
+      }
+    ],
+    "backupValidationError": "invalid-id",
+    "recordMapRoundTrip": [
+      {
+        "start": "2026-10-12",
+        "projects": [
+          "New work in source week",
+          "Moved work"
+        ]
+      }
+    ]
+  },
+  "browser": [
+    {
+      "viewportWidth": 1440,
+      "scenario": "one-minute-adjacent",
+      "measurements": [
+        {
+          "id": "short-a",
+          "rect": {
+            "x": 844.703125,
+            "y": 669.1875,
+            "width": 134.578125,
+            "height": 4
+          },
+          "inlineStyle": "top: 720px; height: 4px; left: calc(0% + 3px); width: calc(100% - 6px);",
+          "computedWidth": "134.578px",
+          "hitAtCenter": "short-c"
+        },
+        {
+          "id": "short-b",
+          "rect": {
+            "x": 844.703125,
+            "y": 670.1875,
+            "width": 134.578125,
+            "height": 4
+          },
+          "inlineStyle": "top: 721px; height: 4px; left: calc(0% + 3px); width: calc(100% - 6px);",
+          "computedWidth": "134.578px",
+          "hitAtCenter": "short-c"
+        },
+        {
+          "id": "short-c",
+          "rect": {
+            "x": 844.703125,
+            "y": 671.1875,
+            "width": 134.578125,
+            "height": 4
+          },
+          "inlineStyle": "top: 722px; height: 4px; left: calc(0% + 3px); width: calc(100% - 6px);",
+          "computedWidth": "134.578px",
+          "hitAtCenter": "short-c"
+        }
+      ],
+      "screenshot": "D:\\Projects\\SuperPlanner\\docs\\audit\\2026-10-11\\calendar-short-sessions-desktop.png"
+    },
+    {
+      "viewportWidth": 1440,
+      "scenario": "eight-overlaps",
+      "measurements": [
+        {
+          "id": "overlap-0",
+          "rect": {
+            "x": 844.703125,
+            "y": 489.1875,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(0% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-0"
+        },
+        {
+          "id": "overlap-1",
+          "rect": {
+            "x": 862.265625,
+            "y": 489.1875,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(12.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-1"
+        },
+        {
+          "id": "overlap-2",
+          "rect": {
+            "x": 879.84375,
+            "y": 489.1875,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(25% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-2"
+        },
+        {
+          "id": "overlap-3",
+          "rect": {
+            "x": 897.40625,
+            "y": 489.1875,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(37.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-3"
+        },
+        {
+          "id": "overlap-4",
+          "rect": {
+            "x": 914.984375,
+            "y": 489.1875,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(50% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-4"
+        },
+        {
+          "id": "overlap-5",
+          "rect": {
+            "x": 932.5625,
+            "y": 489.1875,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(62.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-5"
+        },
+        {
+          "id": "overlap-6",
+          "rect": {
+            "x": 950.125,
+            "y": 489.1875,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(75% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-6"
+        },
+        {
+          "id": "overlap-7",
+          "rect": {
+            "x": 967.703125,
+            "y": 489.1875,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(87.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-7"
+        }
+      ]
+    },
+    {
+      "viewportWidth": 900,
+      "scenario": "one-minute-adjacent",
+      "measurements": [
+        {
+          "id": "short-a",
+          "rect": {
+            "x": 726,
+            "y": 740.375,
+            "width": 103,
+            "height": 4
+          },
+          "inlineStyle": "top: 720px; height: 4px; left: calc(0% + 3px); width: calc(100% - 6px);",
+          "computedWidth": "103px",
+          "hitAtCenter": "short-c"
+        },
+        {
+          "id": "short-b",
+          "rect": {
+            "x": 726,
+            "y": 741.375,
+            "width": 103,
+            "height": 4
+          },
+          "inlineStyle": "top: 721px; height: 4px; left: calc(0% + 3px); width: calc(100% - 6px);",
+          "computedWidth": "103px",
+          "hitAtCenter": "short-c"
+        },
+        {
+          "id": "short-c",
+          "rect": {
+            "x": 726,
+            "y": 742.375,
+            "width": 103,
+            "height": 4
+          },
+          "inlineStyle": "top: 722px; height: 4px; left: calc(0% + 3px); width: calc(100% - 6px);",
+          "computedWidth": "103px",
+          "hitAtCenter": "short-c"
+        }
+      ]
+    },
+    {
+      "viewportWidth": 900,
+      "scenario": "eight-overlaps",
+      "measurements": [
+        {
+          "id": "overlap-0",
+          "rect": {
+            "x": 726,
+            "y": 560.375,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(0% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-0"
+        },
+        {
+          "id": "overlap-1",
+          "rect": {
+            "x": 739.625,
+            "y": 560.375,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(12.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-1"
+        },
+        {
+          "id": "overlap-2",
+          "rect": {
+            "x": 753.25,
+            "y": 560.375,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(25% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-2"
+        },
+        {
+          "id": "overlap-3",
+          "rect": {
+            "x": 766.875,
+            "y": 560.375,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(37.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-3"
+        },
+        {
+          "id": "overlap-4",
+          "rect": {
+            "x": 780.5,
+            "y": 560.375,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(50% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-4"
+        },
+        {
+          "id": "overlap-5",
+          "rect": {
+            "x": 794.125,
+            "y": 560.375,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(62.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-5"
+        },
+        {
+          "id": "overlap-6",
+          "rect": {
+            "x": 807.75,
+            "y": 560.375,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(75% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-6"
+        },
+        {
+          "id": "overlap-7",
+          "rect": {
+            "x": 821.375,
+            "y": 560.375,
+            "width": 14,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(87.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "14px",
+          "hitAtCenter": "overlap-7"
+        }
+      ]
+    },
+    {
+      "viewportWidth": 390,
+      "scenario": "one-minute-adjacent",
+      "measurements": [
+        {
+          "id": "short-a",
+          "rect": {
+            "x": 68,
+            "y": 550.125,
+            "width": 302,
+            "height": 4
+          },
+          "inlineStyle": "top: 720px; height: 4px; left: calc(0% + 3px); width: calc(100% - 6px);",
+          "computedWidth": "302px",
+          "hitAtCenter": "short-c"
+        },
+        {
+          "id": "short-b",
+          "rect": {
+            "x": 68,
+            "y": 551.125,
+            "width": 302,
+            "height": 4
+          },
+          "inlineStyle": "top: 721px; height: 4px; left: calc(0% + 3px); width: calc(100% - 6px);",
+          "computedWidth": "302px",
+          "hitAtCenter": "short-c"
+        },
+        {
+          "id": "short-c",
+          "rect": {
+            "x": 68,
+            "y": 552.125,
+            "width": 302,
+            "height": 4
+          },
+          "inlineStyle": "top: 722px; height: 4px; left: calc(0% + 3px); width: calc(100% - 6px);",
+          "computedWidth": "302px",
+          "hitAtCenter": "short-c"
+        }
+      ],
+      "screenshot": "D:\\Projects\\SuperPlanner\\docs\\audit\\2026-10-11\\calendar-short-sessions-mobile.png"
+    },
+    {
+      "viewportWidth": 390,
+      "scenario": "eight-overlaps",
+      "measurements": [
+        {
+          "id": "overlap-0",
+          "rect": {
+            "x": 68,
+            "y": 370.125,
+            "width": 32.5,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(0% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "32.5px",
+          "hitAtCenter": "overlap-0"
+        },
+        {
+          "id": "overlap-1",
+          "rect": {
+            "x": 106.5,
+            "y": 370.125,
+            "width": 32.5,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(12.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "32.5px",
+          "hitAtCenter": "overlap-1"
+        },
+        {
+          "id": "overlap-2",
+          "rect": {
+            "x": 145,
+            "y": 370.125,
+            "width": 32.5,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(25% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "32.5px",
+          "hitAtCenter": "overlap-2"
+        },
+        {
+          "id": "overlap-3",
+          "rect": {
+            "x": 183.5,
+            "y": 370.125,
+            "width": 32.5,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(37.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "32.5px",
+          "hitAtCenter": "overlap-3"
+        },
+        {
+          "id": "overlap-4",
+          "rect": {
+            "x": 222,
+            "y": 370.125,
+            "width": 32.5,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(50% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "32.5px",
+          "hitAtCenter": "overlap-4"
+        },
+        {
+          "id": "overlap-5",
+          "rect": {
+            "x": 260.5,
+            "y": 370.125,
+            "width": 32.5,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(62.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "32.5px",
+          "hitAtCenter": "overlap-5"
+        },
+        {
+          "id": "overlap-6",
+          "rect": {
+            "x": 299,
+            "y": 370.125,
+            "width": 32.5,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(75% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "32.5px",
+          "hitAtCenter": "overlap-6"
+        },
+        {
+          "id": "overlap-7",
+          "rect": {
+            "x": 337.5,
+            "y": 370.125,
+            "width": 32.5,
+            "height": 58
+          },
+          "inlineStyle": "top: 540px; height: 58px; left: calc(87.5% + 3px); width: calc(12.5% - 6px);",
+          "computedWidth": "32.5px",
+          "hitAtCenter": "overlap-7"
+        }
+      ]
+    }
+  ]
+}

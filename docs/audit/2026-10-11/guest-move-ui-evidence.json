@@ -1,0 +1,23 @@
+{
+  "method": "All actions through actual Guest UI in disposable Chrome context",
+  "before": [
+    {
+      "id": "week_2026-10-05",
+      "start": "2026-10-05",
+      "projects": [
+        "New source project"
+      ]
+    },
+    {
+      "id": "week_2026-10-05",
+      "start": "2026-10-12",
+      "projects": [
+        "Project to move"
+      ]
+    }
+  ],
+  "after": {
+    "projectMissing": true,
+    "text": "weekdam\nTrang chủ\nHướng dẫn\n0%\n0/0 đơn vị\nĐồng bộ chưa thành công\n\nTuần 41 · Còn 4 ngày\n\n05/10/26 - 11/10/26\nHôm nay\nTất cả dự án\nDự án\nThêm công việc\nCó lỗi xảy ra. Dữ liệu hiện tại vẫn được giữ.\nĐóng\nLịch theo giờ\nBảng theo ngày\nChọn tuần\nMột tuần rõ ràng, từ vài bước nhỏ.\n\nTạo dự án, thêm công việc, rồi chia thành những bước dễ bắt đầu.\n\n1. Chọn một dự án\n2. Viết việc cần làm\n3. Rải các bước vào tuần\nTạo dự án\nBỏ qua hướng dẫn"
+  }
+}

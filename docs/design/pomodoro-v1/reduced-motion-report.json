@@ -1,0 +1,8 @@
+{
+  "reducedMotion": true,
+  "timerAriaLive": "off",
+  "dialTransition": "0s",
+  "buttonTransition": "0s",
+  "horizontalOverflow": false,
+  "accessibilityViolations": 0
+}

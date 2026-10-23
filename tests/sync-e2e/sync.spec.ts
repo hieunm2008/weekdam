@@ -2,7 +2,7 @@ import { test, expect, type BrowserContext } from "@playwright/test";
 async function account(context: BrowserContext, uid: string) {
   const page = await context.newPage();
   await page.goto("http://127.0.0.1:4280/tests/fixtures/auth.html?uid=" + uid);
-  await page.waitForURL("http://127.0.0.1:4280/");
+  await page.waitForURL("http://127.0.0.1:4280/app");
   await expect(page.getByTestId("sync-status")).toContainText("Đã đồng bộ", {
     timeout: 15000,
   });
@@ -64,7 +64,7 @@ test("imports the saved Guest workspace after the authentication redirect reload
 }) => {
   const context = await browser.newContext(),
     page = await context.newPage();
-  await page.goto("http://127.0.0.1:4280/");
+  await page.goto("http://127.0.0.1:4280/app");
   await page
     .getByRole("main")
     .getByRole("button", { name: "Tạo dự án", exact: true })
@@ -75,7 +75,7 @@ test("imports the saved Guest workspace after the authentication redirect reload
     "http://127.0.0.1:4280/tests/fixtures/auth.html?uid=guest-migration-" +
       Date.now(),
   );
-  await page.waitForURL("http://127.0.0.1:4280/");
+  await page.waitForURL("http://127.0.0.1:4280/app");
   await expect(page.getByTestId("sync-status")).toContainText("Đã đồng bộ");
   await expect(
     page.getByRole("combobox", { name: "Lọc dự án", exact: true }),
@@ -89,7 +89,7 @@ test("shares one account across tabs without losing independent task edits", asy
     uid = "tabs-" + Date.now(),
     a = await account(context, uid),
     b = await context.newPage();
-  await b.goto("http://127.0.0.1:4280/");
+  await b.goto("http://127.0.0.1:4280/app");
   await expect(b.getByTestId("sync-status")).toContainText("Đã đồng bộ", {
     timeout: 15000,
   });

@@ -3,6 +3,7 @@ import {
   clone,
   emptyPlan,
   id,
+  hasPlanData,
   mergePlans,
   parseBackup,
   sameContent,
@@ -19,6 +20,7 @@ import {
   acknowledge,
   loadAccount,
   loadPlan,
+  loadPomodoroHistory,
   saveAccount,
   savePlan,
   type PendingChange,
@@ -28,6 +30,8 @@ import {
   getFirebaseClient,
   type FirebaseClient,
 } from "./firebaseClient";
+import { mergePomodoroSessions } from "./pomodoroHistory";
+import type { PomodoroSession } from "./pomodoro";
 
 type Undo = { patch: Map<string, CloudRecord | null>; label: string };
 type Profile = { uid: string; name: string };
@@ -58,9 +62,18 @@ export function usePlanner() {
     sdkPending = useRef(false),
     migrated = useRef(false);
   const flushRef = useRef<() => void>(() => {});
+  const knownSessions = useRef<PomodoroSession[]>([]);
   const show = useCallback((next: Plan) => {
-    current.current = next;
-    setPlan(next);
+    knownSessions.current = mergePomodoroSessions(
+      knownSessions.current,
+      next.pomodoroSessions,
+    );
+    const remembered =
+      knownSessions.current.length || next.pomodoroSessions !== undefined
+        ? { ...next, pomodoroSessions: knownSessions.current }
+        : next;
+    current.current = remembered;
+    setPlan(remembered);
   }, []);
   const overlay = useCallback(() => {
     const records = new Map(remote.current.map((r) => [r.id, r]));
@@ -130,9 +143,38 @@ export function usePlanner() {
       });
   }, [enqueue, overlay, refreshStatus, show]);
   flushRef.current = flushPending;
+  const refreshPomodoroHistory = useCallback(
+    async (expectedScope: string) => {
+      const stamp = epoch.current;
+      await queue.current.catch(() => {});
+      if (key.current !== expectedScope || stamp !== epoch.current) return;
+      const saved = await loadPomodoroHistory(expectedScope);
+      if (key.current !== expectedScope || stamp !== epoch.current) return;
+      knownSessions.current = mergePomodoroSessions(
+        knownSessions.current,
+        saved.sessions,
+      );
+      for (const change of saved.pending)
+        pending.current.set(change.record.id, change);
+      show(current.current);
+      refreshStatus();
+      if (migrated.current) flushRef.current();
+    },
+    [show, refreshStatus],
+  );
   const persist = useCallback(
     (input: Plan, markMigrated?: boolean) => {
-      const next = user.current ? normalizeForSync(input) : input,
+      const remembered =
+          knownSessions.current.length || input.pomodoroSessions !== undefined
+            ? {
+                ...input,
+                pomodoroSessions: mergePomodoroSessions(
+                  knownSessions.current,
+                  input.pomodoroSessions,
+                ),
+              }
+            : input,
+        next = user.current ? normalizeForSync(remembered) : remembered,
         previous = current.current,
         accountKey = key.current,
         stamp = epoch.current;
@@ -181,6 +223,7 @@ export function usePlanner() {
       stopAuth = () => {},
       stopWatch = () => {};
     const openGuest = async (stamp = ++epoch.current) => {
+      knownSessions.current = [];
       key.current = "guest";
       user.current = null;
       setProfile(null);
@@ -220,6 +263,7 @@ export function usePlanner() {
             const memoryGuest =
                 key.current === "guest" ? clone(current.current) : null,
               accountKey = "account:" + sdk.projectId + ":" + authUser.uid;
+            knownSessions.current = [];
             key.current = accountKey;
             user.current = {
               uid: authUser.uid,
@@ -242,7 +286,19 @@ export function usePlanner() {
               loadPlan("guest"),
             ]);
             if (!active || stamp !== epoch.current) return;
-            const guest = memoryGuest?.weeks.length ? memoryGuest : diskGuest;
+            const guestBase =
+              memoryGuest && hasPlanData(memoryGuest) ? memoryGuest : diskGuest;
+            const guest =
+              diskGuest.pomodoroSessions !== undefined ||
+              guestBase.pomodoroSessions !== undefined
+                ? {
+                    ...guestBase,
+                    pomodoroSessions: mergePomodoroSessions(
+                      diskGuest.pomodoroSessions,
+                      guestBase.pomodoroSessions,
+                    ),
+                  }
+                : guestBase;
             migrated.current = cached.migrated;
             pending.current = new Map(
               cached.pending.map((p) => [p.record.id, p]),
@@ -360,15 +416,32 @@ export function usePlanner() {
   }, []);
   const commit = useCallback(
     (next: Plan, label = "updated", undoable = true) => {
-      const normalized = user.current ? normalizeForSync(next) : next,
+      const remembered =
+          knownSessions.current.length || next.pomodoroSessions !== undefined
+            ? {
+                ...next,
+                pomodoroSessions: mergePomodoroSessions(
+                  knownSessions.current,
+                  next.pomodoroSessions,
+                ),
+              }
+            : next,
+        normalized = user.current ? normalizeForSync(remembered) : remembered,
         before = new Map(encodeRecords(current.current).map((r) => [r.id, r])),
         after = new Map(encodeRecords(normalized).map((r) => [r.id, r])),
         patch = new Map<string, CloudRecord | null>();
+      let changed = false;
       for (const entity of new Set([...before.keys(), ...after.keys()]))
-        if (!sameContent(before.get(entity), after.get(entity)))
-          patch.set(entity, before.get(entity) ?? null);
-      if (!patch.size) return;
-      if (undoable) {
+        if (!sameContent(before.get(entity), after.get(entity))) {
+          changed = true;
+          if (
+            (before.get(entity) ?? after.get(entity))?.kind !==
+            "pomodoroSession"
+          )
+            patch.set(entity, before.get(entity) ?? null);
+        }
+      if (!changed) return;
+      if (undoable && patch.size) {
         history.current.push({ patch, label });
         history.current = history.current.slice(-20);
         setUndoCount(history.current.length);
@@ -441,5 +514,6 @@ export function usePlanner() {
     mergeRequest,
     resolveMerge,
     flush: () => queue.current,
+    refreshPomodoroHistory,
   };
 }

@@ -1,0 +1,97 @@
+{
+  "finding": "P1: Saving a project rename overwrites remotely updated tasks with the editor's opening snapshot",
+  "reproductionConfirmed": true,
+  "method": "Actual source editor payload and project replacement handler evaluated; actual records.ts diffRecords imported. Remote snapshot is modeled in memory, not via a live Firebase session.",
+  "source": [
+    {
+      "file": "src/components/Projects.tsx",
+      "line": 88
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 1204
+    },
+    {
+      "file": "src/App.tsx",
+      "line": 447
+    },
+    {
+      "file": "src/usePlanner.ts",
+      "line": 299
+    },
+    {
+      "file": "src/records.ts",
+      "line": 24
+    }
+  ],
+  "trigger": [
+    "Device A opens the editor for an existing project.",
+    "Device B adds a task and completes an existing task in that project; A receives the remote snapshot while its dialog is open.",
+    "Device A changes only the project name and selects Save."
+  ],
+  "expected": "Only the project name changes; B's new task and completion remain intact.",
+  "observed": {
+    "beforeTasks": [
+      "original-task",
+      "added-on-device-B"
+    ],
+    "afterTasks": [
+      "original-task"
+    ],
+    "originalTaskBeforeDone": true,
+    "originalTaskAfterDone": false,
+    "deletedCloudRecordIds": [
+      "added-on-device-B",
+      "added-on-device-B-step"
+    ],
+    "completionReverted": true
+  },
+  "cloudChanges": [
+    {
+      "id": "project",
+      "kind": "project",
+      "parent": "week_2026-10-05",
+      "order": 0,
+      "deleted": false,
+      "value": {
+        "id": "project",
+        "name": "Renamed on device A"
+      }
+    },
+    {
+      "id": "original-task-step",
+      "kind": "subtask",
+      "parent": "original-task",
+      "order": 0,
+      "deleted": false,
+      "value": {
+        "id": "original-task-step",
+        "day": 0,
+        "weight": 1,
+        "note": "",
+        "done": false,
+        "missed": []
+      }
+    },
+    {
+      "id": "added-on-device-B",
+      "kind": "task",
+      "parent": "project",
+      "order": 1,
+      "deleted": true,
+      "value": {
+        "id": "added-on-device-B"
+      }
+    },
+    {
+      "id": "added-on-device-B-step",
+      "kind": "subtask",
+      "parent": "added-on-device-B",
+      "order": 0,
+      "deleted": true,
+      "value": {
+        "id": "added-on-device-B-step"
+      }
+    }
+  ]
+}

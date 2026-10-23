@@ -8,9 +8,11 @@ import {
   type Task,
   type Subtask,
 } from "./domain";
+import type { PomodoroSession } from "./pomodoro";
+import { mergePomodoroSessions } from "./pomodoroHistory";
 export interface CloudRecord {
   id: string;
-  kind: "week" | "project" | "task" | "subtask";
+  kind: "week" | "project" | "task" | "subtask" | "pomodoroSession";
   parent: string;
   order: number;
   deleted: boolean;
@@ -19,6 +21,9 @@ export interface CloudRecord {
 export function normalizeForSync(plan: Plan): Plan {
   const result = clone(plan);
   for (const week of result.weeks) week.id = "week_" + week.start;
+  const weekIds = new Set(result.weeks.map((week) => week.id));
+  if (result.pomodoroSessions?.some((session) => weekIds.has(session.id)))
+    throw new Error("invalid-id");
   return result;
 }
 export function diffRecords(before: Plan, after: Plan): CloudRecord[] {
@@ -62,6 +67,8 @@ export function encodeRecords(plan: Plan): CloudRecord[] {
       });
     });
   });
+  for (const session of plan.pomodoroSessions ?? [])
+    add("pomodoroSession", "", 0, session.id, { ...session });
   return records;
 }
 export function decodeRecords(input: CloudRecord[]): Plan {
@@ -96,5 +103,10 @@ export function decodeRecords(input: CloudRecord[]): Plan {
     plan.weeks.push(week);
   }
   plan.weeks.sort((a, b) => a.start.localeCompare(b.start));
+  const sessions = children("", "pomodoroSession").map(
+    (record) => ({ ...record.value }) as unknown as PomodoroSession,
+  );
+  if (sessions.length)
+    plan.pomodoroSessions = mergePomodoroSessions([], sessions);
   return plan;
 }

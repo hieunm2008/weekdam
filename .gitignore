@@ -8,6 +8,7 @@ test-results/
 *.tsbuildinfo
 .tools/
 .firebase/
+*.log
 firebase-debug.log
 firestore-debug.log
 ui-debug.log

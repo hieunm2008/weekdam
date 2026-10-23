@@ -18,7 +18,8 @@ export default defineConfig(({ mode }) => ({
         theme_color: "#f4f0e8",
         background_color: "#f4f0e8",
         display: "standalone",
-        start_url: "/",
+        id: "/",
+        start_url: "/app",
         icons: [
           { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
           {
@@ -30,6 +31,7 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       workbox: {
+        importScripts: ["/pomodoro-notifications.js"],
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/__\//, /^\/tests\/fixtures\//],

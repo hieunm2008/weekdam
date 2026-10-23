@@ -1,0 +1,2582 @@
+[
+  {
+    "screenshot": "1440-light-vi-free.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 724.015625,
+      "width": 586.3125,
+      "height": 44,
+      "top": 724.015625,
+      "right": 833.3125,
+      "bottom": 768.015625,
+      "left": 247
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-light-vi-long-task.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 724.015625,
+      "width": 586.3125,
+      "height": 44,
+      "top": 724.015625,
+      "right": 833.3125,
+      "bottom": 768.015625,
+      "left": 247
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-light-vi-minibar.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": {
+      "x": 92,
+      "y": 154,
+      "width": 1332,
+      "height": 62,
+      "top": 154,
+      "right": 1424,
+      "bottom": 216,
+      "left": 92
+    },
+    "navBounds": null,
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 146,
+        "scrollWidth": 146
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-light-vi-history.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 786.8125,
+      "width": 586.3125,
+      "height": 44,
+      "top": 786.8125,
+      "right": 833.3125,
+      "bottom": 830.8125,
+      "left": 247
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-light-vi-stopped-history.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 786.8125,
+      "width": 586.3125,
+      "height": 44,
+      "top": 786.8125,
+      "right": 833.3125,
+      "bottom": 830.8125,
+      "left": 247
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-light-en-free.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 724.015625,
+      "width": 586.3125,
+      "height": 44,
+      "top": 724.015625,
+      "right": 833.3125,
+      "bottom": 768.015625,
+      "left": 247
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-light-en-long-task.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 724.015625,
+      "width": 586.3125,
+      "height": 44,
+      "top": 724.015625,
+      "right": 833.3125,
+      "bottom": 768.015625,
+      "left": 247
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-light-en-minibar.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": {
+      "x": 92,
+      "y": 154,
+      "width": 1332,
+      "height": 62,
+      "top": 154,
+      "right": 1424,
+      "bottom": 216,
+      "left": 92
+    },
+    "navBounds": null,
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 146,
+        "scrollWidth": 146
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-light-en-history.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 786.8125,
+      "width": 586.3125,
+      "height": 44,
+      "top": 786.8125,
+      "right": 833.3125,
+      "bottom": 830.8125,
+      "left": 247
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-light-en-stopped-history.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 786.8125,
+      "width": 586.3125,
+      "height": 44,
+      "top": 786.8125,
+      "right": 833.3125,
+      "bottom": 830.8125,
+      "left": 247
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-dark-vi-free.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 724.015625,
+      "width": 586.3125,
+      "height": 44,
+      "top": 724.015625,
+      "right": 833.3125,
+      "bottom": 768.015625,
+      "left": 247
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-dark-vi-long-task.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 724.015625,
+      "width": 586.3125,
+      "height": 44,
+      "top": 724.015625,
+      "right": 833.3125,
+      "bottom": 768.015625,
+      "left": 247
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-dark-vi-minibar.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": {
+      "x": 92,
+      "y": 154,
+      "width": 1332,
+      "height": 62,
+      "top": 154,
+      "right": 1424,
+      "bottom": 216,
+      "left": 92
+    },
+    "navBounds": null,
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 146,
+        "scrollWidth": 146
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-dark-vi-history.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 786.8125,
+      "width": 586.3125,
+      "height": 44,
+      "top": 786.8125,
+      "right": 833.3125,
+      "bottom": 830.8125,
+      "left": 247
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-dark-vi-stopped-history.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 786.8125,
+      "width": 586.3125,
+      "height": 44,
+      "top": 786.8125,
+      "right": 833.3125,
+      "bottom": 830.8125,
+      "left": 247
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-dark-en-free.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 724.015625,
+      "width": 586.3125,
+      "height": 44,
+      "top": 724.015625,
+      "right": 833.3125,
+      "bottom": 768.015625,
+      "left": 247
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-dark-en-long-task.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 724.015625,
+      "width": 586.3125,
+      "height": 44,
+      "top": 724.015625,
+      "right": 833.3125,
+      "bottom": 768.015625,
+      "left": 247
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-dark-en-minibar.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": {
+      "x": 92,
+      "y": 154,
+      "width": 1332,
+      "height": 62,
+      "top": 154,
+      "right": 1424,
+      "bottom": 216,
+      "left": 92
+    },
+    "navBounds": null,
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 146,
+        "scrollWidth": 146
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-dark-en-history.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 786.8125,
+      "width": 586.3125,
+      "height": 44,
+      "top": 786.8125,
+      "right": 833.3125,
+      "bottom": 830.8125,
+      "left": 247
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "1440-dark-en-stopped-history.png",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "horizontalOverflow": false,
+    "buttons": [],
+    "barBounds": null,
+    "navBounds": null,
+    "timerControlsBounds": {
+      "x": 247,
+      "y": 786.8125,
+      "width": 586.3125,
+      "height": 44,
+      "top": 786.8125,
+      "right": 833.3125,
+      "bottom": 830.8125,
+      "left": 247
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-light-vi-free.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 652.75,
+      "width": 316,
+      "height": 44,
+      "top": 652.75,
+      "right": 353,
+      "bottom": 696.75,
+      "left": 37
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-light-vi-long-task.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 652.75,
+      "width": 316,
+      "height": 96,
+      "top": 652.75,
+      "right": 353,
+      "bottom": 748.75,
+      "left": 37
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-light-vi-minibar.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": {
+      "x": 16,
+      "y": 182.75,
+      "width": 358,
+      "height": 62,
+      "top": 182.75,
+      "right": 374,
+      "bottom": 244.75,
+      "left": 16
+    },
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 332,
+        "scrollWidth": 332
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-light-vi-history.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 696.34375,
+      "width": 316,
+      "height": 44,
+      "top": 696.34375,
+      "right": 353,
+      "bottom": 740.34375,
+      "left": 37
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-light-vi-stopped-history.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 675.546875,
+      "width": 316,
+      "height": 44,
+      "top": 675.546875,
+      "right": 353,
+      "bottom": 719.546875,
+      "left": 37
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-light-en-free.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 652.75,
+      "width": 316,
+      "height": 44,
+      "top": 652.75,
+      "right": 353,
+      "bottom": 696.75,
+      "left": 37
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-light-en-long-task.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 652.75,
+      "width": 316,
+      "height": 96,
+      "top": 652.75,
+      "right": 353,
+      "bottom": 748.75,
+      "left": 37
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-light-en-minibar.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": {
+      "x": 16,
+      "y": 182.75,
+      "width": 358,
+      "height": 62,
+      "top": 182.75,
+      "right": 374,
+      "bottom": 244.75,
+      "left": 16
+    },
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 332,
+        "scrollWidth": 332
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-light-en-history.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 696.34375,
+      "width": 316,
+      "height": 44,
+      "top": 696.34375,
+      "right": 353,
+      "bottom": 740.34375,
+      "left": 37
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-light-en-stopped-history.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 696.34375,
+      "width": 316,
+      "height": 44,
+      "top": 696.34375,
+      "right": 353,
+      "bottom": 740.34375,
+      "left": 37
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-dark-vi-free.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 652.75,
+      "width": 316,
+      "height": 44,
+      "top": 652.75,
+      "right": 353,
+      "bottom": 696.75,
+      "left": 37
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-dark-vi-long-task.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 652.75,
+      "width": 316,
+      "height": 96,
+      "top": 652.75,
+      "right": 353,
+      "bottom": 748.75,
+      "left": 37
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-dark-vi-minibar.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": {
+      "x": 16,
+      "y": 182.75,
+      "width": 358,
+      "height": 62,
+      "top": 182.75,
+      "right": 374,
+      "bottom": 244.75,
+      "left": 16
+    },
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 332,
+        "scrollWidth": 332
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-dark-vi-history.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 696.34375,
+      "width": 316,
+      "height": 44,
+      "top": 696.34375,
+      "right": 353,
+      "bottom": 740.34375,
+      "left": 37
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-dark-vi-stopped-history.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 675.546875,
+      "width": 316,
+      "height": 44,
+      "top": 675.546875,
+      "right": 353,
+      "bottom": 719.546875,
+      "left": 37
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-dark-en-free.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 652.75,
+      "width": 316,
+      "height": 44,
+      "top": 652.75,
+      "right": 353,
+      "bottom": 696.75,
+      "left": 37
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-dark-en-long-task.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 652.75,
+      "width": 316,
+      "height": 96,
+      "top": 652.75,
+      "right": 353,
+      "bottom": 748.75,
+      "left": 37
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-dark-en-minibar.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": {
+      "x": 16,
+      "y": 182.75,
+      "width": 358,
+      "height": 62,
+      "top": 182.75,
+      "right": 374,
+      "bottom": 244.75,
+      "left": 16
+    },
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 332,
+        "scrollWidth": 332
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-dark-en-history.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 696.34375,
+      "width": 316,
+      "height": 44,
+      "top": 696.34375,
+      "right": 353,
+      "bottom": 740.34375,
+      "left": 37
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "390-dark-en-stopped-history.png",
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 84.5,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 84.5,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 374,
+      "height": 70,
+      "top": 766,
+      "right": 382,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 37,
+      "y": 696.34375,
+      "width": 316,
+      "height": 44,
+      "top": 696.34375,
+      "right": 353,
+      "bottom": 740.34375,
+      "left": 37
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-light-vi-free.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 625.75,
+      "width": 262,
+      "height": 44,
+      "top": 625.75,
+      "right": 291,
+      "bottom": 669.75,
+      "left": 29
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-light-vi-long-task.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 625.75,
+      "width": 262,
+      "height": 94,
+      "top": 625.75,
+      "right": 291,
+      "bottom": 719.75,
+      "left": 29
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-light-vi-minibar.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": {
+      "x": 12,
+      "y": 177.75,
+      "width": 296,
+      "height": 62,
+      "top": 177.75,
+      "right": 308,
+      "bottom": 239.75,
+      "left": 12
+    },
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 270,
+        "scrollWidth": 270
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-light-vi-history.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 687.34375,
+      "width": 262,
+      "height": 44,
+      "top": 687.34375,
+      "right": 291,
+      "bottom": 731.34375,
+      "left": 29
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-light-vi-stopped-history.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 687.34375,
+      "width": 262,
+      "height": 44,
+      "top": 687.34375,
+      "right": 291,
+      "bottom": 731.34375,
+      "left": 29
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-light-en-free.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 625.75,
+      "width": 262,
+      "height": 44,
+      "top": 625.75,
+      "right": 291,
+      "bottom": 669.75,
+      "left": 29
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-light-en-long-task.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 625.75,
+      "width": 262,
+      "height": 94,
+      "top": 625.75,
+      "right": 291,
+      "bottom": 719.75,
+      "left": 29
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-light-en-minibar.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": {
+      "x": 12,
+      "y": 177.75,
+      "width": 296,
+      "height": 62,
+      "top": 177.75,
+      "right": 308,
+      "bottom": 239.75,
+      "left": 12
+    },
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 270,
+        "scrollWidth": 270
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-light-en-history.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 687.34375,
+      "width": 262,
+      "height": 44,
+      "top": 687.34375,
+      "right": 291,
+      "bottom": 731.34375,
+      "left": 29
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-light-en-stopped-history.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 687.34375,
+      "width": 262,
+      "height": 44,
+      "top": 687.34375,
+      "right": 291,
+      "bottom": 731.34375,
+      "left": 29
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-dark-vi-free.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 625.75,
+      "width": 262,
+      "height": 44,
+      "top": 625.75,
+      "right": 291,
+      "bottom": 669.75,
+      "left": 29
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-dark-vi-long-task.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 625.75,
+      "width": 262,
+      "height": 94,
+      "top": 625.75,
+      "right": 291,
+      "bottom": 719.75,
+      "left": 29
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-dark-vi-minibar.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": {
+      "x": 12,
+      "y": 177.75,
+      "width": 296,
+      "height": 62,
+      "top": 177.75,
+      "right": 308,
+      "bottom": 239.75,
+      "left": 12
+    },
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 270,
+        "scrollWidth": 270
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-dark-vi-history.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 687.34375,
+      "width": 262,
+      "height": 44,
+      "top": 687.34375,
+      "right": 291,
+      "bottom": 731.34375,
+      "left": 29
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-dark-vi-stopped-history.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Kế hoạch",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Thống kê",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Lịch tuần",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 687.34375,
+      "width": 262,
+      "height": 44,
+      "top": 687.34375,
+      "right": 291,
+      "bottom": 731.34375,
+      "left": 29
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-dark-en-free.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 625.75,
+      "width": 262,
+      "height": 44,
+      "top": 625.75,
+      "right": 291,
+      "bottom": 669.75,
+      "left": 29
+    },
+    "timer": "25:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-dark-en-long-task.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 625.75,
+      "width": 262,
+      "height": 94,
+      "top": 625.75,
+      "right": 291,
+      "bottom": 719.75,
+      "left": 29
+    },
+    "timer": "00:45",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-dark-en-minibar.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": {
+      "x": 12,
+      "y": 177.75,
+      "width": 296,
+      "height": 62,
+      "top": 177.75,
+      "right": 308,
+      "bottom": 239.75,
+      "left": 12
+    },
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": null,
+    "timer": "00:45",
+    "footer": [
+      {
+        "clientWidth": 270,
+        "scrollWidth": 270
+      }
+    ],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-dark-en-history.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 687.34375,
+      "width": 262,
+      "height": 44,
+      "top": 687.34375,
+      "right": 291,
+      "bottom": 731.34375,
+      "left": 29
+    },
+    "timer": "00:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  },
+  {
+    "screenshot": "320-dark-en-stopped-history.png",
+    "width": 320,
+    "scrollWidth": 320,
+    "horizontalOverflow": false,
+    "buttons": [
+      {
+        "text": "Plan",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Pomodoro",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Stats",
+        "width": 67,
+        "height": 56
+      },
+      {
+        "text": "Weeks",
+        "width": 67,
+        "height": 56
+      }
+    ],
+    "barBounds": null,
+    "navBounds": {
+      "x": 8,
+      "y": 766,
+      "width": 304,
+      "height": 70,
+      "top": 766,
+      "right": 312,
+      "bottom": 836,
+      "left": 8
+    },
+    "timerControlsBounds": {
+      "x": 29,
+      "y": 687.34375,
+      "width": 262,
+      "height": 44,
+      "top": 687.34375,
+      "right": 291,
+      "bottom": 731.34375,
+      "left": 29
+    },
+    "timer": "01:00",
+    "footer": [],
+    "accessibilityViolations": 0
+  }
+]

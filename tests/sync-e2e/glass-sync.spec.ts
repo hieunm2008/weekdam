@@ -24,7 +24,7 @@ async function signIn(page: Page, uid: string) {
   // The Auth fixture needs a current token timestamp; the board uses Thursday.
   await page.clock.setFixedTime(new Date());
   await page.goto(`${appURL}/tests/fixtures/auth.html?uid=${uid}`);
-  await page.waitForURL(`${appURL}/`);
+  await page.waitForURL(`${appURL}/app`);
   await page.clock.setFixedTime(boardDate);
   await page.reload();
   await synced(page);
@@ -280,7 +280,7 @@ test("retains reordered backup imports through Guest migration and sync without 
   try {
     const guest = await contexts.phone.newPage();
     await guest.clock.setFixedTime(boardDate);
-    await guest.goto("/");
+    await guest.goto("/app");
     await importBackup(guest, backup);
     await ordered(guest, ["Alpha", "Gamma", "Beta 1", "Beta 2"]);
     await importBackup(guest, backup);

@@ -1,0 +1,110 @@
+{
+  "date": "2026-10-11",
+  "method": "Actual src modules stripped of TypeScript types in Node VM; fake-indexeddb in memory; no source modifications, build, live cloud writes, or user IndexedDB access.",
+  "main": [
+    {
+      "id": "guest-week-move-duplicate-id",
+      "steps": [
+        "Create Guest week 2026-10-05",
+        "Move week to 2026-10-12",
+        "Create a project in 2026-10-05",
+        "Save and reload"
+      ],
+      "saved": true,
+      "weeks": [
+        {
+          "id": "week_2026-10-05",
+          "start": "2026-10-05"
+        },
+        {
+          "id": "week_2026-10-05",
+          "start": "2026-10-12"
+        }
+      ],
+      "reloadError": "invalid-id",
+      "recordsAfterMapDecode": [
+        {
+          "start": "2026-10-12",
+          "projects": [
+            "new-project",
+            "original-project"
+          ]
+        }
+      ],
+      "sources": [
+        "src/domain.ts:108-110",
+        "src/domain.ts:194-196",
+        "src/storage.ts:24"
+      ]
+    },
+    {
+      "id": "stored-plan-over-import-limit",
+      "tasks": 500,
+      "noteCharsPerTask": 10000,
+      "serializedChars": 5039432,
+      "guestSaved": true,
+      "accountSaved": true,
+      "guestReloadError": "backup-too-large",
+      "accountReloadError": "backup-too-large",
+      "alternateImportScenario": {
+        "localChars": 2519682,
+        "importedChars": 2520438,
+        "bothInputsAccepted": true,
+        "mergedChars": 5040024,
+        "mergedSaved": true,
+        "mergedReloadError": "backup-too-large"
+      },
+      "sources": [
+        "src/domain.ts:216",
+        "src/storage.ts:24",
+        "src/storage.ts:46",
+        "src/usePlanner.ts:69"
+      ]
+    }
+  ],
+  "supplemental": [
+    {
+      "id": "crafted-import-id-collision-after-normalization",
+      "note": "Requires a crafted accepted backup: arbitrary imported week ID plus child ID equal to its canonical week ID.",
+      "recordsBeforeDiff": [
+        {
+          "kind": "week",
+          "id": "week_2026-10-05"
+        },
+        {
+          "kind": "project",
+          "id": "week_2026-10-05"
+        }
+      ],
+      "recordsAfterDiff": [
+        {
+          "kind": "project",
+          "id": "week_2026-10-05"
+        }
+      ],
+      "decodedWeeksAfterDiff": 0,
+      "sources": [
+        "src/records.ts:21",
+        "src/records.ts:25-26"
+      ]
+    },
+    {
+      "id": "crafted-import-schema-mismatch",
+      "note": "Requires a crafted backup; acceptance and encoding were reproduced. Live Firestore rejection was not exercised; rejection follows firestore.rules validId/hasOnly constraints.",
+      "acceptedReservedIds": [
+        ".",
+        "..",
+        "__reserved__"
+      ],
+      "unknownFieldPreservedInCloudValue": {
+        "color": "blue"
+      },
+      "sources": [
+        "src/domain.ts:222-227",
+        "src/records.ts:50",
+        "firestore.rules:5",
+        "firestore.rules:24"
+      ]
+    }
+  ]
+}

@@ -151,6 +151,69 @@ describe("planner operations", () => {
     f.weeks[0].projects[0].id = "invalid/path";
     expect(() => domain.parseBackup(JSON.stringify(f))).toThrow();
   });
+  it("rejects partial or invalid imported time slots", () => {
+    for (const times of [
+      { startTime: "09:00" },
+      { endTime: "10:00" },
+      { startTime: "", endTime: "" },
+      { startTime: "9:00", endTime: "10:00" },
+      { startTime: "09:00\n", endTime: "10:00" },
+      { startTime: "09:00", endTime: "09:00" },
+      { startTime: "11:00", endTime: "10:00" },
+      { startTime: "23:00", endTime: "00:30" },
+      { startTime: "23:00", endTime: "24:00" },
+      { startTime: "09:00", endTime: 600 },
+    ]) {
+      const f = fixture();
+      Object.assign(f.weeks[0].projects[0].tasks[0].subtasks[0], times);
+      expect(() => domain.parseBackup(JSON.stringify(f))).toThrow(
+        "invalid-subtask",
+      );
+    }
+  });
+  it("accepts old backups and preserves session times through copying and week moves", () => {
+    const f = fixture();
+    expect(domain.parseBackup(JSON.stringify(f))).toEqual(f);
+    Object.assign(f.weeks[0].projects[0].tasks[0].subtasks[1], {
+      startTime: "08:15",
+      endTime: "09:45",
+    });
+    const timed = domain.parseBackup(JSON.stringify(f));
+    const copy = domain.copyProjects(timed.weeks[0].projects, false);
+    expect(copy[0].tasks[0].subtasks[1]).toMatchObject({
+      day: 3,
+      startTime: "08:15",
+      endTime: "09:45",
+      done: false,
+      missed: [],
+    });
+    expect(copy[0].tasks[0].subtasks[1].id).not.toBe("s2");
+    expect(
+      domain.moveWeek(timed, "2026-10-05", "2026-10-19").weeks[0].projects[0]
+        .tasks[0].subtasks[1],
+    ).toMatchObject({ id: "s2", day: 3, startTime: "08:15", endTime: "09:45" });
+  });
+  it("carries unfinished sessions into the next week at the same weekday and time", () => {
+    const f = fixture();
+    Object.assign(f.weeks[0].projects[0].tasks[0].subtasks[1], {
+      startTime: "08:15",
+      endTime: "09:45",
+    });
+    const carried = domain.endWeek(
+      domain.parseBackup(JSON.stringify(f)),
+      "2026-10-05",
+      true,
+    );
+    expect(carried.weeks[1].start).toBe("2026-10-12");
+    expect(carried.weeks[1].projects[0].tasks[0].subtasks[0]).toMatchObject({
+      day: 3,
+      startTime: "08:15",
+      endTime: "09:45",
+      done: false,
+      missed: [],
+    });
+    expect(carried.weeks[1].projects[0].tasks[0].subtasks[0].id).not.toBe("s2");
+  });
   it("deduplicates identical imported entities regardless of JSON property order", () => {
     const incoming = fixture();
     const p = incoming.weeks[0].projects[0];
@@ -172,5 +235,159 @@ describe("planner operations", () => {
     expect(result.percent).toBe(58);
     expect(result.best?.start).toBe("2026-10-19");
     expect(result.streak).toBe(1);
+  });
+});
+
+describe("Pomodoro backup and import", () => {
+  const session = () => ({
+    id: "pomodoro_focus",
+    startedAt: 1_000,
+    endedAt: 61_000,
+    plannedDurationMs: 60_000,
+    focusedDurationMs: 60_000,
+    outcome: "completed" as const,
+    task: { id: "task", name: "Study", projectName: "Math" },
+  });
+  const historyPlan = () => ({
+    version: 1 as const,
+    weeks: [],
+    pomodoroSessions: [session()],
+  });
+
+  it("recognizes a history-only Guest workspace as data for migration", () => {
+    expect(domain.hasPlanData?.(historyPlan())).toBe(true);
+  });
+
+  it("retains linked history without requiring its deleted task to exist", () => {
+    expect(domain.parseBackup(JSON.stringify(historyPlan()))).toEqual(
+      historyPlan(),
+    );
+  });
+
+  it("rejects invalid focus accounting and snapshots in backups", () => {
+    for (const invalid of [
+      { startedAt: -1 },
+      { startedAt: 1.5 },
+      { endedAt: 999 },
+      { endedAt: Number.MAX_SAFE_INTEGER + 1 },
+      { plannedDurationMs: 0 },
+      { plannedDurationMs: 1.5 },
+      { focusedDurationMs: -1 },
+      { focusedDurationMs: 60_001 },
+      { focusedDurationMs: 59_999 },
+      { outcome: "stopped" },
+      { outcome: "unknown" },
+      { task: { id: "bad/path", name: "Study", projectName: "Math" } },
+      { task: { id: "task", name: "", projectName: "Math" } },
+      { task: { id: "task", name: "Study" } },
+      { task: { id: "task", name: "Study", projectName: "Math", done: true } },
+      { unexpected: true },
+    ]) {
+      const plan = historyPlan();
+      Object.assign(plan.pomodoroSessions[0], invalid);
+      expect(() => domain.parseBackup(JSON.stringify(plan))).toThrow(
+        "invalid-pomodoro-session",
+      );
+    }
+    expect(() =>
+      domain.parseBackup(
+        JSON.stringify({ ...historyPlan(), pomodoroSessions: {} }),
+      ),
+    ).toThrow("invalid-pomodoro-history");
+  });
+
+  it("accepts a stopped partial focus session without counting it as completed", () => {
+    const plan = historyPlan();
+    Object.assign(plan.pomodoroSessions[0], {
+      focusedDurationMs: 10_000,
+      outcome: "stopped",
+    });
+    expect(domain.parseBackup(JSON.stringify(plan))).toEqual(plan);
+  });
+
+  it("rejects duplicate history IDs before they overwrite a cloud document", () => {
+    const plan = historyPlan();
+    plan.pomodoroSessions.push(session());
+    expect(() => domain.parseBackup(JSON.stringify(plan))).toThrow(
+      "invalid-id",
+    );
+  });
+
+  it("merges history-only backups idempotently and keeps the original session", () => {
+    const incoming = historyPlan();
+    Object.assign(incoming.pomodoroSessions[0], {
+      focusedDurationMs: 10_000,
+      outcome: "stopped",
+    });
+    incoming.pomodoroSessions.push({ ...session(), id: "pomodoro_second" });
+    const merged = domain.mergePlans(historyPlan(), incoming);
+    expect(merged.pomodoroSessions).toEqual([
+      session(),
+      { ...session(), id: "pomodoro_second" },
+    ]);
+    expect(domain.mergePlans(merged, incoming).pomodoroSessions).toHaveLength(
+      2,
+    );
+  });
+
+  it("remaps an imported history link when conflicting tasks become copies", () => {
+    const plan = {
+      version: 1 as const,
+      weeks: [
+        {
+          id: "week_2026-10-05",
+          start: "2026-10-05",
+          ended: false,
+          projects: [
+            {
+              id: "project",
+              name: "Math",
+              tasks: [
+                {
+                  id: "task",
+                  name: "Original",
+                  note: "",
+                  done: false,
+                  subtasks: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const incoming = structuredClone(plan);
+    incoming.weeks[0].projects[0].tasks[0].name = "Study";
+    const merged = domain.mergePlans(plan, {
+      ...incoming,
+      pomodoroSessions: [session()],
+    });
+    const copiedTask = merged.weeks[0].projects[1].tasks[0];
+    expect(copiedTask.id).not.toBe("task");
+    expect(merged.pomodoroSessions?.[0].task).toEqual({
+      id: copiedTask.id,
+      name: "Study",
+      projectName: "Math",
+    });
+  });
+
+  it("rejects a cross-kind history ID collision without mutating either workspace", () => {
+    const local = {
+      version: 1 as const,
+      weeks: [
+        {
+          id: "week_2026-10-05",
+          start: "2026-10-05",
+          ended: false,
+          projects: [{ id: "pomodoro_focus", name: "Math", tasks: [] }],
+        },
+      ],
+    };
+    const incoming = historyPlan();
+    const beforeLocal = structuredClone(local);
+    const beforeIncoming = structuredClone(incoming);
+    expect(() => domain.mergePlans(local, incoming)).toThrow("invalid-id");
+    expect(local).toEqual(beforeLocal);
+    expect(incoming).toEqual(beforeIncoming);
   });
 });

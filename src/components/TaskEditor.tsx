@@ -28,6 +28,7 @@ import {
 } from "../domain";
 import { Modal } from "./Modal";
 import { useDndAccessibility } from "./dndAccessibility";
+import { DifficultyBadge } from "./DifficultyBadge";
 
 function Step({
   step,
@@ -84,6 +85,8 @@ function Step({
         onChange={(e) => onChange({ ...step, note: e.target.value })}
       />
       <select
+        className="difficulty-select"
+        data-difficulty={step.weight}
         aria-label={t("difficulty")}
         value={step.weight}
         onChange={(e) =>
@@ -104,6 +107,11 @@ function Step({
       >
         <Trash2 size={16} />
       </button>
+      {step.startTime && step.endTime ? (
+        <span className="step-time-summary">
+          {step.startTime}–{step.endTime}
+        </span>
+      ) : null}
     </div>
   );
 }
@@ -114,6 +122,7 @@ export function TaskEditor({
   onSave,
   onDelete,
   onClose,
+  calendarMode = false,
 }: {
   task: Task;
   projectId: string;
@@ -121,6 +130,7 @@ export function TaskEditor({
   onSave: (task: Task, pid: string) => void;
   onDelete?: () => void;
   onClose: () => void;
+  calendarMode?: boolean;
 }) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState(() => clone(task)),
@@ -198,6 +208,15 @@ export function TaskEditor({
             {t("difficulty")}: 1 / 2 / 3 {t("units")}
           </span>
         </div>
+        <div
+          className="difficulty-legend"
+          role="group"
+          aria-label={t("difficulty")}
+        >
+          <DifficultyBadge value={1} />
+          <DifficultyBadge value={2} />
+          <DifficultyBadge value={3} />
+        </div>
         <div className="day-picker">
           {names.map((name, day) => (
             <button
@@ -207,23 +226,28 @@ export function TaskEditor({
                 draft.subtasks.some((s) => s.day === day) ? "selected" : ""
               }
               aria-label={name}
-              aria-pressed={draft.subtasks.some((s) => s.day === day)}
+              aria-pressed={
+                calendarMode
+                  ? undefined
+                  : draft.subtasks.some((s) => s.day === day)
+              }
               onClick={() =>
                 setDraft({
                   ...draft,
-                  subtasks: draft.subtasks.some((s) => s.day === day)
-                    ? draft.subtasks.filter((s) => s.day !== day)
-                    : [
-                        ...draft.subtasks,
-                        {
-                          id: id(),
-                          day,
-                          weight: 1,
-                          note: "",
-                          done: false,
-                          missed: [],
-                        },
-                      ],
+                  subtasks:
+                    !calendarMode && draft.subtasks.some((s) => s.day === day)
+                      ? draft.subtasks.filter((s) => s.day !== day)
+                      : [
+                          ...draft.subtasks,
+                          {
+                            id: id(),
+                            day,
+                            weight: 1,
+                            note: "",
+                            done: false,
+                            missed: [],
+                          },
+                        ],
                 })
               }
             >

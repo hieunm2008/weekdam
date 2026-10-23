@@ -78,7 +78,7 @@ export async function loadGlass(
   sample: Plan = glassPlan(legacy),
 ) {
   await page.clock.setFixedTime(new Date("2026-10-08T05:00:00Z"));
-  await page.goto("/");
+  await page.goto("/app");
   await page.getByRole("button", { name: "Cài đặt", exact: true }).click();
   await page.getByRole("button", { name: "Nhập JSON", exact: true }).click();
   await page.getByLabel("JSON", { exact: true }).fill(JSON.stringify(sample));

@@ -1,0 +1,21 @@
+{
+  "observedAt": "2026-10-11T02:02:31.720Z",
+  "scrollBefore": 420,
+  "scrollAfter": 499,
+  "scrollDelta": 79,
+  "initialBounds": {
+    "x": 844.703125,
+    "y": 489.1875,
+    "width": 134.578125,
+    "height": 58
+  },
+  "pointerDropY": 548,
+  "trackTopAtDrop": -129.8125,
+  "grabOffset": 20,
+  "expectedStartMinute": 660,
+  "expectedStartTime": "11:00",
+  "actualStartTime": "12:15",
+  "actual": "Sửa lịch Scroll test · 12:15–13:15",
+  "mismatch": true,
+  "screenshot": "D:\\Projects\\SuperPlanner\\docs\\audit\\2026-10-11\\calendar-autoscroll-time-mismatch.png"
+}

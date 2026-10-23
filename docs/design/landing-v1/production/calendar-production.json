@@ -1,0 +1,33 @@
+{
+  "url": "https://weekdam-hieu-2026.web.app/app",
+  "checkedAt": "2026-10-11T01:42:10.566Z",
+  "guestOnly": true,
+  "week": "2026-10-19",
+  "sessionDate": "2026-10-22",
+  "contexts": [
+    {
+      "mode": "desktop",
+      "checks": [
+        "Created Guest project/task and scheduled a visible 09:00–10:00 session",
+        "Edited session to 10:15–11:45; times and calendar mode persisted after reload",
+        "Document fits viewport without horizontal overflow"
+      ],
+      "pageErrors": [],
+      "cloudWrites": [],
+      "status": "passed"
+    },
+    {
+      "mode": "mobile",
+      "checks": [
+        "Created Guest project/task and scheduled a visible 09:00–10:00 session",
+        "Edited session to 10:15–11:45; times and calendar mode persisted after reload",
+        "Document fits viewport without horizontal overflow",
+        "Mobile time editor displays stored values and remains inside viewport"
+      ],
+      "pageErrors": [],
+      "cloudWrites": [],
+      "status": "passed"
+    }
+  ],
+  "status": "passed"
+}

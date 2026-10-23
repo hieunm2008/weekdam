@@ -80,7 +80,7 @@ test("exports a real backup file and imports it without duplicating existing dat
 });
 async function loadFixture(page: import("@playwright/test").Page) {
   await page.clock.setFixedTime(new Date("2026-10-08T05:00:00Z"));
-  await page.goto("/");
+  await page.goto("/app");
   await page.getByRole("button", { name: "Cài đặt", exact: true }).click();
   await page.getByRole("button", { name: "Nhập JSON", exact: true }).click();
   await page.getByLabel("JSON", { exact: true }).fill(JSON.stringify(seed));
@@ -97,7 +97,7 @@ async function weekAction(page: import("@playwright/test").Page, name: string) {
 test("creates a project and task, finishes work, and restores deletion with undo", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/app");
   await page
     .getByRole("main")
     .getByRole("button", { name: "Tạo dự án", exact: true })
@@ -141,7 +141,7 @@ test("remembers language/theme and reloads the PWA while offline", async ({
   page,
   context,
 }) => {
-  await page.goto("/");
+  await page.goto("/app");
   await page.getByRole("button", { name: "Cài đặt", exact: true }).click();
   await page.getByLabel("Ngôn ngữ", { exact: true }).selectOption("en");
   await page.getByLabel("Theme", { exact: true }).selectOption("dark");
@@ -380,6 +380,12 @@ test("has accessible planner and task dialog in both themes", async ({
     await expect(page.getByRole("dialog")).toHaveAccessibleName(
       "Thêm công việc",
     );
+    // Measure final colors after the dialog's opacity entrance finishes.
+    await page.getByRole("dialog").evaluate(async (node) => {
+      await Promise.all(
+        node.getAnimations().map((animation) => animation.finished),
+      );
+    });
     const editor = await new AxeBuilder({ page })
       .include("dialog")
       .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])

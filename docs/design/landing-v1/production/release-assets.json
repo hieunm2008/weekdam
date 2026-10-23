@@ -1,0 +1,68 @@
+{
+  "origin": "https://weekdam-hieu-2026.web.app",
+  "checkedAt": "2026-10-11T01:42:14.452Z",
+  "routes": [
+    {
+      "route": "/",
+      "status": 200,
+      "sha256": "78c13307ff9bd939ad0945e649e8b1d3f34ec72f400c8d8ac2373678735cac13"
+    },
+    {
+      "route": "/guide",
+      "status": 200,
+      "sha256": "78c13307ff9bd939ad0945e649e8b1d3f34ec72f400c8d8ac2373678735cac13"
+    },
+    {
+      "route": "/app",
+      "status": 200,
+      "sha256": "78c13307ff9bd939ad0945e649e8b1d3f34ec72f400c8d8ac2373678735cac13"
+    }
+  ],
+  "assets": [
+    {
+      "asset": "/assets/index-CXJddpbR.js",
+      "status": 200,
+      "sha256": "b5476c0e4c859467bd844b7a936dfb6fc32e75d79942966b728fb05e8e88220d"
+    },
+    {
+      "asset": "/assets/rolldown-runtime-hePW80VL.js",
+      "status": 200,
+      "sha256": "580ad8c58061a4dde99bde0a56905e382f0568516ee2f5b84dbfb52085709021"
+    },
+    {
+      "asset": "/assets/jsx-runtime-D4vn8iA1.js",
+      "status": 200,
+      "sha256": "5bc5e2c6d9f8ca63599c4b8eee935fd83605d4c878ef9a0e4b10072912e8afc5"
+    },
+    {
+      "asset": "/assets/createLucideIcon-ERklkT-r.js",
+      "status": 200,
+      "sha256": "fef7b61d33b0012b1d4b2a5ee12d8d2727ff1f69d2374e9f7d1646008a8c1caa"
+    },
+    {
+      "asset": "/assets/i18n-D6RsIFbF.js",
+      "status": 200,
+      "sha256": "d536e13aa517bbbfc291511ac5098c38bbe67bb292506f739d0c4e470dcb1ed9"
+    },
+    {
+      "asset": "/assets/index-CA55SZW9.css",
+      "status": 200,
+      "sha256": "cee18013b716e75eb8db61e9aec083a364b73f07dea9e60a86fcc8bfeaa279ca"
+    },
+    {
+      "asset": "/manifest.webmanifest",
+      "status": 200,
+      "sha256": "5d142c0c893d58ee919c8d336763b0876b491ee7a068ada843bf228a1adc0bb5"
+    },
+    {
+      "asset": "/sw.js",
+      "status": 200,
+      "sha256": "b48056a4faaa5e5e3dd6e9144ed0a67202d91ef916a45561cfc5cf5512e4361e"
+    },
+    {
+      "asset": "/robots.txt",
+      "status": 200,
+      "sha256": "16ceb5ee3e0dc13aa9adf31a3ebbe45a1d965b8c2b9f72eaf84e5911e140ed95"
+    }
+  ]
+}

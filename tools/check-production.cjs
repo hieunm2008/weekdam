@@ -14,7 +14,7 @@ async function main() {
     const page = await context.newPage();
     const errors = [];
     page.on("pageerror", (error) => errors.push(error.message));
-    const response = await page.goto(url);
+    const response = await page.goto(new URL("/app", url).href);
     expect(response.status()).toBe(200);
     await page
       .getByRole("main")
@@ -133,7 +133,7 @@ async function main() {
       hasTouch: true,
     });
     const phone = await mobile.newPage();
-    await phone.goto(url);
+    await phone.goto(new URL("/app", url).href);
     await expect(
       phone.getByRole("button", { name: "Cài đặt", exact: true }),
     ).toBeVisible();

@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Check,
   CloudOff,
+  Timer,
 } from "lucide-react";
 import type { Project } from "../domain";
 
@@ -92,6 +93,7 @@ export function Navigation({
         <nav className="desktop-nav" aria-label={t("plan")}>
           {[
             { key: "plan", icon: CalendarDays },
+            { key: "pomodoro", icon: Timer },
             { key: "stats", icon: ChartNoAxesColumn },
             { key: "weeks", icon: Archive },
           ].map(({ key, icon: Icon }) => (

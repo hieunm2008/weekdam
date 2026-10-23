@@ -26,6 +26,8 @@ import {
   Plus,
   CalendarClock,
   StickyNote,
+  Clock3,
+  Timer,
 } from "lucide-react";
 import {
   dayCards,
@@ -36,6 +38,7 @@ import {
   type BoardAnchor,
 } from "../domain";
 import { useDndAccessibility } from "./dndAccessibility";
+import { DifficultyBadge } from "./DifficultyBadge";
 
 interface Row {
   project: Project;
@@ -118,22 +121,6 @@ const boardCollision: CollisionDetection = (args) => {
     : [{ id: day.id, data: { droppableContainer: day, value: 0 } }];
 };
 
-function Weight({ value }: { value: number }) {
-  const { t } = useTranslation();
-  return (
-    <span
-      role="img"
-      className={"weight weight-" + value}
-      aria-label={
-        t("difficulty") + ": " + t(["easy", "medium", "hard"][value - 1])
-      }
-    >
-      {[1, 2, 3].map((i) => (
-        <i key={i} className={i <= value ? "filled" : ""} />
-      ))}
-    </span>
-  );
-}
 const Card = memo(function Card({
   row,
   ended,
@@ -142,6 +129,7 @@ const Card = memo(function Card({
   onEdit,
   onMove,
   onClearMissed,
+  onPomodoro,
   overdue,
   insertion,
 }: {
@@ -152,6 +140,7 @@ const Card = memo(function Card({
   onEdit: () => void;
   onMove: () => void;
   onClearMissed: () => void;
+  onPomodoro?: () => void;
   overdue: boolean;
   insertion?: "before" | "after";
 }) {
@@ -231,7 +220,12 @@ const Card = memo(function Card({
           {row.task.name}
         </button>
       </div>
-      <div className="card-footer">
+      <div
+        className={
+          "card-footer" +
+          (onPomodoro && !ended && !row.missed ? " has-pomodoro" : "")
+        }
+      >
         <div className="card-info">
           <div className="card-project">
             <span className="project-tag" title={row.project.name}>
@@ -247,7 +241,13 @@ const Card = memo(function Card({
             ) : null}
           </div>
           <div className="card-meta">
-            <Weight value={row.step.weight} />
+            <DifficultyBadge value={row.step.weight} />
+            {row.step.startTime && row.step.endTime ? (
+              <span className="card-session-time">
+                <Clock3 size={14} />
+                {row.step.startTime}–{row.step.endTime}
+              </span>
+            ) : null}
             {deadlineText ? (
               <span className="card-deadline" title={deadline}>
                 <CalendarClock size={14} />
@@ -268,6 +268,16 @@ const Card = memo(function Card({
         </div>
         {!ended && !row.missed ? (
           <>
+            {onPomodoro ? (
+              <button
+                className="card-pomodoro"
+                aria-label={t("pomodoroNamedTask", { name: row.task.name })}
+                onClick={onPomodoro}
+              >
+                <Timer size={16} aria-hidden="true" />
+                <span>{t("pomodoro")}</span>
+              </button>
+            ) : null}
             <button
               className="icon-button card-menu"
               aria-label={t("moveDay") + " · " + cardName}
@@ -319,6 +329,7 @@ interface DayProps {
   onMove: (id: string) => void;
   onAdd: (day: number) => void;
   onClearMissed: (id: string, day: number) => void;
+  onPomodoro?: (task: Task, pid: string) => void;
   onFocus?: (day: number) => void;
   mobile?: boolean;
 }
@@ -336,6 +347,7 @@ const Day = memo(function Day({
   onMove,
   onAdd,
   onClearMissed,
+  onPomodoro,
   onFocus,
   mobile,
 }: DayProps) {
@@ -415,6 +427,11 @@ const Day = memo(function Day({
               onEdit={() => onEdit(row.task, row.project.id)}
               onMove={() => onMove(row.step.id)}
               onClearMissed={() => onClearMissed(row.step.id, day)}
+              onPomodoro={
+                onPomodoro
+                  ? () => onPomodoro(row.task, row.project.id)
+                  : undefined
+              }
             />
           ))}
         </div>
@@ -733,7 +750,7 @@ export function Board(
           <div className="drag-preview" data-overlay-id={activeRow.step.id}>
             <span>{activeRow.project.name}</span>
             <strong>{activeRow.task.name}</strong>
-            <Weight value={activeRow.step.weight} />
+            <DifficultyBadge value={activeRow.step.weight} />
           </div>
         ) : null}
       </DragOverlay>

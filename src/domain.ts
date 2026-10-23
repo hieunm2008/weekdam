@@ -4,6 +4,9 @@ import {
   validDayOrder,
   withoutDayOrder,
 } from "./boardOrder";
+import { validTimeRange } from "./calendar";
+import type { PomodoroSession } from "./pomodoro";
+import { mergePomodoroSessions, validPomodoroSession } from "./pomodoroHistory";
 export {
   dayCards,
   moveBoardCard,
@@ -21,6 +24,8 @@ export interface Subtask {
   done: boolean;
   missed: number[];
   dayOrder?: number;
+  startTime?: string;
+  endTime?: string;
 }
 export interface Task {
   id: string;
@@ -45,8 +50,14 @@ export interface Week {
 export interface Plan {
   version: 1;
   weeks: Week[];
+  pomodoroSessions?: PomodoroSession[];
 }
 export const emptyPlan = (): Plan => ({ version: 1, weeks: [] });
+export const hasPlanData = (plan: Plan): boolean =>
+  Boolean(
+    plan.pomodoroSessions?.length ||
+    plan.weeks.some((week) => week.projects.length),
+  );
 export const id = () => crypto.randomUUID();
 export const clone = <T>(value: T): T => structuredClone(value);
 export function sameContent(a: unknown, b: unknown): boolean {
@@ -235,6 +246,11 @@ export function parseBackup(raw: string): Plan {
         /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/.test(d)));
   if (data.version !== 1 || !Array.isArray(data.weeks))
     throw new Error("invalid-version");
+  if (
+    data.pomodoroSessions !== undefined &&
+    !Array.isArray(data.pomodoroSessions)
+  )
+    throw new Error("invalid-pomodoro-history");
   for (const w of data.weeks) {
     if (
       !w ||
@@ -281,6 +297,8 @@ export function parseBackup(raw: string): Plan {
             !Array.isArray(s.missed) ||
             s.missed.some((d) => !Number.isInteger(d) || d < 0 || d > 6) ||
             new Set(s.missed).size !== s.missed.length ||
+            ((s.startTime !== undefined || s.endTime !== undefined) &&
+              !validTimeRange(s.startTime!, s.endTime!)) ||
             (s.dayOrder !== undefined && !validDayOrder(s.dayOrder))
           )
             throw new Error("invalid-subtask");
@@ -289,6 +307,11 @@ export function parseBackup(raw: string): Plan {
       }
     }
   }
+  for (const session of data.pomodoroSessions ?? []) {
+    if (!validPomodoroSession(session))
+      throw new Error("invalid-pomodoro-session");
+    acceptId(session);
+  }
   return clone(data);
 }
 export function mergePlans(local: Plan, incoming: Plan): Plan {
@@ -296,15 +319,17 @@ export function mergePlans(local: Plan, incoming: Plan): Plan {
     projectIds = new Map(
       local.weeks.flatMap((w) => w.projects.map((p) => [p.id, p] as const)),
     );
-  const used = new Set(
-    local.weeks.flatMap((w) => [
+  const used = new Set([
+    ...local.weeks.flatMap((w) => [
       w.id,
       ...w.projects.flatMap((p) => [
         p.id,
         ...p.tasks.flatMap((t) => [t.id, ...t.subtasks.map((s) => s.id)]),
       ]),
     ]),
-  );
+    ...(local.pomodoroSessions ?? []).map((session) => session.id),
+  ]);
+  const importedTaskIds = new Map<string, string>();
   for (const source of incoming.weeks) {
     let target = result.weeks.find((w) => w.start === source.start);
     if (!target) {
@@ -314,13 +339,19 @@ export function mergePlans(local: Plan, incoming: Plan): Plan {
         projects: [],
       };
       result.weeks.push(target);
+      used.add(target.id);
     }
     const addedSources: Project[] = [],
       addedCopies: Project[] = [];
     for (const project of source.projects) {
       const same = projectIds.get(project.id);
-      if (same && sameContent(withoutDayOrder(same), withoutDayOrder(project)))
+      if (
+        same &&
+        sameContent(withoutDayOrder(same), withoutDayOrder(project))
+      ) {
+        project.tasks.forEach((task) => importedTaskIds.set(task.id, task.id));
         continue;
+      }
       const entities = [
         project.id,
         ...project.tasks.flatMap((t) => [t.id, ...t.subtasks.map((s) => s.id)]),
@@ -328,6 +359,9 @@ export function mergePlans(local: Plan, incoming: Plan): Plan {
       const copy = entities.some((key) => used.has(key))
         ? copyProjects([project], true)[0]
         : clone(project);
+      project.tasks.forEach((task, index) =>
+        importedTaskIds.set(task.id, copy.tasks[index].id),
+      );
       addedSources.push(project);
       addedCopies.push(copy);
       for (const key of [
@@ -342,6 +376,27 @@ export function mergePlans(local: Plan, incoming: Plan): Plan {
         assignCopiedDayOrder(addedSources, addedCopies),
       );
   }
+  const existingSessions = new Set(
+    (result.pomodoroSessions ?? []).map((session) => session.id),
+  );
+  const importedSessions: PomodoroSession[] = [];
+  for (const session of incoming.pomodoroSessions ?? []) {
+    if (existingSessions.has(session.id)) continue;
+    const copy = clone(session);
+    if (used.has(copy.id)) throw new Error("invalid-id");
+    if (copy.task)
+      copy.task.id = importedTaskIds.get(copy.task.id) ?? copy.task.id;
+    importedSessions.push(copy);
+    used.add(copy.id);
+  }
+  if (
+    result.pomodoroSessions !== undefined ||
+    incoming.pomodoroSessions !== undefined
+  )
+    result.pomodoroSessions = mergePomodoroSessions(
+      result.pomodoroSessions,
+      importedSessions,
+    );
   return {
     ...result,
     weeks: result.weeks.sort((a, b) => a.start.localeCompare(b.start)),

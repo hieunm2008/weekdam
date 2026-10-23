@@ -1,0 +1,29 @@
+{
+  "origin": "https://weekdam-hieu-2026.web.app",
+  "checkedAt": "2026-10-12T16:41:50.702Z",
+  "scope": "Fresh Guest contexts only; no cloud login, notification permission request, clock manipulation or shortened session",
+  "checks": [
+    "Direct /app#pomodoro, 25:00 default, free focus, sound on, notifications off and empty Guest history",
+    "Keyboard start, real countdown, pause and reload restore the same session without accruing paused time",
+    "Resume, planner and calendar minibar, minibar pause and return to the same Pomodoro",
+    "Stopping saves one partial session with actual focus excluding pauses; reload preserves history and cycle stays zero",
+    "320px English/dark Pomodoro and active planner minibar have no horizontal overflow",
+    "Production PWA manifest and service-worker notification handler are served correctly; no auth Emulator fixture precached",
+    "No page errors in desktop or mobile Guest contexts"
+  ],
+  "pageErrors": [],
+  "status": "passed",
+  "stoppedSession": {
+    "plannedDurationMs": 1500000,
+    "focusedDurationMs": 1789,
+    "outcome": "stopped"
+  },
+  "mobileLayout": {
+    "viewport": 320,
+    "document": 320
+  },
+  "mobileMinibarLayout": {
+    "viewport": 320,
+    "document": 320
+  }
+}

@@ -81,15 +81,28 @@ test("drags card bodies across projects and preserves rank through reload and un
   );
   await loadGlass(page);
   await ordered(page, ["Alpha", "Beta 1", "Gamma", "Beta 2"]);
+  await page
+    .locator(".toast")
+    .getByRole("button", { name: "Đóng", exact: true })
+    .click();
+  // Pointer coordinates must clear the import toast and fixed navigation.
+  await page
+    .locator('[data-step-id="glass-b2"] .project-tag')
+    .evaluate((node) => node.scrollIntoView({ block: "center" }));
   const source = await page
     .locator('[data-step-id="glass-b2"] .project-tag')
     .boundingBox();
-  const target = await page.locator('[data-step-id="glass-a"]').boundingBox();
-  if (!source || !target) throw Error("Drag coordinates missing");
+  if (!source) throw Error("Drag coordinates missing");
   await page.mouse.move(source.x + 10, source.y + 5);
   await page.mouse.down();
   await page.mouse.move(source.x + 22, source.y + 5, { steps: 3 });
   await expect(page.locator(".drag-preview")).toBeVisible();
+  // The taller cards put Alpha above the viewport after centering Beta 2.
+  // Drag at the top edge to scroll up, then measure the visible drop target.
+  await page.mouse.move(source.x + 22, 24, { steps: 15 });
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  const target = await page.locator('[data-step-id="glass-a"]').boundingBox();
+  if (!target) throw Error("Drag target coordinates missing");
   await page.mouse.move(target.x + target.width / 2, target.y + 4, {
     steps: 15,
   });
@@ -99,6 +112,8 @@ test("drags card bodies across projects and preserves rank through reload and un
   );
   await page.mouse.up();
   await ordered(page, ["Beta 2", "Alpha", "Beta 1", "Gamma"]);
+  // Finish the drop animation before beginning the next independent interaction.
+  await expect(page.locator(".drag-preview")).toHaveCount(0);
   await page.getByRole("button", { name: "Hoàn tác", exact: true }).click();
   await ordered(page, ["Alpha", "Beta 1", "Gamma", "Beta 2"]);
   await keyboardMove(page, "glass-b1", "ArrowUp");
@@ -133,7 +148,14 @@ test("drags card bodies across projects and preserves rank through reload and un
   );
   await page.mouse.up();
   await ordered(page, ["Beta 1", "Gamma", "Beta 2", "Alpha"]);
-  await page.locator('[data-step-id="glass-a"]').scrollIntoViewIfNeeded();
+  await expect(page.locator(".drag-preview")).toHaveCount(0);
+  await page
+    .locator(".toast")
+    .getByRole("button", { name: "Đóng", exact: true })
+    .click();
+  await page
+    .locator('[data-step-id="glass-a"] .project-tag')
+    .evaluate((node) => node.scrollIntoView({ block: "center" }));
   const cancel = await page
     .locator('[data-step-id="glass-a"] .project-tag')
     .boundingBox();
@@ -160,14 +182,23 @@ test("touches a card body to reorder and scrolls before activation without dragg
     "Real touch events use the mobile context.",
   );
   await loadGlass(page);
+  await page
+    .locator(".toast")
+    .getByRole("button", { name: "Đóng", exact: true })
+    .click();
+  // Center the source before reading coordinates; fixed mobile navigation can cover it.
+  await page
+    .locator('[data-step-id="glass-b1"] .project-tag')
+    .evaluate((node) => node.scrollIntoView({ block: "center" }));
   const cdp = await context.newCDPSession(page);
   const source = await page
     .locator('[data-step-id="glass-b1"] .project-tag')
     .boundingBox();
   const target = await page.locator('[data-step-id="glass-a"]').boundingBox();
   if (!source || !target) throw Error("Touch coordinates missing");
+  // Stay in Alpha's upper half without entering the viewport's auto-scroll edge.
   const a = { x: source.x + 12, y: source.y + 5 },
-    b = { x: target.x + target.width / 2, y: target.y + 3 };
+    b = { x: target.x + target.width / 2, y: target.y + target.height / 4 };
   await cdp.send("Input.dispatchTouchEvent", {
     type: "touchStart",
     touchPoints: [a],
@@ -185,6 +216,10 @@ test("touches a card body to reorder and scrolls before activation without dragg
         new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
     );
   }
+  await expect(page.locator('[data-step-id="glass-a"]')).toHaveAttribute(
+    "data-insertion",
+    "before",
+  );
   await cdp.send("Input.dispatchTouchEvent", {
     type: "touchEnd",
     touchPoints: [],
@@ -220,7 +255,7 @@ test("a quick swipe scrolls a dense mobile day without starting a drag", async (
     "Touch scroll needs the mobile context.",
   );
   await page.clock.setFixedTime(new Date("2026-10-08T05:00:00Z"));
-  await page.goto("/");
+  await page.goto("/app");
   const dense = glassPlan();
   dense.weeks[0].projects[0].tasks[0].subtasks = Array.from(
     { length: 20 },

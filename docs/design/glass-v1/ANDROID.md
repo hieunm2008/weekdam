@@ -3,7 +3,7 @@
 Trạng thái: **chờ kết quả từ thiết bị thật**. Ngày 10/10/2026 Hieu trả lời **“Chưa thử”** cho chuỗi nghiệm thu bản mới. Xác nhận Android của bản trước ngày 09/10/2026 không được dùng để nghiệm thu thứ tự thẻ mới.
 
 1. Mở PWA weekdam đang cài, có mạng. Bấm **Cập nhật** nếu có thông báo. Xác nhận thẻ kính mờ, tab ngày và thanh điều hướng dưới. Trên desktop và Android đăng nhập cùng Google account, đợi **Đã đồng bộ**.
-2. Chọn tuần đang mở và một ngày có ít nhất ba thẻ; có thể dùng thẻ thử thuộc hai project. Nhấn giữ vùng project/metadata của thẻ khoảng 250ms, kéo trước/sau thẻ khác. Kiểm tra thẻ nguồn mờ, điểm chèn, thứ tự mới và desktop nhận đúng thứ tự. Vuốt nhanh vẫn cuộn bình thường.
+2. Chọn tuần đang mở và một n0gày có ít nhất ba thẻ; có thể dùng thẻ thử thuộc hai project. Nhấn giữ vùng project/metadata của thẻ khoảng 250ms, kéo trước/sau thẻ khác. Kiểm tra thẻ nguồn mờ, điểm chèn, thứ tự mới và desktop nhận đúng thứ tự. Vuốt nhanh vẫn cuộn bình thường.
 3. Tắt Wi-Fi và dữ liệu di động. Đổi thứ tự hai thẻ khi offline, đợi thông báo **Đã lưu thay đổi**. Đóng PWA, mở lại từ icon trong lúc vẫn offline; thứ tự vừa đổi phải còn.
 4. Bật mạng và đợi **Đã đồng bộ**. Desktop phải nhận đúng thứ tự, không nhân đôi thẻ và không thay đổi project của thẻ.
 

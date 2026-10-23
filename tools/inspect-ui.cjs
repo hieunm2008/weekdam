@@ -133,7 +133,7 @@ const plan = {
       }),
       page = await context.newPage();
     await page.clock.setFixedTime(new Date("2026-10-08T05:00:00Z"));
-    await page.goto("http://127.0.0.1:4173");
+    await page.goto("http://127.0.0.1:4173/app");
     await page.getByRole("button", { name: "Cài đặt", exact: true }).click();
     await page.getByRole("button", { name: "Nhập JSON", exact: true }).click();
     await page.getByLabel("JSON", { exact: true }).fill(JSON.stringify(plan));

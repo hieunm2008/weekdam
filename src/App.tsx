@@ -5,6 +5,7 @@ import {
   useMemo,
   useState,
   type FormEvent,
+  type MouseEvent,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { useRegisterSW } from "virtual:pwa-register/react";
@@ -26,6 +27,9 @@ import {
   ArrowRight,
   Download,
   Undo2,
+  Home,
+  BookOpen,
+  Timer,
 } from "lucide-react";
 import {
   blankTask,
@@ -52,14 +56,28 @@ import {
   type Task,
   type Week,
   type BoardAnchor,
+  type Subtask,
 } from "./domain";
+import { rescheduleSession, timeToMinutes } from "./calendar";
+import {
+  ScheduleEditor,
+  type ScheduleDraft,
+} from "./components/ScheduleEditor";
 import { usePlanner } from "./usePlanner";
+import { usePomodoro } from "./usePomodoro";
+import { PomodoroMiniBar } from "./components/PomodoroMiniBar";
 import { Modal } from "./components/Modal";
 import { Navigation } from "./components/Navigation";
 import i18n from "./i18n";
 const Stats = lazy(() => import("./components/Stats"));
+const PomodoroPage = lazy(() => import("./components/PomodoroPage"));
 const Board = lazy(() =>
   import("./components/Board").then((module) => ({ default: module.Board })),
+);
+const CalendarPlanner = lazy(() =>
+  import("./components/CalendarPlanner").then((module) => ({
+    default: module.CalendarPlanner,
+  })),
 );
 const TaskEditor = lazy(() =>
   import("./components/TaskEditor").then((module) => ({
@@ -89,6 +107,7 @@ type Dialog = {
   pid?: string;
   stepId?: string;
   source?: Week;
+  schedule?: ScheduleDraft;
 };
 type InstallEvent = Event & { prompt: () => Promise<void> };
 const formatDay = (day: string, lang: string) =>
@@ -97,33 +116,10 @@ const formatDay = (day: string, lang: string) =>
     month: "short",
     timeZone: "UTC",
   }).format(new Date(day + "T12:00:00Z"));
-const range = (start: string, lang: string) => {
-  const a = new Date(start + "T12:00:00Z"),
-    b = new Date(shiftDate(start, 6) + "T12:00:00Z");
-  const locale = lang === "vi" ? "vi-VN" : "en-GB";
-  const month = new Intl.DateTimeFormat(locale, {
-    month: "long",
-    timeZone: "UTC",
-  }).format(b);
-  if (
-    a.getUTCMonth() === b.getUTCMonth() &&
-    a.getUTCFullYear() === b.getUTCFullYear()
-  )
-    return `${a.getUTCDate()}–${b.getUTCDate()} ${lang === "vi" ? month.toLocaleLowerCase("vi-VN") : month}${lang === "vi" ? "," : ""} ${b.getUTCFullYear()}`;
-  return (
-    new Intl.DateTimeFormat(locale, {
-      day: "numeric",
-      month: "long",
-      timeZone: "UTC",
-    }).format(a) +
-    " – " +
-    new Intl.DateTimeFormat(locale, {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-      timeZone: "UTC",
-    }).format(b)
-  );
+const range = (start: string) => {
+  const shortDate = (day: string) =>
+    `${day.slice(8, 10)}/${day.slice(5, 7)}/${day.slice(2, 4)}`;
+  return `${shortDate(start)} - ${shortDate(shiftDate(start, 6))}`;
 };
 
 function CopyDialog({
@@ -277,13 +273,46 @@ function PasteDialog({
   );
 }
 
-export default function App() {
+export default function App({
+  onNavigate,
+}: {
+  onNavigate?: (path: string) => void;
+}) {
   const { t } = useTranslation(),
     store = usePlanner();
-  const [route, setRoute] = useState("plan"),
+  const pomodoro = usePomodoro(
+    store.scope,
+    store.ready && !store.mergeRequest,
+    store.refreshPomodoroHistory,
+  );
+  const english = i18n.language.startsWith("en");
+  const navigateSite = (event: MouseEvent<HTMLAnchorElement>, path: string) => {
+    if (
+      !onNavigate ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    void store.flush().then(
+      () => onNavigate(path),
+      () => store.setError("error"),
+    );
+  };
+  const [route, setRoute] = useState(() =>
+      window.location.hash === "#pomodoro" ? "pomodoro" : "plan",
+    ),
     [start, setStart] = useState(
       () => localStorage.getItem("weekdam:viewed-week") ?? weekStart(today()),
     );
+  const [plannerView, setPlannerView] = useState(() =>
+    localStorage.getItem("weekdam:planner-view") === "calendar"
+      ? "calendar"
+      : "board",
+  );
   const [date, setDate] = useState(today),
     [selectedDay, setSelectedDay] = useState(() =>
       Math.max(
@@ -341,6 +370,9 @@ export default function App() {
     localStorage.setItem("weekdam:viewed-week", start);
   }, [start]);
   useEffect(() => {
+    localStorage.setItem("weekdam:planner-view", plannerView);
+  }, [plannerView]);
+  useEffect(() => {
     const setInput = (method: string) => {
       if (document.documentElement.dataset.inputMethod !== method)
         document.documentElement.dataset.inputMethod = method;
@@ -383,11 +415,26 @@ export default function App() {
     return () => window.removeEventListener("beforeinstallprompt", event);
   }, []);
   useEffect(() => {
+    const openPomodoro = (event: MessageEvent) => {
+      if (event.data?.type === "OPEN_POMODORO") setRoute("pomodoro");
+    };
+    const hash = () => {
+      if (window.location.hash === "#pomodoro") setRoute("pomodoro");
+    };
+    navigator.serviceWorker?.addEventListener("message", openPomodoro);
+    window.addEventListener("hashchange", hash);
+    return () => {
+      navigator.serviceWorker?.removeEventListener("message", openPomodoro);
+      window.removeEventListener("hashchange", hash);
+    };
+  }, []);
+  useEffect(() => {
     const shortcuts = (e: KeyboardEvent) => {
       const editing = (e.target as HTMLElement)?.closest(
         "input,textarea,select,[contenteditable]",
       );
       if (
+        route !== "plan" ||
         editing ||
         dialog ||
         e.defaultPrevented ||
@@ -423,13 +470,27 @@ export default function App() {
       setRoute("plan");
       setFilter("");
     };
+  function openTaskPomodoro(task: Task, pid: string) {
+    void pomodoro.action({
+      type: "selectTask",
+      task: {
+        id: task.id,
+        name: task.name,
+        projectName:
+          week.projects.find((project) => project.id === pid)?.name ?? "",
+      },
+    });
+    setRoute("pomodoro");
+  }
   function mutate(fn: (next: Week) => void, label = "updated") {
     const next = clone(week);
     fn(next);
     store.commit(replaceWeek(store.plan, next), label);
   }
   function newTask(
-    day = selectedDay,
+    day: number | undefined = plannerView === "calendar"
+      ? undefined
+      : selectedDay,
     pid = activeFilter || week.projects[0]?.id,
   ) {
     if (week.ended) {
@@ -441,6 +502,108 @@ export default function App() {
       return;
     }
     setDialog({ kind: "task", task: blankTask(day), pid });
+  }
+  function newBacklogTask() {
+    if (week.ended) {
+      setDialog({ kind: "reopen" });
+      return;
+    }
+    const pid = activeFilter || week.projects[0]?.id;
+    if (pid) setDialog({ kind: "task", task: blankTask(), pid });
+    else setDialog({ kind: "project" });
+  }
+  function bulkAddTasks(names: string[]) {
+    if (week.ended) return;
+    const accepted = names
+      .map((name) => name.trim().slice(0, 500))
+      .filter(Boolean);
+    if (!accepted.length) return;
+    mutate((next) => {
+      let project =
+        next.projects.find((item) => item.id === activeFilter) ??
+        next.projects[0];
+      if (!project) {
+        project = { id: id(), name: t("scheduleTask"), tasks: [] };
+        next.projects.push(project);
+      }
+      project.tasks.push(...accepted.map((name) => ({ ...blankTask(), name })));
+    });
+  }
+  function openSchedule(
+    task: Task,
+    _pid: string,
+    day: number,
+    startMinute: number,
+    step?: Subtask,
+  ) {
+    if (week.ended) {
+      setDialog({ kind: "reopen" });
+      return;
+    }
+    setDialog({
+      kind: "schedule",
+      schedule: { taskId: task.id, day, startMinute, step },
+    });
+  }
+  function chooseSlot(day: number, startMinute: number) {
+    const project = shown.find((item) => item.tasks.length);
+    if (project) openSchedule(project.tasks[0], project.id, day, startMinute);
+    else newBacklogTask();
+  }
+  function editSession(stepId: string) {
+    for (const project of week.projects)
+      for (const task of project.tasks) {
+        const step = task.subtasks.find((item) => item.id === stepId);
+        if (step) {
+          openSchedule(
+            task,
+            project.id,
+            step.day,
+            step.startTime ? timeToMinutes(step.startTime) : 540,
+            step,
+          );
+          return;
+        }
+      }
+  }
+  function saveSession(taskId: string, projectId: string, step: Subtask) {
+    if (week.ended) return;
+    mutate((next) => {
+      const previous = clone(next.projects);
+      const task = next.projects
+        .find((project) => project.id === projectId)
+        ?.tasks.find((item) => item.id === taskId);
+      if (!task) return;
+      const index = task.subtasks.findIndex((item) => item.id === step.id);
+      if (index >= 0) task.subtasks[index] = step;
+      else task.subtasks.push(step);
+      task.done = taskDone(task);
+      next.projects = placeEditedTask(previous, next.projects, task.id);
+    });
+    close();
+  }
+  function changeSession(stepId: string, remove: boolean) {
+    if (week.ended) return;
+    mutate(
+      (next) => {
+        for (const project of next.projects)
+          for (const task of project.tasks) {
+            if (remove)
+              task.subtasks = task.subtasks.filter(
+                (step) => step.id !== stepId,
+              );
+            else {
+              const step = task.subtasks.find((item) => item.id === stepId);
+              if (step) {
+                delete step.startTime;
+                delete step.endTime;
+              }
+            }
+          }
+      },
+      remove ? "deleted" : "updated",
+    );
+    close();
   }
   function editTask(task: Task, pid: string) {
     if (week.ended) {
@@ -543,6 +706,7 @@ export default function App() {
   }
   const nav = [
     { key: "plan", icon: CalendarDays },
+    { key: "pomodoro", icon: Timer },
     { key: "stats", icon: ChartNoAxesColumn },
     { key: "weeks", icon: Archive },
   ];
@@ -661,6 +825,27 @@ export default function App() {
           >
             weekdam
           </a>
+          <nav
+            className="workspace-site-links"
+            aria-label={english ? "Website" : "Trang web"}
+          >
+            <a
+              className="text-button"
+              href="/"
+              onClick={(event) => navigateSite(event, "/")}
+            >
+              <Home size={15} aria-hidden="true" />
+              {english ? "Home" : "Trang chủ"}
+            </a>
+            <a
+              className="text-button"
+              href="/guide"
+              onClick={(event) => navigateSite(event, "/guide")}
+            >
+              <BookOpen size={15} aria-hidden="true" />
+              {english ? "Guide" : "Hướng dẫn"}
+            </a>
+          </nav>
           <div className="workspace-summary">
             {!mobile && route === "plan" ? (
               <div className="workspace-progress">{progressIndicator}</div>
@@ -690,9 +875,15 @@ export default function App() {
                   " " +
                   getISOWeek(parseISO(start)) +
                   (!mobile ? " · " + weekHint : "")
-                : t(route === "stats" ? "statsSubtitle" : "weeksSubtitle")}
+                : t(
+                    route === "pomodoro"
+                      ? "pomodoroSubtitle"
+                      : route === "stats"
+                        ? "statsSubtitle"
+                        : "weeksSubtitle",
+                  )}
             </p>
-            <h1>{route === "plan" ? range(start, i18n.language) : t(route)}</h1>
+            <h1>{route === "plan" ? range(start) : t(route)}</h1>
           </div>
           <div className="header-actions">
             {!mobile && route === "plan" ? (
@@ -733,6 +924,25 @@ export default function App() {
             </button>
           </div>
         ) : null}
+        {route !== "pomodoro" && pomodoro.error ? (
+          <p className="pomodoro-message is-error" role="alert">
+            {pomodoro.error}
+          </p>
+        ) : null}
+        {route !== "pomodoro" && pomodoro.notice ? (
+          <p className="pomodoro-message" role="status">
+            {pomodoro.notice}
+          </p>
+        ) : null}
+        {route !== "pomodoro" &&
+        pomodoro.runtime &&
+        pomodoro.runtime.status !== "ready" ? (
+          <PomodoroMiniBar
+            runtime={pomodoro.runtime}
+            onAction={pomodoro.action}
+            onOpen={() => setRoute("pomodoro")}
+          />
+        ) : null}
         {route === "plan" ? (
           <>
             {mobile ? (
@@ -745,7 +955,72 @@ export default function App() {
                 <p className="week-hint">{weekHint}</p>
               </>
             ) : null}
-            {!week.projects.length ? (
+            <div className="planner-view-toolbar">
+              <div
+                className="planner-view-switch"
+                role="group"
+                aria-label={t("planView")}
+              >
+                <button
+                  aria-pressed={plannerView === "calendar"}
+                  onClick={() => setPlannerView("calendar")}
+                >
+                  {t("calendarView")}
+                </button>
+                <button
+                  aria-pressed={plannerView === "board"}
+                  onClick={() => setPlannerView("board")}
+                >
+                  {t("boardView")}
+                </button>
+              </div>
+              <label className="planner-week-jump">
+                <span>{t("chooseWeek")}</span>
+                <input
+                  type="date"
+                  value={start}
+                  onChange={(event) => {
+                    if (event.target.value) {
+                      close();
+                      navigate(weekStart(event.target.value));
+                    }
+                  }}
+                />
+              </label>
+            </div>
+            {plannerView === "calendar" ? (
+              <Suspense fallback={<p role="status">{t("loading")}</p>}>
+                <CalendarPlanner
+                  key={store.scope + start + activeFilter}
+                  start={start}
+                  projects={shown}
+                  ended={week.ended}
+                  todayDate={date}
+                  mobile={mobile}
+                  selectedDay={selectedDay}
+                  onSelectDay={setSelectedDay}
+                  onAddTask={newBacklogTask}
+                  onBulkAdd={bulkAddTasks}
+                  onEditTask={editTask}
+                  onToggleTask={toggleTask}
+                  onPomodoro={openTaskPomodoro}
+                  onSchedule={openSchedule}
+                  onEditSession={editSession}
+                  onChooseSlot={chooseSlot}
+                  onReschedule={(stepId, day, minute) => {
+                    if (!week.ended)
+                      mutate((next) => {
+                        next.projects = rescheduleSession(
+                          next.projects,
+                          stepId,
+                          day,
+                          minute,
+                        );
+                      });
+                  }}
+                />
+              </Suspense>
+            ) : !week.projects.length ? (
               <div className="onboarding">
                 <div className="onboarding-mark">
                   <CalendarDays size={29} />
@@ -809,6 +1084,7 @@ export default function App() {
                     })
                   }
                   onEdit={editTask}
+                  onPomodoro={openTaskPomodoro}
                   onMove={openMove}
                   onAdd={(day) => newTask(day)}
                   onClearMissed={(sid, day) =>
@@ -826,6 +1102,19 @@ export default function App() {
               </Suspense>
             )}
           </>
+        ) : route === "pomodoro" ? (
+          <Suspense fallback={<p role="status">{t("loading")}</p>}>
+            <PomodoroPage
+              runtime={pomodoro.runtime}
+              projects={week.projects}
+              sessions={store.plan.pomodoroSessions ?? []}
+              onAction={pomodoro.action}
+              onEnableNotifications={pomodoro.enableNotifications}
+              onRetry={pomodoro.retry}
+              error={pomodoro.error}
+              notice={pomodoro.notice}
+            />
+          </Suspense>
         ) : route === "stats" ? (
           <Suspense fallback={<p>{t("loading")}</p>}>
             <Stats plan={store.plan} onWeek={navigate} />
@@ -847,7 +1136,7 @@ export default function App() {
                           className="history-title"
                           onClick={() => navigate(w.start)}
                         >
-                          {range(w.start, i18n.language)}
+                          {range(w.start)}
                         </button>
                       </div>
                       <div className="history-progress">
@@ -858,7 +1147,7 @@ export default function App() {
                         <div
                           className="progress-track"
                           role="progressbar"
-                          aria-label={range(w.start, i18n.language)}
+                          aria-label={range(w.start)}
                           aria-valuenow={p.percent}
                           aria-valuemin={0}
                           aria-valuemax={100}
@@ -1014,6 +1303,7 @@ export default function App() {
         ) : null}
         {dialog?.kind === "task" ? (
           <TaskEditor
+            calendarMode={plannerView === "calendar"}
             task={dialog.task!}
             projectId={dialog.pid!}
             projects={week.projects}
@@ -1040,6 +1330,25 @@ export default function App() {
             }
           />
         ) : null}
+        {dialog?.kind === "schedule" && dialog.schedule ? (
+          <ScheduleEditor
+            start={start}
+            projects={week.projects}
+            initial={dialog.schedule}
+            onClose={close}
+            onSave={saveSession}
+            onDelete={
+              dialog.schedule.step
+                ? () => changeSession(dialog.schedule!.step!.id, true)
+                : undefined
+            }
+            onUntime={
+              dialog.schedule.step?.startTime
+                ? () => changeSession(dialog.schedule!.step!.id, false)
+                : undefined
+            }
+          />
+        ) : null}
         {dialog?.kind === "projects" ? (
           <ProjectsManager
             onCreate={() => setDialog({ kind: "project" })}
@@ -1051,7 +1360,15 @@ export default function App() {
                 ? setDialog({ kind: "reopen" })
                 : setDialog({ kind: "project", project: p })
             }
-            onAdd={(pid) => newTask(selectedDay, pid)}
+            onAdd={(pid) => {
+              if (plannerView === "calendar")
+                setDialog({
+                  kind: week.ended ? "reopen" : "task",
+                  task: blankTask(),
+                  pid,
+                });
+              else newTask(selectedDay, pid);
+            }}
             onTask={editTask}
             onToggle={toggleTask}
             onReorder={(key, target, kind, parent) =>
@@ -1286,9 +1603,7 @@ export default function App() {
                 onChange={(e) => setTarget(e.target.value)}
               />
             </label>
-            <p className="muted">
-              {target ? range(weekStart(target), i18n.language) : ""}
-            </p>
+            <p className="muted">{target ? range(weekStart(target)) : ""}</p>
             <footer className="dialog-actions">
               <button type="button" className="secondary" onClick={close}>
                 {t("cancel")}
@@ -1389,6 +1704,14 @@ export default function App() {
             />
             {t("guide")}
           </label>
+          <a
+            className="secondary"
+            href="/guide"
+            onClick={(event) => navigateSite(event, "/guide")}
+          >
+            <BookOpen size={17} aria-hidden="true" />
+            {english ? "Open user guide" : "Mở hướng dẫn sử dụng"}
+          </a>
           <div className="settings-section">
             <h3>{t("backup")}</h3>
             <div className="button-row">
