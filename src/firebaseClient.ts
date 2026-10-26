@@ -1,16 +1,10 @@
 import type { User } from "firebase/auth";
 import type { CloudRecord } from "./records";
 import { createWriteQueue } from "./writeQueue";
-export const emulatorMode =
-  import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true";
-export const firebaseConfigured =
-  emulatorMode ||
-  Boolean(
-    import.meta.env.VITE_FIREBASE_API_KEY &&
-    import.meta.env.VITE_FIREBASE_PROJECT_ID &&
-    import.meta.env.VITE_FIREBASE_AUTH_DOMAIN &&
-    import.meta.env.VITE_FIREBASE_APP_ID,
-  );
+import { resolveFirebaseConfig } from "./firebaseConfig";
+const config = resolveFirebaseConfig(import.meta.env);
+export const emulatorMode = config.emulatorMode;
+export const firebaseConfigured = config.configured;
 let instance: Promise<FirebaseClient> | undefined;
 export type FirebaseClient = Awaited<ReturnType<typeof initializeClient>>;
 export function getFirebaseClient() {
@@ -26,9 +20,7 @@ async function initializeClient() {
     import("firebase/app"),
     import("firebase/auth"),
   ]);
-  const projectId =
-    import.meta.env.VITE_FIREBASE_PROJECT_ID ||
-    (emulatorMode ? "demo-weekdam" : "");
+  const projectId = config.projectId;
   if (!firebaseConfigured || (emulatorMode && !projectId.startsWith("demo-")))
     throw new Error("firebase-configuration");
   const app = appModule.initializeApp({
@@ -74,6 +66,7 @@ async function initializeClient() {
   return {
     projectId,
     auth,
+    getDatabase,
     watchAuth: (callback: (user: User | null) => void) =>
       authModule.onAuthStateChanged(auth, callback),
     login: (language: string) => {

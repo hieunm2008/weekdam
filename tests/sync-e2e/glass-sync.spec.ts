@@ -107,7 +107,7 @@ async function storedRank(page: Page, uid: string, id: string, rank: number) {
             };
           },
         );
-      }, `account:demo-weekdam:${uid}`);
+      }, `account:demo-weekdam-pro:${uid}`);
       return {
         rank:
           saved.plan &&

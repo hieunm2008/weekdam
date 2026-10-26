@@ -1,0 +1,17 @@
+{
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "weekdam Pro Demo",
+        "supportEmail": "hieuthecoder@gmail.com",
+        "authorizedRedirectUris": [
+          "https://weekdam-pro-demo-2026.firebaseapp.com/__/auth/handler",
+          "https://weekdam-pro-demo-2026.web.app/__/auth/handler",
+          "https://weekdam.web.app/__/auth/handler",
+          "https://weekdam.firebaseapp.com/__/auth/handler",
+          "http://localhost"
+        ]
+      }
+    }
+  }
+}

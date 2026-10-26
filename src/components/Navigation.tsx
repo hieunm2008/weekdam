@@ -12,6 +12,7 @@ import {
   Check,
   CloudOff,
   Timer,
+  Crown,
 } from "lucide-react";
 import type { Project } from "../domain";
 
@@ -96,6 +97,7 @@ export function Navigation({
             { key: "pomodoro", icon: Timer },
             { key: "stats", icon: ChartNoAxesColumn },
             { key: "weeks", icon: Archive },
+            { key: "pro", icon: Crown },
           ].map(({ key, icon: Icon }) => (
             <button
               key={key}

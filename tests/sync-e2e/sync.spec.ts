@@ -37,6 +37,11 @@ test("syncs two devices, persists offline edits across reload, and isolates sign
   await expect(
     phone.getByTestId("day-work").getByText("Cross-device reading"),
   ).toBeVisible();
+  // Data sync can finish before the fresh PWA installation finishes precaching.
+  // Offline navigation requires an active service worker, not only a synced plan.
+  await phone.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+  });
   await b.setOffline(true);
   await phone
     .getByTestId("day-work")

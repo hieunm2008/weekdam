@@ -75,7 +75,7 @@ async function savedSession(page: Page, uid: string) {
         };
       },
     );
-  }, `account:demo-weekdam:${uid}`);
+  }, `account:demo-weekdam-pro:${uid}`);
   const step = saved.plan?.weeks
     .flatMap((week) =>
       week.projects.flatMap((project) =>

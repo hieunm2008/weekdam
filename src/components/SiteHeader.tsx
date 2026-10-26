@@ -42,7 +42,7 @@ export function SiteLink({
 export function SiteHeader({
   onNavigate,
   page,
-}: SiteProps & { page: "landing" | "guide" }) {
+}: SiteProps & { page: "landing" | "guide" | "pricing" }) {
   const { i18n: language } = useTranslation();
   const vi = !language.language.startsWith("en");
   const switchLanguage = () => {
@@ -96,6 +96,13 @@ export function SiteHeader({
             aria-current={page === "guide" ? "page" : undefined}
           >
             {vi ? "Hướng dẫn" : "Guide"}
+          </SiteLink>
+          <SiteLink
+            href="/pricing"
+            onNavigate={onNavigate}
+            aria-current={page === "pricing" ? "page" : undefined}
+          >
+            {vi ? "Bảng giá" : "Pricing"}
           </SiteLink>
         </nav>
         <div className="site-header-actions">

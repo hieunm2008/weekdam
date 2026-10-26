@@ -90,11 +90,21 @@ export async function ordered(page: Page, names: string[], day = 3) {
   ).toHaveText(names);
 }
 export async function keyboardMove(page: Page, id: string, key: string) {
-  await page.locator(`[data-step-id="${id}"] .drag-handle`).focus();
+  const grip = page.locator(`[data-step-id="${id}"] .drag-handle`);
+  const live = page.locator('[id^="DndLiveRegion"]');
+  await grip.focus();
   await page.keyboard.press("Space");
   await expect(
     page.locator(`.drag-preview[data-overlay-id="${id}"]`),
   ).toBeVisible();
+  await expect(grip).toHaveAttribute("aria-pressed", "true");
+  await expect(live).toContainText(/^(Đã nhấc|Picked up)/);
   await page.keyboard.press(key);
+  // Wait for the app's destination state before dropping. Sending both keys in
+  // one render turn can finish the drag before the keyboard sensor measures it.
+  await expect(live).toContainText(/^(Đích:|Destination:)/);
   await page.keyboard.press("Space");
+  await expect(
+    page.locator(`.drag-preview[data-overlay-id="${id}"]`),
+  ).toHaveCount(0);
 }

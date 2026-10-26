@@ -5,6 +5,9 @@ import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig(({ mode }) => ({
+  server: {
+    watch: { ignored: ["**/.tmp/**", "**/.tools/**", "**/test-results/**"] },
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -47,6 +50,7 @@ export default defineConfig(({ mode }) => ({
             input: {
               app: resolve("index.html"),
               auth: resolve("tests/fixtures/auth.html"),
+              pro: resolve("tests/fixtures/pro.html"),
             },
           },
         }

@@ -6,6 +6,7 @@ import {
 } from "./boardOrder";
 import { validTimeRange } from "./calendar";
 import type { PomodoroSession } from "./pomodoro";
+import type { ProPlanData, TaskSource } from "./pro/types";
 import { mergePomodoroSessions, validPomodoroSession } from "./pomodoroHistory";
 export {
   dayCards,
@@ -26,6 +27,7 @@ export interface Subtask {
   dayOrder?: number;
   startTime?: string;
   endTime?: string;
+  source?: TaskSource;
 }
 export interface Task {
   id: string;
@@ -34,6 +36,7 @@ export interface Task {
   done: boolean;
   deadline?: string;
   subtasks: Subtask[];
+  source?: TaskSource;
 }
 export interface Project {
   id: string;
@@ -51,11 +54,15 @@ export interface Plan {
   version: 1;
   weeks: Week[];
   pomodoroSessions?: PomodoroSession[];
+  pro?: ProPlanData;
 }
 export const emptyPlan = (): Plan => ({ version: 1, weeks: [] });
 export const hasPlanData = (plan: Plan): boolean =>
   Boolean(
     plan.pomodoroSessions?.length ||
+    plan.pro?.templates?.length ||
+    plan.pro?.recurrenceRules?.length ||
+    plan.pro?.reminders ||
     plan.weeks.some((week) => week.projects.length),
   );
 export const id = () => crypto.randomUUID();
@@ -148,15 +155,20 @@ export function taskDone(task: Task): boolean {
   return task.subtasks.length ? task.subtasks.every((s) => s.done) : task.done;
 }
 export function copyProjects(projects: Project[], keep: boolean): Project[] {
+  const independent = <T extends { source?: TaskSource }>(item: T): T => {
+    const copy = clone(item);
+    delete copy.source;
+    return copy;
+  };
   const copies = projects.map((p) => ({
     ...clone(p),
     id: id(),
     tasks: p.tasks.map((t) => ({
-      ...clone(t),
+      ...independent(t),
       id: id(),
       done: keep ? t.done : false,
       subtasks: t.subtasks.map((s) => ({
-        ...clone(s),
+        ...independent(s),
         id: id(),
         done: keep ? s.done : false,
         missed: keep ? [...s.missed] : [],
@@ -176,7 +188,7 @@ export function endWeek(data: Plan, start: string, carry: boolean): Plan {
       .map((p) => ({
         ...p,
         tasks: p.tasks
-          .filter((t) => !taskDone(t))
+          .filter((t) => !taskDone(t) && t.source?.kind !== "recurrence")
           .map((t) => ({ ...t, subtasks: t.subtasks.filter((s) => !s.done) })),
       }))
       .filter((p) => p.tasks.length);
@@ -201,6 +213,27 @@ export function moveWeek(data: Plan, start: string, target: string): Plan {
   const result = clone(data);
   const source = result.weeks.find((w) => w.start === start);
   if (!source || source.ended) throw new Error("cannot-move");
+  const dateShift = Math.round(
+    (Date.parse(target) - Date.parse(start)) / 86400000,
+  );
+  const relocatedSource = (
+    metadata: TaskSource | undefined,
+  ): TaskSource | undefined =>
+    metadata?.kind === "recurrence"
+      ? {
+          ...metadata,
+          detached: true,
+          ...(metadata.occurrenceDate
+            ? { occurrenceDate: shiftDate(metadata.occurrenceDate, dateShift) }
+            : {}),
+        }
+      : metadata;
+  for (const project of source.projects)
+    for (const task of project.tasks) {
+      if (task.source) task.source = relocatedSource(task.source);
+      for (const step of task.subtasks)
+        if (step.source) step.source = relocatedSource(step.source);
+    }
   source.start = target;
   return {
     ...result,
@@ -219,6 +252,33 @@ function validDate(value: unknown): value is string {
 }
 function text(value: unknown, max = 10000): value is string {
   return typeof value === "string" && value.length <= max;
+}
+function onlyKeys(value: object, keys: string[]): boolean {
+  return Object.keys(value).every((key) => keys.includes(key));
+}
+function validSource(source: TaskSource | undefined): boolean {
+  return (
+    source === undefined ||
+    Boolean(
+      source &&
+      onlyKeys(source, [
+        "kind",
+        "operationId",
+        "seriesId",
+        "occurrenceDate",
+        "detached",
+      ]) &&
+      ["exam", "recurrence"].includes(source.kind) &&
+      text(source.operationId, 200) &&
+      /^[A-Za-z0-9_.:-]+$/.test(source.operationId) &&
+      (source.seriesId === undefined ||
+        (text(source.seriesId, 200) &&
+          /^[A-Za-z0-9_.:-]+$/.test(source.seriesId))) &&
+      (source.occurrenceDate === undefined ||
+        validDate(source.occurrenceDate)) &&
+      (source.detached === undefined || typeof source.detached === "boolean"),
+    )
+  );
 }
 export function parseBackup(raw: string): Plan {
   if (raw.length > 5_000_000) throw new Error("backup-too-large");
@@ -281,7 +341,8 @@ export function parseBackup(raw: string): Plan {
           !text(t.note) ||
           typeof t.done !== "boolean" ||
           !Array.isArray(t.subtasks) ||
-          !deadline(t.deadline)
+          !deadline(t.deadline) ||
+          !validSource(t.source)
         )
           throw new Error("invalid-task");
         acceptId(t);
@@ -299,7 +360,8 @@ export function parseBackup(raw: string): Plan {
             new Set(s.missed).size !== s.missed.length ||
             ((s.startTime !== undefined || s.endTime !== undefined) &&
               !validTimeRange(s.startTime!, s.endTime!)) ||
-            (s.dayOrder !== undefined && !validDayOrder(s.dayOrder))
+            (s.dayOrder !== undefined && !validDayOrder(s.dayOrder)) ||
+            !validSource(s.source)
           )
             throw new Error("invalid-subtask");
           acceptId(s);
@@ -312,7 +374,135 @@ export function parseBackup(raw: string): Plan {
       throw new Error("invalid-pomodoro-session");
     acceptId(session);
   }
-  return clone(data);
+  if (data.pro !== undefined) {
+    const pro = data.pro;
+    if (!pro || typeof pro !== "object" || Array.isArray(pro))
+      throw new Error("invalid-pro");
+    for (const key of Object.keys(pro))
+      if (
+        ![
+          "templates",
+          "recurrenceRules",
+          "appliedOperations",
+          "reminders",
+        ].includes(key)
+      )
+        throw new Error("invalid-pro");
+    if (pro.templates !== undefined) {
+      if (!Array.isArray(pro.templates) || pro.templates.length > 200)
+        throw new Error("invalid-template");
+      for (const template of pro.templates) {
+        if (
+          !template ||
+          !onlyKeys(template, ["id", "name", "sourceWeek", "projects"]) ||
+          !text(template.name, 300) ||
+          !template.name.trim() ||
+          !validDate(template.sourceWeek) ||
+          weekStart(template.sourceWeek) !== template.sourceWeek ||
+          !Array.isArray(template.projects)
+        )
+          throw new Error("invalid-template");
+        acceptId(template);
+        parseBackup(
+          JSON.stringify({
+            version: 1,
+            weeks: [
+              {
+                id: "template-week",
+                start: template.sourceWeek,
+                ended: false,
+                projects: template.projects,
+              },
+            ],
+          }),
+        );
+        if (
+          template.projects.some((p) =>
+            p.tasks.some((t) => t.source || t.subtasks.some((s) => s.source)),
+          )
+        )
+          throw new Error("invalid-template-source");
+      }
+    }
+    if (pro.recurrenceRules !== undefined) {
+      if (
+        !Array.isArray(pro.recurrenceRules) ||
+        pro.recurrenceRules.length > 1000
+      )
+        throw new Error("invalid-recurrence");
+      for (const rule of pro.recurrenceRules) {
+        if (
+          !rule ||
+          !onlyKeys(rule, [
+            "id",
+            "operationId",
+            "name",
+            "note",
+            "weight",
+            "days",
+            "startTime",
+            "endTime",
+            "startDate",
+            "endDate",
+            "stoppedFrom",
+          ]) ||
+          !text(rule.name, 500) ||
+          !rule.name.trim() ||
+          !text(rule.note) ||
+          !text(rule.operationId, 200) ||
+          !/^[A-Za-z0-9_.:-]+$/.test(rule.operationId) ||
+          ![1, 2, 3].includes(rule.weight) ||
+          !Array.isArray(rule.days) ||
+          !rule.days.length ||
+          rule.days.length > 7 ||
+          new Set(rule.days).size !== rule.days.length ||
+          rule.days.some((d) => !Number.isInteger(d) || d < 0 || d > 6) ||
+          !validTimeRange(rule.startTime, rule.endTime) ||
+          !validDate(rule.startDate) ||
+          !validDate(rule.endDate) ||
+          rule.endDate < rule.startDate ||
+          rule.endDate > shiftDate(rule.startDate, 181) ||
+          (rule.stoppedFrom !== undefined && !validDate(rule.stoppedFrom))
+        )
+          throw new Error("invalid-recurrence");
+        acceptId(rule);
+      }
+    }
+    if (
+      pro.appliedOperations !== undefined &&
+      (!Array.isArray(pro.appliedOperations) ||
+        pro.appliedOperations.length > 20000 ||
+        new Set(pro.appliedOperations).size !== pro.appliedOperations.length ||
+        pro.appliedOperations.some(
+          (op) => !text(op, 200) || !/^[A-Za-z0-9_.:-]+$/.test(op),
+        ))
+    )
+      throw new Error("invalid-operations");
+    if (pro.reminders !== undefined) {
+      const r = pro.reminders;
+      if (
+        !r ||
+        !onlyKeys(r, ["enabled", "offsetsMinutes", "browserNotifications"]) ||
+        typeof r.enabled !== "boolean" ||
+        typeof r.browserNotifications !== "boolean" ||
+        !Array.isArray(r.offsetsMinutes) ||
+        r.offsetsMinutes.length > 20 ||
+        new Set(r.offsetsMinutes).size !== r.offsetsMinutes.length ||
+        r.offsetsMinutes.some(
+          (n) => !Number.isInteger(n) || n <= 0 || n > 525600,
+        )
+      )
+        throw new Error("invalid-reminders");
+    }
+  }
+  return clone({
+    version: 1,
+    weeks: data.weeks,
+    ...(data.pomodoroSessions !== undefined
+      ? { pomodoroSessions: data.pomodoroSessions }
+      : {}),
+    ...(data.pro !== undefined ? { pro: data.pro } : {}),
+  });
 }
 export function mergePlans(local: Plan, incoming: Plan): Plan {
   const result = clone(local),
@@ -328,8 +518,11 @@ export function mergePlans(local: Plan, incoming: Plan): Plan {
       ]),
     ]),
     ...(local.pomodoroSessions ?? []).map((session) => session.id),
+    ...(local.pro?.templates ?? []).map((template) => template.id),
+    ...(local.pro?.recurrenceRules ?? []).map((rule) => rule.id),
   ]);
   const importedTaskIds = new Map<string, string>();
+  const appendedTaskIds = new Set<string>();
   for (const source of incoming.weeks) {
     let target = result.weeks.find((w) => w.start === source.start);
     if (!target) {
@@ -356,12 +549,26 @@ export function mergePlans(local: Plan, incoming: Plan): Plan {
         project.id,
         ...project.tasks.flatMap((t) => [t.id, ...t.subtasks.map((s) => s.id)]),
       ];
-      const copy = entities.some((key) => used.has(key))
-        ? copyProjects([project], true)[0]
-        : clone(project);
+      // A merge preserves imported planning provenance. Clipboard copies are
+      // deliberately independent, so copyProjects must not be used here.
+      const copy = clone(project);
+      if (entities.some((key) => used.has(key))) {
+        const freshId = () => {
+          let key = id();
+          while (used.has(key)) key = id();
+          used.add(key);
+          return key;
+        };
+        copy.id = freshId();
+        for (const task of copy.tasks) {
+          task.id = freshId();
+          for (const step of task.subtasks) step.id = freshId();
+        }
+      }
       project.tasks.forEach((task, index) =>
         importedTaskIds.set(task.id, copy.tasks[index].id),
       );
+      copy.tasks.forEach((task) => appendedTaskIds.add(task.id));
       addedSources.push(project);
       addedCopies.push(copy);
       for (const key of [
@@ -397,6 +604,55 @@ export function mergePlans(local: Plan, incoming: Plan): Plan {
       result.pomodoroSessions,
       importedSessions,
     );
+  if (local.pro || incoming.pro) {
+    const mergeEntities = <T extends { id: string }>(
+      a: T[] = [],
+      b: T[] = [],
+      onRemap?: (from: string, to: string) => void,
+    ): T[] => {
+      const merged = clone(a);
+      for (const item of b) {
+        const existing = merged.find((x) => x.id === item.id);
+        if (existing && sameContent(existing, item)) continue;
+        let nextId = item.id;
+        if (existing || used.has(nextId)) {
+          do {
+            nextId = id();
+          } while (used.has(nextId));
+          onRemap?.(item.id, nextId);
+        }
+        merged.push({ ...clone(item), id: nextId });
+        used.add(nextId);
+      }
+      return merged;
+    };
+    const remapSeries = (from: string, to: string) => {
+      for (const week of result.weeks)
+        for (const project of week.projects)
+          for (const task of project.tasks) {
+            if (!appendedTaskIds.has(task.id)) continue;
+            if (task.source?.seriesId === from) task.source.seriesId = to;
+            for (const step of task.subtasks)
+              if (step.source?.seriesId === from) step.source.seriesId = to;
+          }
+    };
+    result.pro = {
+      ...clone(incoming.pro ?? {}),
+      ...clone(local.pro ?? {}),
+      templates: mergeEntities(local.pro?.templates, incoming.pro?.templates),
+      recurrenceRules: mergeEntities(
+        local.pro?.recurrenceRules,
+        incoming.pro?.recurrenceRules,
+        remapSeries,
+      ),
+      appliedOperations: [
+        ...new Set([
+          ...(local.pro?.appliedOperations ?? []),
+          ...(incoming.pro?.appliedOperations ?? []),
+        ]),
+      ],
+    };
+  }
   return {
     ...result,
     weeks: result.weeks.sort((a, b) => a.start.localeCompare(b.start)),

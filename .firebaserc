@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "weekdam-hieu-2026"
+    "default": "weekdam-pro-demo-2026",
+    "emulator": "demo-weekdam-pro"
   }
 }

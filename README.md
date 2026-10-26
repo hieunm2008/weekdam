@@ -2,6 +2,22 @@
 
 Weekly planner cá nhân cho desktop và Android, định hướng PWA local-first và đồng bộ miễn phí.
 
+## weekdam Pro cho đồ án — bản demo ngày 23/10/2026
+
+Nhánh hiện tại bổ sung `/pricing`, mục **Pro**, dùng thử 7 ngày một lần mỗi tài khoản Google và checkout **“Thanh toán mô phỏng — không thu tiền”**. Giá khảo sát là **29.000đ/tháng, 249.000đ/năm**; không tự gia hạn. Năm công cụ gồm ôn thi tự động, lịch lặp, thư viện mẫu, báo cáo học tập CSV/bản in và nhắc deadline trong app. Planner, lịch theo giờ, Pomodoro, thống kê cơ bản, đồng bộ và backup vẫn thuộc Free.
+
+Demo Pro đã deploy tại [weekdam.web.app](https://weekdam.web.app), có [bảng giá](https://weekdam.web.app/pricing) và [không gian Pro](https://weekdam.web.app/app#pro). Hosting site `weekdam` thuộc project thử nghiệm riêng `weekdam-pro-demo-2026`; project này có Web app, Firestore Standard Singapore, Google provider và authorized domains đã đọc lại xác nhận. Google login thật và đồng bộ trên hai thiết bị thật **chưa nghiệm thu**, được để lại sau theo yêu cầu người dùng. Website `weekdam-hieu-2026.web.app` dưới đây là bản Free đã phát hành trước đó; không deploy Pro vào project cũ.
+
+Khởi động: `npm ci`, sao chép `.env.example` thành `.env.local`, giữ Emulator bật; chạy `npm run emulators`, rồi `npm run dev` ở terminal khác. Wrapper tự tìm Java portable tại `.tools/jdk/`; nếu chưa có, cài Java 21+ trên PATH hoặc đặt `JAVA_HOME`.
+
+- [Firebase riêng và cách chuyển từ Emulator sang sandbox cloud](docs/pro-firebase-sandbox.md)
+- [Kịch bản video dưới 3 phút, phỏng vấn thật và khảo sát mức sẵn sàng trả tiền](docs/pro/DEMO.md)
+- [Bằng chứng kiểm thử Firebase](docs/pro/FIREBASE-VALIDATION.md)
+- [Project cloud riêng và bằng chứng cấu hình/deploy](docs/pro/CLOUD-SETUP.md)
+- [Nghiệm thu Pro và các phần còn chờ](docs/pro/ACCEPTANCE.md)
+
+Backup vẫn dùng version 1, thêm các trường Pro tùy chọn. Billing/receipt tách khỏi backup, merge và Undo. Hết Pro vẫn sửa/hoàn thành/xóa/sao lưu được dữ liệu đã tạo; tạo mới hoặc chạy công cụ Pro cần gói còn hạn. Nhắc việc chỉ quét khi app mở, mở lại gộp các mốc bị lỡ; quyền thông báo trình duyệt là tùy chọn.
+
 Mã nguồn mở theo [MIT License](LICENSE), tại [hieunm2008/weekdam](https://github.com/hieunm2008/weekdam). Xem [hướng dẫn đóng góp](CONTRIBUTING.md) và [ghi nhận bên thứ ba](THIRD_PARTY_NOTICES.md).
 
 App đã deploy tại [weekdam-hieu-2026.web.app](https://weekdam-hieu-2026.web.app): kế hoạch tuần/ngày, project/task/subtask, độ khó 1/2/3, drag chuột/cảm ứng/bàn phím, copy/paste, end/carry/reopen, Stats, lịch sử, undo, JSON backup, vi/en, theme và PWA offline. Firestore rules/indexes đã deploy; database Standard ở Singapore có free tier và billing chưa bật. Google provider production đã bật; ngày 09/10/2026 Hieu xác nhận đồng bộ thực, cài PWA Android và offline/reconnect thành công. Xem `docs/validation/ACCEPTANCE.md` để phân biệt kiểm thử tự động với nghiệm thu từ người dùng.
@@ -51,9 +67,11 @@ Chế độ Guest chạy ngay khi chưa có cấu hình Firebase. Chỉ cần t�
 
 `npm run test:production` kiểm tra URL Hosting đã deploy: Guest CRUD/persistence, PWA offline/restart/reconnect, mobile layout, manifest/auth handler, Firestore chặn đọc chưa đăng nhập và Google OAuth popup đến trang Google Accounts. Dữ liệu thử chỉ lưu Guest trong browser context tạm; lệnh không nhập credentials, đăng nhập hay ghi dữ liệu cloud. Báo cáo nằm trong `docs/validation/production-smoke.json`.
 
-E2E dùng Chrome đã cài qua Playwright. Rules/sync tests chỉ dùng `demo-weekdam`, không dùng project production. Nếu JDK nằm trong `.tools/jdk/`, wrapper tự tìm; nếu không, đặt `JAVA_HOME` và PATH cho Java 21+. Bản test sync có fixture đăng nhập bằng token Emulator; fixture không được build vào production.
+E2E dùng Chrome qua Playwright và bundle production tại `.tmp/dist-ui`, được phục vụ bằng static server cục bộ để kiểm tra cả PWA offline. Rules/sync tests chỉ dùng `demo-weekdam-pro`, không dùng project production. Nếu JDK nằm trong `.tools/jdk/`, wrapper tự tìm; nếu không, đặt `JAVA_HOME` và PATH cho Java 21+. Bản test sync có fixture đăng nhập bằng Auth Emulator; fixture chỉ được build khi bật Emulator. Chạy các suite trình duyệt tuần tự trên máy ít bộ nhớ; có thể thêm `--workers=1` cho E2E.
 
 ## Bật đồng bộ và deploy
+
+Đối với bản Pro hiện tại, làm theo [hướng dẫn Firebase sandbox riêng](docs/pro-firebase-sandbox.md), tạo project mới và bật `VITE_FIREBASE_PRO_SANDBOX=true` khi cấu hình cloud. Các bước bên dưới mô tả hệ thống Free gốc; không tái sử dụng `weekdam-hieu-2026` cho đồ án Pro.
 
 1. Trong thư mục dự án, đăng nhập Firebase CLI: `npm run firebase -- login`. Script dùng CLI từ package `firebase-tools` đã cài qua `npm ci`. Mật khẩu/mã xác thực nhập vào Google/terminal trực tiếp, không gửi vào chat.
 2. Tạo Firebase project gói **Spark**, không liên kết billing; không cần Analytics, Functions hoặc Cloud Storage. Tạo Firestore Standard native database, đề xuất region `asia-southeast1`.

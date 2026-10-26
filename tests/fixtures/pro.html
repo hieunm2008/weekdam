@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en"><head><title>Pro Emulator integration fixture</title></head><body><p id="status">Loading</p>
+<script type="module">
+import { emulatorMode, getFirebaseClient } from "/src/firebaseClient.ts";
+import { createFirebaseBillingRepository } from "/src/pro/useBilling.ts";
+import { emptyPlan, parseBackup, today, weekStart } from "/src/domain.ts";
+import { encodeRecords, decodeRecords, normalizeForSync } from "/src/records.ts";
+import { applyExam, previewExam, applyRecurrence, previewRecurrence, captureTemplate, previewTemplate, applyTemplate } from "/src/pro/planning.ts";
+import { buildStudyReport, exportStudyReportCsv } from "/src/pro/reports.ts";
+import { scanDeadlineReminders } from "/src/pro/reminders.ts";
+if (!emulatorMode) throw new Error("This fixture is restricted to the isolated Emulator build");
+const client = await getFirebaseClient();
+const uid = client.auth.currentUser?.uid;
+if (!uid) throw new Error("Sign in using the auth fixture first");
+const repository = createFirebaseBillingRepository(client);
+const now = new Date("2026-10-23T08:00:00+07:00");
+const { db, firestore } = await client.getDatabase();
+async function load() {
+  const result = await firestore.getDocsFromServer(firestore.collection(db, "users", uid, "records"));
+  return parseBackup(JSON.stringify(decodeRecords(result.docs.map(doc => ({ ...doc.data(), id: doc.id })))));
+}
+window.proFixture = {
+  uid,
+  // Test-only, Emulator-guarded lifecycle fixture. Production billing always
+  // uses the calendar-period transaction adapter tested separately.
+  seedLifecycle: async ({ reminders = false, lifetimeMs = 30000 } = {}) => {
+    const baseNow = Date.now();
+    const day = today(new Date(baseNow));
+    const start = weekStart(day);
+    const dueAt = Math.ceil(baseNow / 60000) * 60000 + 60000;
+    const deadline = new Date(dueAt + (120 + 420) * 60000).toISOString().slice(0, 16);
+    const project = { id: "lifecycle-project", name: "Lifecycle subject", tasks: [{
+      id: "lifecycle-task", name: "Existing Pro task", note: "Editable after expiry", done: false,
+      ...(reminders ? { deadline } : {}),
+      source: { kind: "exam", operationId: "lifecycle-seed" },
+      subtasks: [{ id: "lifecycle-step", day: Math.round((Date.parse(day) - Date.parse(start)) / 86400000),
+        weight: 1, note: "", done: false, missed: [], startTime: "09:00", endTime: "09:50" }],
+    }] };
+    const plan = { version: 1, weeks: [{ id: "week_" + start, start, ended: false, projects: [project] }],
+      pro: { templates: [captureTemplate({ id: "week_" + start, start, ended: false, projects: [project] }, [project.id], "Lifecycle template", "lifecycle-template")],
+        appliedOperations: ["lifecycle-seed"], reminders: { enabled: reminders, offsetsMinutes: [120], browserNotifications: reminders } } };
+    await client.write(uid, encodeRecords(parseBackup(JSON.stringify(plan))));
+    const billing = { demo: true, uid, status: "pro", plan: "month", trialUsed: false,
+      trialStartedAt: null, expiresAt: baseNow + lifetimeMs, updatedAt: baseNow };
+    await firestore.setDoc(firestore.doc(db, "users", uid, "demoBilling", "current"), { ...billing, committedAt: firestore.serverTimestamp() });
+    return { uid, baseNow, expiresAt: billing.expiresAt, dueAt, plan };
+  },
+  checkout: (checkoutId, outcome = "success", plan = "month") => repository.mutate(uid, { uid, checkoutId, kind: "checkout", outcome, plan, now: now.getTime() }),
+  billing: async () => {
+    const result = await firestore.getDocFromServer(firestore.doc(db, "users", uid, "demoBilling", "current"));
+    return result.data() ?? null;
+  },
+  seed: async () => {
+    let plan = emptyPlan();
+    const exam = previewExam(plan, { subject: "Giải tích", startDate: "2026-10-23", examDate: "2026-10-30", topics: [{ name: "Tích phân", minutes: 75 }, { name: "Đạo hàm", minutes: 25 }], sessionMinutes: 50, availability: [{ day: 4, startTime: "09:00", endTime: "12:00" }] }, now);
+    plan = applyExam(plan, exam, now);
+    const firstApply = JSON.stringify(plan);
+    const duplicateIgnored = JSON.stringify(applyExam(plan, exam, now)) === firstApply;
+    const recurrence = previewRecurrence(plan, { name: "IELTS lặp", note: "Speaking", weight: 2, days: [0, 2], startTime: "17:00", endTime: "18:00", startDate: "2026-10-26", endDate: "2026-11-06" }, now);
+    plan = applyRecurrence(plan, recurrence, false, now);
+    const sourceWeek = plan.weeks.find(week => week.start === "2026-10-19");
+    const template = captureTemplate(sourceWeek, sourceWeek.projects.map(project => project.id), "Mẫu ôn thi", "custom-template");
+    plan.pro = { ...plan.pro, templates: [template], reminders: { enabled: true, offsetsMinutes: [4320, 1440, 120], browserNotifications: false } };
+    plan = applyTemplate(plan, previewTemplate(plan, template, "2026-11-02"));
+    plan.pomodoroSessions = [{ id: "integration-stopped-focus", startedAt: Date.parse("2026-10-22T23:50:00+07:00"), endedAt: Date.parse("2026-10-23T00:10:00+07:00"), plannedDurationMs: 1200000, focusedDurationMs: 600000, outcome: "stopped", task: { id: "deleted-task", name: "Đã xóa", projectName: "Giải tích" } }];
+    plan = parseBackup(JSON.stringify(normalizeForSync(plan)));
+    await client.write(uid, encodeRecords(plan));
+    return { duplicateIgnored, examMinutes: exam.scheduledMinutes, recurrenceCount: recurrence.sessions.length, plan };
+  },
+  inspect: async () => {
+    const plan = await load();
+    const report = buildStudyReport(plan, { from: "2026-10-23", to: "2026-11-06" });
+    const reminders = await scanDeadlineReminders(uid, plan, plan.pro.reminders, Date.parse("2026-10-30T23:00:00+07:00"), true);
+    return { plan, report, csv: exportStudyReportCsv(report, "vi"), reminders: reminders.items };
+  },
+  tombstoneFirstOccurrence: async () => {
+    const plan = await load();
+    const occurrence = plan.weeks.flatMap(week => week.projects.flatMap(project => project.tasks)).find(task => task.source?.kind === "recurrence");
+    await client.write(uid, [{ id: occurrence.id, kind: "task", parent: plan.weeks.flatMap(week => week.projects).find(project => project.tasks.some(task => task.id === occurrence.id)).id, order: 0, deleted: true, value: { id: occurrence.id } }]);
+    return occurrence.id;
+  },
+};
+document.getElementById("status").textContent = "Ready";
+</script></body></html>

@@ -14,10 +14,12 @@ import {
   diffRecords,
   encodeRecords,
   normalizeForSync,
+  rebasePlan,
   type CloudRecord,
 } from "./records";
 import {
   acknowledge,
+  guestPlanChannel,
   loadAccount,
   loadPlan,
   loadPomodoroHistory,
@@ -33,7 +35,11 @@ import {
 import { mergePomodoroSessions } from "./pomodoroHistory";
 import type { PomodoroSession } from "./pomodoro";
 
-type Undo = { patch: Map<string, CloudRecord | null>; label: string };
+type Undo = {
+  patch: Map<string, CloudRecord | null>;
+  label: string;
+  guest?: { before: Plan; after: Plan };
+};
 type Profile = { uid: string; name: string };
 type MergeRequest = { guest: Plan; cloud: Plan };
 export function usePlanner() {
@@ -63,6 +69,8 @@ export function usePlanner() {
     migrated = useRef(false);
   const flushRef = useRef<() => void>(() => {});
   const knownSessions = useRef<PomodoroSession[]>([]);
+  const guestWrites = useRef<{ before: Plan; after: Plan }[]>([]);
+  const guestRead = useRef(0);
   const show = useCallback((next: Plan) => {
     knownSessions.current = mergePomodoroSessions(
       knownSessions.current,
@@ -162,6 +170,23 @@ export function usePlanner() {
     },
     [show, refreshStatus],
   );
+  const refreshGuestPlan = useCallback(async () => {
+    if (key.current !== "guest" || user.current) return;
+    const stamp = epoch.current;
+    const read = ++guestRead.current;
+    let saved = await loadPlan("guest");
+    if (
+      stamp !== epoch.current ||
+      read !== guestRead.current ||
+      key.current !== "guest" ||
+      user.current
+    )
+      return;
+    for (const write of guestWrites.current)
+      saved = rebasePlan(write.before, write.after, saved);
+    show(saved);
+    setStatus(guestWrites.current.length ? "saving" : "localSaved");
+  }, [show]);
   const persist = useCallback(
     (input: Plan, markMigrated?: boolean) => {
       const remembered =
@@ -195,14 +220,22 @@ export function usePlanner() {
           .catch(() => {});
       } else {
         setStatus("saving");
-        void enqueue(() => savePlan(accountKey, next))
-          .then(() => {
-            if (stamp === epoch.current) setStatus("localSaved");
-          })
-          .catch(() => {});
+        const writes = guestWrites.current;
+        writes.push({ before: previous, after: next });
+        void enqueue(async () => {
+          // Retain a failed write in this queue so the next edit retries it
+          // before saving later edits. Each patch is atomic across tabs in IDB.
+          while (writes.length) {
+            const write = writes[0];
+            await savePlan(accountKey, write.after, write.before);
+            if (stamp === epoch.current) guestRead.current++;
+            writes.shift();
+          }
+          if (stamp === epoch.current) await refreshGuestPlan();
+        }).catch(() => {});
       }
     },
-    [enqueue, show, status],
+    [enqueue, refreshGuestPlan, show, status],
   );
   const resolveMerge = useCallback(
     (useGuest: boolean) => {
@@ -224,6 +257,7 @@ export function usePlanner() {
       stopWatch = () => {};
     const openGuest = async (stamp = ++epoch.current) => {
       knownSessions.current = [];
+      guestWrites.current = [];
       key.current = "guest";
       user.current = null;
       setProfile(null);
@@ -264,6 +298,7 @@ export function usePlanner() {
                 key.current === "guest" ? clone(current.current) : null,
               accountKey = "account:" + sdk.projectId + ":" + authUser.uid;
             knownSessions.current = [];
+            guestWrites.current = [];
             key.current = accountKey;
             user.current = {
               uid: authUser.uid,
@@ -403,6 +438,41 @@ export function usePlanner() {
     };
   }, [enqueue, overlay, refreshStatus, show]);
   useEffect(() => {
+    if (!ready || scope !== "guest") return;
+    let active = true;
+    const refresh = () => {
+      if (!active) return;
+      void refreshGuestPlan().catch(() => {
+        if (active) {
+          setError("error");
+          setStatus("syncError");
+        }
+      });
+    };
+    const visibility = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    const storage = (event: StorageEvent) => {
+      if (event.key === guestPlanChannel) refresh();
+    };
+    const channel =
+      typeof BroadcastChannel !== "undefined"
+        ? new BroadcastChannel(guestPlanChannel)
+        : null;
+    if (channel) channel.onmessage = refresh;
+    window.addEventListener("focus", refresh);
+    window.addEventListener("storage", storage);
+    document.addEventListener("visibilitychange", visibility);
+    refresh();
+    return () => {
+      active = false;
+      channel?.close();
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("storage", storage);
+      document.removeEventListener("visibilitychange", visibility);
+    };
+  }, [ready, scope, refreshGuestPlan]);
+  useEffect(() => {
     const update = () => {
       setOnline(navigator.onLine);
       if (navigator.onLine) flushRef.current();
@@ -442,7 +512,13 @@ export function usePlanner() {
         }
       if (!changed) return;
       if (undoable && patch.size) {
-        history.current.push({ patch, label });
+        history.current.push({
+          patch,
+          label,
+          ...(!user.current
+            ? { guest: { before: current.current, after: normalized } }
+            : {}),
+        });
         history.current = history.current.slice(-20);
         setUndoCount(history.current.length);
       }
@@ -455,6 +531,14 @@ export function usePlanner() {
   const undo = useCallback(() => {
     const entry = history.current.pop();
     if (!entry) return;
+    if (entry.guest) {
+      persist(
+        rebasePlan(entry.guest.after, entry.guest.before, current.current),
+      );
+      setUndoCount(history.current.length);
+      setNotice("updated");
+      return;
+    }
     const records = new Map(
       encodeRecords(current.current).map((r) => [r.id, r]),
     );

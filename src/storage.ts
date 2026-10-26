@@ -1,6 +1,6 @@
 import { openDB } from "idb";
 import { emptyPlan, parseBackup, type Plan } from "./domain";
-import type { CloudRecord } from "./records";
+import { rebasePlan, type CloudRecord } from "./records";
 import {
   initialPomodoroRuntime,
   reducePomodoro,
@@ -49,15 +49,36 @@ export async function loadPlan(key: string): Promise<Plan> {
     db.close();
   }
 }
-export async function savePlan(key: string, plan: Plan): Promise<void> {
+export const guestPlanChannel = "weekdam:guest-plan";
+
+export async function savePlan(
+  key: string,
+  plan: Plan,
+  before?: Plan,
+): Promise<void> {
   const db = await database();
   try {
     const tx = db.transaction("plans", "readwrite");
     const existing: Plan | undefined = await tx.store.get(key);
-    await tx.store.put(mergeHistory(existing, plan), key);
+    const next = before
+      ? rebasePlan(before, plan, existing ?? emptyPlan())
+      : plan;
+    await tx.store.put(mergeHistory(existing, next), key);
     await tx.done;
   } finally {
     db.close();
+  }
+  if (key === "guest") {
+    try {
+      if (typeof BroadcastChannel !== "undefined") {
+        const channel = new BroadcastChannel(guestPlanChannel);
+        channel.postMessage(null);
+        channel.close();
+      } else localStorage.setItem(guestPlanChannel, crypto.randomUUID());
+    } catch {
+      // Notification failure must not turn a committed save into a failed save.
+      // Other tabs also reload the persisted plan when they regain focus.
+    }
   }
 }
 export async function loadAccount(key: string): Promise<AccountState> {

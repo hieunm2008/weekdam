@@ -7,6 +7,70 @@ import {
   loadAccount,
   acknowledge,
 } from "./storage";
+import { clone, emptyPlan, type Plan } from "./domain";
+
+function guestProject(plan: Plan, name: string): Plan {
+  const next = clone(plan);
+  if (!next.weeks.length)
+    next.weeks.push({
+      id: "week_2026-10-05",
+      start: "2026-10-05",
+      ended: false,
+      projects: [],
+    });
+  next.weeks[0].projects.push({ id: name, name, tasks: [] });
+  return next;
+}
+
+it("keeps projects added by another Guest tab when a stale snapshot saves", async () => {
+  const key = "guest:stale-projects";
+  const before = emptyPlan();
+  await savePlan(key, guestProject(before, "A"), before);
+  await savePlan(key, guestProject(before, "B"), before);
+  expect((await loadPlan(key)).weeks[0].projects.map((p) => p.name)).toEqual([
+    "A",
+    "B",
+  ]);
+});
+
+it("serializes simultaneous Guest additions without dropping either project", async () => {
+  const key = "guest:simultaneous-projects";
+  const before = emptyPlan();
+  await Promise.all([
+    savePlan(key, guestProject(before, "A"), before),
+    savePlan(key, guestProject(before, "B"), before),
+  ]);
+  expect(
+    (await loadPlan(key)).weeks[0].projects.map((p) => p.name).sort(),
+  ).toEqual(["A", "B"]);
+});
+
+it("applies a Guest deletion without undoing a different tab's project edit", async () => {
+  const key = "guest:delete-and-edit";
+  const before = guestProject(guestProject(emptyPlan(), "A"), "B");
+  await savePlan(key, before);
+  const renamed = clone(before);
+  renamed.weeks[0].projects[1].name = "B edited";
+  await savePlan(key, renamed, before);
+  const removed = clone(before);
+  removed.weeks[0].projects.shift();
+  await savePlan(key, removed, before);
+  expect((await loadPlan(key)).weeks[0].projects.map((p) => p.name)).toEqual([
+    "B edited",
+  ]);
+});
+
+it("keeps a shared week when a stale removal would orphan another tab's project", async () => {
+  const key = "guest:shared-week-deletion";
+  const before = guestProject(emptyPlan(), "A");
+  await savePlan(key, before);
+  await savePlan(key, guestProject(before, "B"), before);
+  await savePlan(key, emptyPlan(), before);
+  expect((await loadPlan(key)).weeks[0]?.projects.map((p) => p.name)).toEqual([
+    "B",
+  ]);
+});
+
 it("persists the Guest plan separately from each account", async () => {
   const local = { version: 1 as const, weeks: [] };
   const cloud = {

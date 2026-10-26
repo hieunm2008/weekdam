@@ -7,6 +7,49 @@ service cloud.firestore {
     function validDeadline(v) {
       return !v.keys().hasAny(['deadline']) || (v.deadline is string && (v.deadline == '' || v.deadline.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])(T([01][0-9]|2[0-3]):[0-5][0-9])?$')));
     }
+    function validDate(v) {
+      return v is string && v.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$');
+    }
+    function validSource(v) {
+      return !v.keys().hasAny(['source']) || (
+        v.source is map && v.source.keys().hasAll(['kind','operationId'])
+        && v.source.keys().hasOnly(['kind','operationId','seriesId','occurrenceDate','detached'])
+        && v.source.kind in ['exam','recurrence'] && validId(v.source.operationId)
+        && (!v.source.keys().hasAny(['seriesId']) || validId(v.source.seriesId))
+        && (!v.source.keys().hasAny(['occurrenceDate']) || validDate(v.source.occurrenceDate))
+        && (!v.source.keys().hasAny(['detached']) || v.source.detached is bool)
+      );
+    }
+    function validOffsetAt(offsets, i) {
+      return offsets.size() <= i || (offsets[i] is int && offsets[i] > 0 && offsets[i] <= 525600);
+    }
+    function validSyntheticId(id, base) {
+      let stem = base.size() > 180 ? base[0:180] : base;
+      return id == stem || (id.size() > stem.size() + 1
+        && id[0:stem.size()] == stem && id[stem.size():].matches('^:[0-9]+$'));
+    }
+    function validProValue(r) {
+      let v = r.value;
+      return r.kind == 'proTemplate' ?
+          v.keys().hasAll(['id','name','sourceWeek','projects']) && v.keys().hasOnly(['id','name','sourceWeek','projects'])
+          && v.name is string && v.name.size() > 0 && v.name.size() <= 300 && validDate(v.sourceWeek) && v.projects is list && v.projects.size() <= 1000 :
+        r.kind == 'recurrenceRule' ?
+          v.keys().hasAll(['id','operationId','name','note','weight','days','startTime','endTime','startDate','endDate'])
+          && v.keys().hasOnly(['id','operationId','name','note','weight','days','startTime','endTime','startDate','endDate','stoppedFrom'])
+          && validId(v.operationId) && v.name is string && v.name.size() > 0 && v.name.size() <= 500 && v.note is string && v.note.size() <= 10000
+          && v.weight in [1,2,3] && v.days is list && v.days.size() > 0 && v.days.size() <= 7 && v.days.hasOnly([0,1,2,3,4,5,6]) && v.days.toSet().size() == v.days.size()
+          && validSessionTimes(v) && validDate(v.startDate) && validDate(v.endDate) && v.endDate >= v.startDate
+          && (!v.keys().hasAny(['stoppedFrom']) || validDate(v.stoppedFrom)) :
+        r.kind == 'proOperation' ?
+          v.keys().hasAll(['id','operationId']) && v.keys().hasOnly(['id','operationId']) && validId(v.operationId) && validSyntheticId(r.id, 'pro-op:' + v.operationId) :
+        r.kind == 'reminderSettings' && r.id.matches('^pro-reminders(:[0-9]+)?$')
+          && v.keys().hasAll(['id','enabled','offsetsMinutes','browserNotifications']) && v.keys().hasOnly(['id','enabled','offsetsMinutes','browserNotifications'])
+          && v.enabled is bool && v.browserNotifications is bool && v.offsetsMinutes is list && v.offsetsMinutes.size() <= 20 && v.offsetsMinutes.toSet().size() == v.offsetsMinutes.size()
+          && validOffsetAt(v.offsetsMinutes,0) && validOffsetAt(v.offsetsMinutes,1) && validOffsetAt(v.offsetsMinutes,2) && validOffsetAt(v.offsetsMinutes,3) && validOffsetAt(v.offsetsMinutes,4)
+          && validOffsetAt(v.offsetsMinutes,5) && validOffsetAt(v.offsetsMinutes,6) && validOffsetAt(v.offsetsMinutes,7) && validOffsetAt(v.offsetsMinutes,8) && validOffsetAt(v.offsetsMinutes,9)
+          && validOffsetAt(v.offsetsMinutes,10) && validOffsetAt(v.offsetsMinutes,11) && validOffsetAt(v.offsetsMinutes,12) && validOffsetAt(v.offsetsMinutes,13) && validOffsetAt(v.offsetsMinutes,14)
+          && validOffsetAt(v.offsetsMinutes,15) && validOffsetAt(v.offsetsMinutes,16) && validOffsetAt(v.offsetsMinutes,17) && validOffsetAt(v.offsetsMinutes,18) && validOffsetAt(v.offsetsMinutes,19);
+    }
     function validSessionTimes(v) {
       return !v.keys().hasAny(['startTime','endTime']) || (
         v.keys().hasAll(['startTime','endTime'])
@@ -41,9 +84,9 @@ service cloud.firestore {
         r.deleted ? v.keys().hasOnly(['id']) :
         r.kind == 'week' ? v.keys().hasAll(['id','start','ended']) && v.keys().hasOnly(['id','start','ended']) && v.start is string && v.start.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$') && r.id == 'week_' + v.start && v.ended is bool :
         r.kind == 'project' ? v.keys().hasAll(['id','name']) && v.keys().hasOnly(['id','name','deadline']) && v.name is string && v.name.size() > 0 && v.name.size() <= 300 && validDeadline(v) :
-        r.kind == 'task' ? v.keys().hasAll(['id','name','note','done']) && v.keys().hasOnly(['id','name','note','done','deadline']) && v.name is string && v.name.size() > 0 && v.name.size() <= 500 && v.note is string && v.note.size() <= 10000 && v.done is bool && validDeadline(v) :
+        r.kind == 'task' ? v.keys().hasAll(['id','name','note','done']) && v.keys().hasOnly(['id','name','note','done','deadline','source']) && v.name is string && v.name.size() > 0 && v.name.size() <= 500 && v.note is string && v.note.size() <= 10000 && v.done is bool && validDeadline(v) && validSource(v) :
         r.kind == 'pomodoroSession' ? validPomodoroSession(v) :
-        r.kind == 'subtask' && v.keys().hasAll(['id','day','weight','note','done','missed']) && v.keys().hasOnly(['id','day','weight','note','done','missed','dayOrder','startTime','endTime']) && v.day is int && v.day >= 0 && v.day <= 6 && v.weight in [1,2,3] && v.note is string && v.note.size() <= 10000 && v.done is bool && v.missed is list && v.missed.size() <= 7 && v.missed.hasOnly([0,1,2,3,4,5,6]) && v.missed.toSet().size() == v.missed.size() && validSessionTimes(v) && (!v.keys().hasAny(['dayOrder']) || (v.dayOrder is number && v.dayOrder >= 0 && v.dayOrder <= 1000000000))
+        r.kind == 'subtask' ? v.keys().hasAll(['id','day','weight','note','done','missed']) && v.keys().hasOnly(['id','day','weight','note','done','missed','dayOrder','startTime','endTime','source']) && v.day is int && v.day >= 0 && v.day <= 6 && v.weight in [1,2,3] && v.note is string && v.note.size() <= 10000 && v.done is bool && v.missed is list && v.missed.size() <= 7 && v.missed.hasOnly([0,1,2,3,4,5,6]) && v.missed.toSet().size() == v.missed.size() && validSessionTimes(v) && validSource(v) && (!v.keys().hasAny(['dayOrder']) || (v.dayOrder is number && v.dayOrder >= 0 && v.dayOrder <= 1000000000)) : validProValue(r)
       );
     }
     match /users/{uid}/records/{recordId} {
@@ -52,12 +95,42 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(['id','kind','parent','order','deleted','value','updatedAt'])
         && request.resource.data.keys().hasOnly(['id','kind','parent','order','deleted','value','updatedAt'])
         && request.resource.data.id == recordId && validId(recordId)
-        && request.resource.data.kind in ['week','project','task','subtask','pomodoroSession']
-        && (request.resource.data.kind in ['week','pomodoroSession'] ? request.resource.data.parent == '' : validId(request.resource.data.parent))
+        && request.resource.data.kind in ['week','project','task','subtask','pomodoroSession','proTemplate','recurrenceRule','proOperation','reminderSettings']
+        && (request.resource.data.kind in ['week','pomodoroSession','proTemplate','recurrenceRule','proOperation','reminderSettings'] ? request.resource.data.parent == '' : validId(request.resource.data.parent))
         && request.resource.data.order is int && request.resource.data.order >= 0 && request.resource.data.order <= 100000
         && request.resource.data.deleted is bool && request.resource.data.updatedAt == request.time
         && validValue(request.resource.data);
       allow delete: if false;
+    }
+    // Deliberately client-managed DEMO entitlement. Never use for real paid access.
+    function validMillis(v) { return v is int && v >= 0 && v <= 8640000000000000; }
+    function validBilling(v, uid) {
+      return v.keys().hasAll(['demo','uid','status','plan','trialUsed','trialStartedAt','expiresAt','updatedAt','committedAt'])
+        && v.keys().hasOnly(['demo','uid','status','plan','trialUsed','trialStartedAt','expiresAt','updatedAt','committedAt'])
+        && v.demo == true && v.uid == uid && v.status in ['free','trial','pro']
+        && (v.plan == null || v.plan in ['month','year']) && v.trialUsed is bool
+        && (v.trialStartedAt == null || validMillis(v.trialStartedAt)) && validMillis(v.expiresAt) && validMillis(v.updatedAt) && v.committedAt == request.time
+        && (v.status != 'trial' || (v.trialUsed == true && validMillis(v.trialStartedAt) && v.expiresAt == v.trialStartedAt + 604800000 && v.plan == null))
+        && (v.status != 'pro' || v.plan in ['month','year']);
+    }
+    match /users/{uid}/demoBilling/{billingId} {
+      allow read: if request.auth != null && request.auth.uid == uid && billingId == 'current';
+      allow create: if request.auth != null && request.auth.uid == uid && billingId == 'current' && validBilling(request.resource.data, uid);
+      allow update: if request.auth != null && request.auth.uid == uid && billingId == 'current' && validBilling(request.resource.data, uid)
+        && (!resource.data.trialUsed || (request.resource.data.trialUsed && request.resource.data.trialStartedAt == resource.data.trialStartedAt));
+      allow delete: if false;
+    }
+    match /users/{uid}/demoReceipts/{checkoutId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null && request.auth.uid == uid && validId(checkoutId)
+        && request.resource.data.keys().hasAll(['demo','uid','checkoutId','kind','plan','outcome','amountVnd','createdAt','previousExpiresAt','expiresAt','committedAt'])
+        && request.resource.data.keys().hasOnly(['demo','uid','checkoutId','kind','plan','outcome','amountVnd','createdAt','previousExpiresAt','expiresAt','committedAt'])
+        && request.resource.data.demo == true && request.resource.data.uid == uid && request.resource.data.checkoutId == checkoutId
+        && request.resource.data.kind in ['trial','checkout'] && request.resource.data.plan in ['month','year'] && request.resource.data.outcome in ['success','failed','cancelled']
+        && validMillis(request.resource.data.createdAt) && validMillis(request.resource.data.previousExpiresAt) && validMillis(request.resource.data.expiresAt)
+        && request.resource.data.committedAt == request.time
+        && (request.resource.data.kind == 'trial' ? checkoutId == 'demo_trial' && request.resource.data.outcome == 'success' && request.resource.data.amountVnd == 0 : request.resource.data.amountVnd == (request.resource.data.plan == 'month' ? 29000 : 249000));
+      allow update, delete: if false;
     }
     match /{document=**} { allow read, write: if false; }
   }

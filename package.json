@@ -12,13 +12,14 @@
     "build": "npm run icons && tsc -b && vite build",
     "icons": "node tools/build-icons.mjs",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "vitest run",
+    "test": "node tools/test-unit.mjs",
     "test:e2e": "playwright test",
     "test:rules": "node tools/run-emulators.cjs rules",
     "test:sync": "node tools/run-emulators.cjs sync",
     "test:production": "node tools/check-production.cjs",
     "check:research": "node docs/research/tools/verify.cjs",
     "firebase": "firebase",
+    "emulators": "node tools/run-emulators.cjs start",
     "deploy": "node tools/validate-deploy.mjs && npm run build && firebase deploy --only hosting,firestore:rules,firestore:indexes"
   },
   "dependencies": {

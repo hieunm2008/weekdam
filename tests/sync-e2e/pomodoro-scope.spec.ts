@@ -182,13 +182,13 @@ test("pauses the previous signed-in account and isolates another account before 
       page.getByRole("button", { name: "Bắt đầu", exact: true }),
     ).toBeVisible();
     await expect
-      .poll(() => storedRuntime(page, `account:demo-weekdam:${firstUID}`))
+      .poll(() => storedRuntime(page, `account:demo-weekdam-pro:${firstUID}`))
       .toMatchObject({
         status: "paused",
         plannedDurationMs: 120_000,
         settings: { focusMinutes: 2 },
       });
-    const accountScope = `account:demo-weekdam:${firstUID}`;
+    const accountScope = `account:demo-weekdam-pro:${firstUID}`;
     const accountRuntime = (await storedRuntime(page, accountScope))!;
     expect(accountRuntime.elapsedMs).toBeGreaterThanOrEqual(8_000);
     expect(accountRuntime.elapsedMs).toBeLessThan(120_000);

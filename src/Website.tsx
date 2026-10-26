@@ -13,6 +13,7 @@ import i18n from "./i18n";
 
 const App = lazy(() => import("./App"));
 const GuidePage = lazy(() => import("./components/GuidePage"));
+const PricingPage = lazy(() => import("./components/PricingPage"));
 
 type SiteLocation = {
   pathname: string;
@@ -88,9 +89,11 @@ export default function Website() {
   const page =
     location.pathname === "/app"
       ? "app"
-      : location.pathname === "/guide"
-        ? "guide"
-        : "landing";
+      : location.pathname === "/pricing"
+        ? "pricing"
+        : location.pathname === "/guide"
+          ? "guide"
+          : "landing";
   const english = i18n.language.startsWith("en");
 
   const navigate = useCallback((path: string) => {
@@ -167,6 +170,10 @@ export default function Website() {
     document.documentElement.lang = english ? "en" : "vi";
     const metadata = english
       ? {
+          pricing: [
+            "weekdam · Pro pricing",
+            "Compare Free and Pro. Simulated checkout for a student project.",
+          ],
           landing: [
             "weekdam · A clearer week, one small step at a time",
             "Plan your week with small steps, a daily board and a calendar. Start on your device, then sync with Google when you need it.",
@@ -181,6 +188,10 @@ export default function Website() {
           ],
         }
       : {
+          pricing: [
+            "weekdam · Bảng giá Pro",
+            "So sánh Free và Pro. Thanh toán mô phỏng cho đồ án.",
+          ],
           landing: [
             "weekdam · Từng việc nhỏ, một tuần rõ ràng",
             "Lên kế hoạch tuần với những bước nhỏ, bảng theo ngày và lịch theo giờ. Bắt đầu ngay trên thiết bị, đồng bộ Google khi bạn cần.",
@@ -214,6 +225,8 @@ export default function Website() {
           <App onNavigate={navigate} />
         ) : page === "guide" ? (
           <GuidePage onNavigate={navigate} />
+        ) : page === "pricing" ? (
+          <PricingPage onNavigate={navigate} />
         ) : (
           <LandingPage onNavigate={navigate} />
         )}

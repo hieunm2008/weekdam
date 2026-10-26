@@ -2,6 +2,7 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
+  workers: 2,
   use: {
     baseURL: "http://127.0.0.1:4173",
     browserName: "chromium",
@@ -10,7 +11,14 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npm run build && npm run preview -- --port 4173",
+    // Exercise the real PWA and code-split production assets. Explicitly disable
+    // Firebase in guest UI tests so they never connect to a cloud or emulator.
+    command:
+      "npm run build -- --outDir .tmp/dist-ui && node tools/serve-dist.mjs --dir .tmp/dist-ui --port 4173",
+    env: {
+      VITE_USE_FIREBASE_EMULATORS: "false",
+      VITE_FIREBASE_PRO_SANDBOX: "false",
+    },
     url: "http://127.0.0.1:4173",
     reuseExistingServer: false,
     timeout: 120000,

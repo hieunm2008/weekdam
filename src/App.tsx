@@ -3,6 +3,7 @@ import {
   Suspense,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
   type MouseEvent,
@@ -30,6 +31,7 @@ import {
   Home,
   BookOpen,
   Timer,
+  Crown,
 } from "lucide-react";
 import {
   blankTask,
@@ -64,12 +66,15 @@ import {
   type ScheduleDraft,
 } from "./components/ScheduleEditor";
 import { usePlanner } from "./usePlanner";
+import { useBilling } from "./pro/useBilling";
 import { usePomodoro } from "./usePomodoro";
 import { PomodoroMiniBar } from "./components/PomodoroMiniBar";
 import { Modal } from "./components/Modal";
 import { Navigation } from "./components/Navigation";
 import i18n from "./i18n";
 const Stats = lazy(() => import("./components/Stats"));
+const ProPage = lazy(() => import("./pro/ProPage"));
+const ReminderCenter = lazy(() => import("./pro/ReminderCenter"));
 const PomodoroPage = lazy(() => import("./components/PomodoroPage"));
 const Board = lazy(() =>
   import("./components/Board").then((module) => ({ default: module.Board })),
@@ -154,7 +159,7 @@ function CopyDialog({
             <span>
               {p.name}
               <small>
-                {p.tasks.length} {t("units")}
+                {progress([p]).total} {t("units")}
               </small>
             </span>
           </label>
@@ -280,6 +285,9 @@ export default function App({
 }) {
   const { t } = useTranslation(),
     store = usePlanner();
+  const billing = useBilling(store.profile);
+  const openedWorkspace = useRef(false);
+  if (store.ready || store.mergeRequest) openedWorkspace.current = true;
   const pomodoro = usePomodoro(
     store.scope,
     store.ready && !store.mergeRequest,
@@ -303,7 +311,11 @@ export default function App({
     );
   };
   const [route, setRoute] = useState(() =>
-      window.location.hash === "#pomodoro" ? "pomodoro" : "plan",
+      window.location.hash === "#pro"
+        ? "pro"
+        : window.location.hash === "#pomodoro"
+          ? "pomodoro"
+          : "plan",
     ),
     [start, setStart] = useState(
       () => localStorage.getItem("weekdam:viewed-week") ?? weekStart(today()),
@@ -420,6 +432,7 @@ export default function App({
     };
     const hash = () => {
       if (window.location.hash === "#pomodoro") setRoute("pomodoro");
+      if (window.location.hash === "#pro") setRoute("pro");
     };
     navigator.serviceWorker?.addEventListener("message", openPomodoro);
     window.addEventListener("hashchange", hash);
@@ -574,6 +587,7 @@ export default function App({
         .find((project) => project.id === projectId)
         ?.tasks.find((item) => item.id === taskId);
       if (!task) return;
+      if (task.source?.kind === "recurrence") task.source.detached = true;
       const index = task.subtasks.findIndex((item) => item.id === step.id);
       if (index >= 0) task.subtasks[index] = step;
       else task.subtasks.push(step);
@@ -588,11 +602,18 @@ export default function App({
       (next) => {
         for (const project of next.projects)
           for (const task of project.tasks) {
-            if (remove)
+            if (
+              task.subtasks.some((s) => s.id === stepId) &&
+              task.source?.kind === "recurrence"
+            )
+              task.source.detached = true;
+            if (remove && task.subtasks.some((step) => step.id === stepId)) {
+              task.done = taskDone(task);
               task.subtasks = task.subtasks.filter(
                 (step) => step.id !== stepId,
               );
-            else {
+              if (task.subtasks.length) task.done = taskDone(task);
+            } else if (!remove) {
               const step = task.subtasks.find((item) => item.id === stepId);
               if (step) {
                 delete step.startTime;
@@ -631,6 +652,14 @@ export default function App({
     missed = false,
   ) {
     const moved = moveBoardCard(week, sid, day, anchor, missed);
+    if (moved !== week)
+      for (const project of moved.projects)
+        for (const task of project.tasks)
+          if (
+            task.subtasks.some((s) => s.id === sid) &&
+            task.source?.kind === "recurrence"
+          )
+            task.source.detached = true;
     if (moved !== week) store.commit(replaceWeek(store.plan, moved));
   }
   function openMove(sid: string) {
@@ -644,6 +673,8 @@ export default function App({
     }
   }
   function saveTask(task: Task, pid: string) {
+    if (task.source?.kind === "recurrence")
+      task = { ...task, source: { ...task.source, detached: true } };
     mutate((w) => {
       const previous = clone(w.projects);
       const target = w.projects.find((p) => p.id === pid);
@@ -709,6 +740,7 @@ export default function App({
     { key: "pomodoro", icon: Timer },
     { key: "stats", icon: ChartNoAxesColumn },
     { key: "weeks", icon: Archive },
+    { key: "pro", icon: Crown },
   ];
   const weekNavigation = (
     <div className="week-navigation">
@@ -788,7 +820,7 @@ export default function App({
       </span>
     </div>
   );
-  if (!store.ready && !store.mergeRequest)
+  if (!openedWorkspace.current && !store.ready && !store.mergeRequest)
     return (
       <div className="loading-screen">
         <img src="/icon.svg" width={48} height={48} alt="" />
@@ -796,757 +828,897 @@ export default function App({
       </div>
     );
   return (
-    <div className="app-shell" data-view={route}>
-      <Navigation
-        key={store.scope}
-        route={route}
-        projects={week.projects}
-        filter={activeFilter}
-        online={store.online}
-        status={store.status}
-        onRoute={setRoute}
-        onFilter={(pid) => {
-          setFilter(pid);
-          setRoute("plan");
-        }}
-        onCreate={() => setDialog({ kind: week.ended ? "reopen" : "project" })}
-        onManage={() => setDialog({ kind: "projects" })}
-        onSettings={() => setDialog({ kind: "settings" })}
-      />
-      <main className="main-content">
-        <div className="workspace-header">
-          <a
-            className="wordmark"
-            href="#"
-            onClick={(event) => {
-              event.preventDefault();
-              setRoute("plan");
-            }}
-          >
-            weekdam
-          </a>
-          <nav
-            className="workspace-site-links"
-            aria-label={english ? "Website" : "Trang web"}
-          >
-            <a
-              className="text-button"
-              href="/"
-              onClick={(event) => navigateSite(event, "/")}
-            >
-              <Home size={15} aria-hidden="true" />
-              {english ? "Home" : "Trang chủ"}
-            </a>
-            <a
-              className="text-button"
-              href="/guide"
-              onClick={(event) => navigateSite(event, "/guide")}
-            >
-              <BookOpen size={15} aria-hidden="true" />
-              {english ? "Guide" : "Hướng dẫn"}
-            </a>
-          </nav>
-          <div className="workspace-summary">
-            {!mobile && route === "plan" ? (
-              <div className="workspace-progress">{progressIndicator}</div>
-            ) : null}
-            <span
-              className="workspace-status"
-              data-testid="sync-status"
-              aria-live="polite"
-            >
-              {store.online ? <Check size={14} /> : <CloudOff size={14} />}
-              {t(store.status)}
-            </span>
-            <button
-              className="icon-button mobile-settings"
-              aria-label={t("settings")}
-              onClick={() => setDialog({ kind: "settings" })}
-            >
-              <Settings size={21} />
-            </button>
-          </div>
-        </div>
-        <header className="page-header">
-          <div>
-            <p className="eyebrow">
-              {route === "plan"
-                ? t("week") +
-                  " " +
-                  getISOWeek(parseISO(start)) +
-                  (!mobile ? " · " + weekHint : "")
-                : t(
-                    route === "pomodoro"
-                      ? "pomodoroSubtitle"
-                      : route === "stats"
-                        ? "statsSubtitle"
-                        : "weeksSubtitle",
-                  )}
-            </p>
-            <h1>{route === "plan" ? range(start) : t(route)}</h1>
-          </div>
-          <div className="header-actions">
-            {!mobile && route === "plan" ? (
-              <>
-                {weekNavigation}
-                {projectSelector}
-                {weekActions}
-              </>
-            ) : null}
-            {install ? (
-              <button
-                className="secondary"
-                onClick={() => {
-                  void install.prompt();
-                  setInstall(null);
-                }}
-              >
-                <Download size={17} />
-                {t("install")}
-              </button>
-            ) : null}
-            {route === "plan" ? (
-              <button
-                className="primary new-task-button"
-                onClick={() => newTask()}
-              >
-                <Plus size={18} />
-                {t("newTask")}
-              </button>
-            ) : null}
-          </div>
-        </header>
-        {store.error ? (
-          <div className="alert" role="alert">
-            {t(store.error)}
-            <button className="text-button" onClick={() => store.setError("")}>
-              {t("close")}
-            </button>
-          </div>
-        ) : null}
-        {route !== "pomodoro" && pomodoro.error ? (
-          <p className="pomodoro-message is-error" role="alert">
-            {pomodoro.error}
-          </p>
-        ) : null}
-        {route !== "pomodoro" && pomodoro.notice ? (
-          <p className="pomodoro-message" role="status">
-            {pomodoro.notice}
-          </p>
-        ) : null}
-        {route !== "pomodoro" &&
-        pomodoro.runtime &&
-        pomodoro.runtime.status !== "ready" ? (
-          <PomodoroMiniBar
-            runtime={pomodoro.runtime}
-            onAction={pomodoro.action}
-            onOpen={() => setRoute("pomodoro")}
-          />
-        ) : null}
-        {route === "plan" ? (
-          <>
-            {mobile ? (
-              <>
-                <div className="week-toolbar">
-                  {weekNavigation}
-                  {weekActions}
-                </div>
-                {progressIndicator}
-                <p className="week-hint">{weekHint}</p>
-              </>
-            ) : null}
-            <div className="planner-view-toolbar">
-              <div
-                className="planner-view-switch"
-                role="group"
-                aria-label={t("planView")}
-              >
-                <button
-                  aria-pressed={plannerView === "calendar"}
-                  onClick={() => setPlannerView("calendar")}
-                >
-                  {t("calendarView")}
-                </button>
-                <button
-                  aria-pressed={plannerView === "board"}
-                  onClick={() => setPlannerView("board")}
-                >
-                  {t("boardView")}
-                </button>
-              </div>
-              <label className="planner-week-jump">
-                <span>{t("chooseWeek")}</span>
-                <input
-                  type="date"
-                  value={start}
-                  onChange={(event) => {
-                    if (event.target.value) {
-                      close();
-                      navigate(weekStart(event.target.value));
-                    }
-                  }}
-                />
-              </label>
-            </div>
-            {plannerView === "calendar" ? (
-              <Suspense fallback={<p role="status">{t("loading")}</p>}>
-                <CalendarPlanner
-                  key={store.scope + start + activeFilter}
-                  start={start}
-                  projects={shown}
-                  ended={week.ended}
-                  todayDate={date}
-                  mobile={mobile}
-                  selectedDay={selectedDay}
-                  onSelectDay={setSelectedDay}
-                  onAddTask={newBacklogTask}
-                  onBulkAdd={bulkAddTasks}
-                  onEditTask={editTask}
-                  onToggleTask={toggleTask}
-                  onPomodoro={openTaskPomodoro}
-                  onSchedule={openSchedule}
-                  onEditSession={editSession}
-                  onChooseSlot={chooseSlot}
-                  onReschedule={(stepId, day, minute) => {
-                    if (!week.ended)
-                      mutate((next) => {
-                        next.projects = rescheduleSession(
-                          next.projects,
-                          stepId,
-                          day,
-                          minute,
-                        );
-                      });
-                  }}
-                />
-              </Suspense>
-            ) : !week.projects.length ? (
-              <div className="onboarding">
-                <div className="onboarding-mark">
-                  <CalendarDays size={29} />
-                </div>
-                <h2>{t(guide ? "guideTitle" : "emptyWeek")}</h2>
-                <p>{t("guideText")}</p>
-                {guide ? (
-                  <ol>
-                    <li>{t("guideStep1")}</li>
-                    <li>{t("guideStep2")}</li>
-                    <li>{t("guideStep3")}</li>
-                  </ol>
-                ) : null}
-                <button
-                  className="primary"
-                  onClick={() => setDialog({ kind: "project" })}
-                >
-                  <Plus size={17} />
-                  {t("newProject")}
-                </button>
-                {guide ? (
-                  <button
-                    className="text-button"
-                    onClick={() => {
-                      setGuide(false);
-                      localStorage.setItem("weekdam:guide", "no");
-                    }}
-                  >
-                    {t("skipGuide")}
-                  </button>
-                ) : null}
-              </div>
-            ) : (
-              <Suspense fallback={<p role="status">{t("loading")}</p>}>
-                <Board
-                  key={
-                    store.scope +
-                    start +
-                    activeFilter +
-                    (week.ended ? "-closed" : "-open") +
-                    (mobile ? "-mobile" : "-desktop")
-                  }
-                  mobile={mobile}
-                  onFocus={(day) => {
-                    setSelectedDay(day);
-                    if (!mobile) setFocus(day);
-                  }}
-                  onShowWeek={() => setFocus(null)}
-                  projects={shown}
-                  start={start}
-                  ended={week.ended}
-                  todayDate={date}
-                  focus={mobile ? selectedDay : focus}
-                  onCheck={(sid) =>
-                    mutate((w) => {
-                      for (const p of w.projects)
-                        for (const task of p.tasks) {
-                          const step = task.subtasks.find((s) => s.id === sid);
-                          if (step) step.done = !step.done;
-                        }
-                    })
-                  }
-                  onEdit={editTask}
-                  onPomodoro={openTaskPomodoro}
-                  onMove={openMove}
-                  onAdd={(day) => newTask(day)}
-                  onClearMissed={(sid, day) =>
-                    mutate((w) => {
-                      for (const p of w.projects)
-                        for (const task of p.tasks) {
-                          const step = task.subtasks.find((s) => s.id === sid);
-                          if (step)
-                            step.missed = step.missed.filter((d) => d !== day);
-                        }
-                    })
-                  }
-                  onDrop={moveStep}
-                />
-              </Suspense>
-            )}
-          </>
-        ) : route === "pomodoro" ? (
-          <Suspense fallback={<p role="status">{t("loading")}</p>}>
-            <PomodoroPage
-              runtime={pomodoro.runtime}
-              projects={week.projects}
-              sessions={store.plan.pomodoroSessions ?? []}
-              onAction={pomodoro.action}
-              onEnableNotifications={pomodoro.enableNotifications}
-              onRetry={pomodoro.retry}
-              error={pomodoro.error}
-              notice={pomodoro.notice}
-            />
-          </Suspense>
-        ) : route === "stats" ? (
-          <Suspense fallback={<p>{t("loading")}</p>}>
-            <Stats plan={store.plan} onWeek={navigate} />
-          </Suspense>
-        ) : (
-          <div className="weeks-page">
-            {!store.plan.weeks.length ? (
-              <p className="page-empty">{t("emptyWeeks")}</p>
-            ) : (
-              [...store.plan.weeks]
-                .sort((a, b) => b.start.localeCompare(a.start))
-                .map((w) => {
-                  const p = progress(w.projects);
-                  return (
-                    <article className="week-history" key={w.id}>
-                      <div className="history-heading">
-                        <span className="muted">{w.start.slice(0, 4)}</span>
-                        <button
-                          className="history-title"
-                          onClick={() => navigate(w.start)}
-                        >
-                          {range(w.start)}
-                        </button>
-                      </div>
-                      <div className="history-progress">
-                        <p>
-                          {p.done}/{p.total} {t("units")}{" "}
-                          <strong>{p.percent}%</strong>
-                        </p>
-                        <div
-                          className="progress-track"
-                          role="progressbar"
-                          aria-label={range(w.start)}
-                          aria-valuenow={p.percent}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                        >
-                          <span
-                            style={{ transform: `scaleX(${p.percent / 100})` }}
-                          />
-                        </div>
-                      </div>
-                      <span
-                        className={
-                          "history-status" + (w.ended ? " is-ended" : "")
-                        }
-                      >
-                        {w.ended ? t("ended") : t("openWeek")}
-                      </span>
-                      <div className="history-actions">
-                        <button
-                          className="secondary"
-                          onClick={() => navigate(w.start)}
-                        >
-                          {t("view")}
-                        </button>
-                        <button
-                          className="icon-button"
-                          aria-label={t("copy") + " " + w.start}
-                          onClick={() => setDialog({ kind: "copy", source: w })}
-                        >
-                          <Copy size={18} />
-                        </button>
-                        <button
-                          className="text-button danger"
-                          onClick={() =>
-                            store.commit(
-                              {
-                                ...store.plan,
-                                weeks: store.plan.weeks.filter(
-                                  (old) => old.id !== w.id,
-                                ),
-                              },
-                              "deleted",
-                            )
-                          }
-                        >
-                          {t("delete")}
-                        </button>
-                      </div>
-                    </article>
-                  );
-                })
-            )}
-          </div>
-        )}
-      </main>
-      <nav className="mobile-nav" aria-label={t("plan")}>
-        {nav.map(({ key, icon: Icon }) => (
-          <button
-            key={key}
-            className={route === key ? "active" : ""}
-            aria-current={route === key ? "page" : undefined}
-            onClick={() => setRoute(key)}
-          >
-            <Icon size={20} />
-            <span>{t(key)}</span>
-          </button>
-        ))}
-      </nav>
-      {store.notice &&
-      !(dialog?.kind === "settings" && store.notice === "loginCancelled") ? (
-        <div className="toast" role="status">
-          <Check size={17} />
-          <span>{t(store.notice)}</span>
-          {store.undoCount ? (
-            <button onClick={store.undo}>
-              <Undo2 size={16} />
-              {t("undo")}
-            </button>
-          ) : null}
-          <button
-            className="toast-dismiss"
-            aria-label={t("close")}
-            onClick={() => store.setNotice("")}
-          >
-            ×
-          </button>
-        </div>
-      ) : null}
-      {needRefresh ? (
-        <div className="update-banner">
-          <span>{t("newVersion")}</span>
-          <button
-            className="primary"
-            onClick={() => void updateServiceWorker(true)}
-          >
-            {t("updateApp")}
-          </button>
-        </div>
-      ) : null}
-      {store.mergeRequest ? (
-        <Modal title={t("merge")} onClose={() => void store.logout()}>
-          <p>{t("mergeHint")}</p>
-          <div className="action-list">
-            <button
-              className="primary"
-              onClick={() => store.resolveMerge(true)}
-            >
-              {t("merge")}
-            </button>
-            <button
-              className="secondary"
-              onClick={() => store.resolveMerge(false)}
-            >
-              {t("useCloud")}
-            </button>
-          </div>
-        </Modal>
-      ) : null}
-      <Suspense
-        fallback={
-          <p className="sr-only" role="status">
-            {t("loading")}
-          </p>
-        }
+    <>
+      <div
+        className="app-shell"
+        data-view={route}
+        aria-busy={!store.ready}
+        inert={!store.ready && !store.mergeRequest}
       >
-        {dialog?.kind === "project" ? (
-          <ProjectEditor
-            project={dialog.project}
-            onClose={close}
-            onSave={(p) => {
-              mutate((w) => {
-                const index = w.projects.findIndex((old) => old.id === p.id);
-                if (index < 0) w.projects.push(p);
-                else w.projects[index] = p;
-              });
-              close();
-            }}
-            onDelete={
-              dialog.project
-                ? () => {
-                    mutate(
-                      (w) =>
-                        (w.projects = w.projects.filter(
-                          (p) => p.id !== dialog.project!.id,
-                        )),
-                      "deleted",
-                    );
-                    setFilter("");
-                    close();
-                  }
-                : undefined
-            }
-          />
-        ) : null}
-        {dialog?.kind === "task" ? (
-          <TaskEditor
-            calendarMode={plannerView === "calendar"}
-            task={dialog.task!}
-            projectId={dialog.pid!}
-            projects={week.projects}
-            onClose={close}
-            onSave={saveTask}
-            onDelete={
-              week.projects.some((p) =>
-                p.tasks.some((task) => task.id === dialog.task?.id),
-              )
-                ? () => {
-                    mutate(
-                      (w) =>
-                        w.projects.forEach(
-                          (p) =>
-                            (p.tasks = p.tasks.filter(
-                              (task) => task.id !== dialog.task!.id,
-                            )),
-                        ),
-                      "deleted",
-                    );
-                    close();
-                  }
-                : undefined
-            }
-          />
-        ) : null}
-        {dialog?.kind === "schedule" && dialog.schedule ? (
-          <ScheduleEditor
-            start={start}
-            projects={week.projects}
-            initial={dialog.schedule}
-            onClose={close}
-            onSave={saveSession}
-            onDelete={
-              dialog.schedule.step
-                ? () => changeSession(dialog.schedule!.step!.id, true)
-                : undefined
-            }
-            onUntime={
-              dialog.schedule.step?.startTime
-                ? () => changeSession(dialog.schedule!.step!.id, false)
-                : undefined
-            }
-          />
-        ) : null}
-        {dialog?.kind === "projects" ? (
-          <ProjectsManager
-            onCreate={() => setDialog({ kind: "project" })}
-            projects={week.projects}
-            ended={week.ended}
-            onClose={close}
-            onEdit={(p) =>
-              week.ended
-                ? setDialog({ kind: "reopen" })
-                : setDialog({ kind: "project", project: p })
-            }
-            onAdd={(pid) => {
-              if (plannerView === "calendar")
-                setDialog({
-                  kind: week.ended ? "reopen" : "task",
-                  task: blankTask(),
-                  pid,
-                });
-              else newTask(selectedDay, pid);
-            }}
-            onTask={editTask}
-            onToggle={toggleTask}
-            onReorder={(key, target, kind, parent) =>
-              mutate((w) => {
-                const previous = clone(w.projects);
-                if (kind === "project")
-                  w.projects = arrayMove(
-                    w.projects,
-                    w.projects.findIndex((p) => p.id === key),
-                    w.projects.findIndex((p) => p.id === target),
-                  );
-                else {
-                  const p = w.projects.find((p) => p.id === parent);
-                  if (p)
-                    p.tasks = arrayMove(
-                      p.tasks,
-                      p.tasks.findIndex((task) => task.id === key),
-                      p.tasks.findIndex((task) => task.id === target),
-                    );
-                }
-                w.projects = preserveBoardOrder(previous, w.projects);
-              })
-            }
-          />
-        ) : null}
-      </Suspense>
-      {dialog?.kind === "copy" ? (
-        <CopyDialog
-          source={dialog.source ?? week}
-          onClose={close}
-          onCopy={async (projects) => {
-            await navigator.clipboard.writeText(
-              JSON.stringify(
-                {
-                  format: "weekdam.plan.v1",
-                  sourceWeek: (dialog.source ?? week).start,
-                  projects,
-                },
-                null,
-                2,
-              ),
-            );
-            close();
-            store.setNotice("copied");
+        <Navigation
+          key={store.scope}
+          route={route}
+          projects={week.projects}
+          filter={activeFilter}
+          online={store.online}
+          status={store.status}
+          onRoute={setRoute}
+          onFilter={(pid) => {
+            setFilter(pid);
+            setRoute("plan");
           }}
+          onCreate={() =>
+            setDialog({ kind: week.ended ? "reopen" : "project" })
+          }
+          onManage={() => setDialog({ kind: "projects" })}
+          onSettings={() => setDialog({ kind: "settings" })}
         />
-      ) : null}
-      {dialog?.kind === "paste" ? (
-        <PasteDialog
-          error={store.error ? t(store.error) : undefined}
-          start={start}
-          onClose={close}
-          onPaste={paste}
-        />
-      ) : null}
-      {dialog?.kind === "manage" ? (
-        <Modal
-          title={t("manage")}
-          onClose={close}
-          error={store.error ? t(store.error) : undefined}
-        >
-          <div className="action-list">
-            {mobile && week.projects.length > 1 ? (
-              <label className="menu-project-filter">
-                {t("projectFilter")}
-                {projectSelector}
-              </label>
-            ) : null}
-            <button
-              disabled={!week.projects.length}
-              onClick={() => setDialog({ kind: "copy" })}
+        <main className="main-content">
+          <div className="workspace-header">
+            <a
+              className="wordmark"
+              href="#"
+              onClick={(event) => {
+                event.preventDefault();
+                setRoute("plan");
+              }}
             >
-              {t("copy")}
-              <Copy size={18} />
-            </button>
-            {!week.ended ? (
-              <button onClick={() => setDialog({ kind: "paste" })}>
-                {t("paste")}
-                <ClipboardPaste size={18} />
+              weekdam
+            </a>
+            <nav
+              className="workspace-site-links"
+              aria-label={english ? "Website" : "Trang web"}
+            >
+              <a
+                className="text-button"
+                href="/"
+                onClick={(event) => navigateSite(event, "/")}
+              >
+                <Home size={15} aria-hidden="true" />
+                {english ? "Home" : "Trang chủ"}
+              </a>
+              <a
+                className="text-button"
+                href="/guide"
+                onClick={(event) => navigateSite(event, "/guide")}
+              >
+                <BookOpen size={15} aria-hidden="true" />
+                {english ? "Guide" : "Hướng dẫn"}
+              </a>
+            </nav>
+            <div className="workspace-summary">
+              {!mobile && route === "plan" ? (
+                <div className="workspace-progress">{progressIndicator}</div>
+              ) : null}
+              <span
+                className="workspace-status"
+                data-testid="sync-status"
+                aria-live="polite"
+              >
+                {store.online ? <Check size={14} /> : <CloudOff size={14} />}
+                {t(store.status)}
+              </span>
+              <button
+                className="icon-button mobile-settings"
+                aria-label={t("settings")}
+                onClick={() => setDialog({ kind: "settings" })}
+              >
+                <Settings size={21} />
               </button>
-            ) : null}
-
-            {week.ended ? (
-              <button onClick={() => setDialog({ kind: "reopen" })}>
-                {t("reopen")}
-                <ArrowRight size={18} />
-              </button>
-            ) : (
-              <>
-                <button
-                  disabled={!week.projects.length}
-                  onClick={() => {
-                    setTarget(shiftDate(start, 7));
-                    setDialog({ kind: "move" });
-                  }}
-                >
-                  {t("moveWork")}
-                  <ArrowRight size={18} />
-                </button>
-                <button
-                  disabled={
-                    !week.projects.length ||
-                    start > currentStart ||
-                    store.plan.weeks.some(
-                      (w) =>
-                        w.start < start && !w.ended && w.projects.length > 0,
-                    )
-                  }
-                  onClick={() => setDialog({ kind: "end" })}
-                >
-                  {t("endWeek")}
-                  <ArrowRight size={18} />
-                </button>
-                <button
-                  className="danger"
-                  disabled={!week.projects.length}
-                  onClick={() => setDialog({ kind: "clear" })}
-                >
-                  {t("clearBoard")}
-                </button>
-              </>
-            )}
+            </div>
           </div>
-        </Modal>
-      ) : null}
-      {dialog?.kind === "end" ||
-      dialog?.kind === "reopen" ||
-      dialog?.kind === "clear" ? (
-        <Modal
-          title={t(
-            dialog.kind === "end"
-              ? "endWeek"
-              : dialog.kind === "reopen"
-                ? "reopen"
-                : "clearBoard",
-          )}
-          onClose={close}
-          error={store.error ? t(store.error) : undefined}
-        >
-          <p>
-            {t(
-              dialog.kind === "end"
-                ? "endHint"
-                : dialog.kind === "reopen"
-                  ? "reopenHint"
-                  : "clearHint",
-            )}
-          </p>
-          {dialog.kind === "end" ? (
-            <div className="action-list">
-              {count.done < count.total ? (
+          <header className="page-header">
+            <div>
+              <p className="eyebrow">
+                {route === "pro"
+                  ? t("proSubtitle")
+                  : route === "plan"
+                    ? t("week") +
+                      " " +
+                      getISOWeek(parseISO(start)) +
+                      (!mobile ? " · " + weekHint : "")
+                    : t(
+                        route === "pomodoro"
+                          ? "pomodoroSubtitle"
+                          : route === "stats"
+                            ? "statsSubtitle"
+                            : "weeksSubtitle",
+                      )}
+              </p>
+              <h1>{route === "plan" ? range(start) : t(route)}</h1>
+            </div>
+            <div className="header-actions">
+              {!mobile && route === "plan" ? (
+                <>
+                  {weekNavigation}
+                  {projectSelector}
+                  {weekActions}
+                </>
+              ) : null}
+              {install ? (
                 <button
-                  className="primary"
+                  className="secondary"
                   onClick={() => {
-                    try {
-                      store.commit(endWeek(store.plan, start, true));
-                      navigate(shiftDate(start, 7));
-                      close();
-                    } catch {
-                      store.setError("occupied");
-                    }
+                    void install.prompt();
+                    setInstall(null);
                   }}
                 >
-                  {t("carry")}
+                  <Download size={17} />
+                  {t("install")}
                 </button>
               ) : null}
+              {route === "plan" ? (
+                <button
+                  className="primary new-task-button"
+                  onClick={() => newTask()}
+                >
+                  <Plus size={18} />
+                  {t("newTask")}
+                </button>
+              ) : null}
+            </div>
+          </header>
+          {store.error ? (
+            <div className="alert" role="alert">
+              {t(store.error)}
               <button
-                className="secondary"
-                onClick={() => {
-                  store.commit(endWeek(store.plan, start, false));
-                  navigate(shiftDate(start, 7));
-                  close();
-                }}
+                className="text-button"
+                onClick={() => store.setError("")}
               >
-                {t(count.done === count.total ? "endWeek" : "noCarry")}
+                {t("close")}
               </button>
             </div>
+          ) : null}
+          {route !== "pomodoro" && pomodoro.error ? (
+            <p className="pomodoro-message is-error" role="alert">
+              {pomodoro.error}
+            </p>
+          ) : null}
+          {route !== "pomodoro" && pomodoro.notice ? (
+            <p className="pomodoro-message" role="status">
+              {pomodoro.notice}
+            </p>
+          ) : null}
+          {route !== "pomodoro" &&
+          pomodoro.runtime &&
+          pomodoro.runtime.status !== "ready" ? (
+            <PomodoroMiniBar
+              runtime={pomodoro.runtime}
+              onAction={pomodoro.action}
+              onOpen={() => setRoute("pomodoro")}
+            />
+          ) : null}
+          {store.profile && store.ready && !store.mergeRequest ? (
+            <Suspense fallback={null}>
+              <ReminderCenter
+                plan={store.plan}
+                uid={store.scope}
+                entitled={billing.isPro && store.ready && !store.mergeRequest}
+                canUsePro={billing.canUsePro}
+              />
+            </Suspense>
+          ) : null}
+          {route === "pro" ? (
+            <Suspense fallback={<p role="status">{t("loading")}</p>}>
+              <ProPage store={store} billing={billing} start={start} />
+            </Suspense>
+          ) : route === "plan" ? (
+            <>
+              {mobile ? (
+                <>
+                  <div className="week-toolbar">
+                    {weekNavigation}
+                    {weekActions}
+                  </div>
+                  {progressIndicator}
+                  <p className="week-hint">{weekHint}</p>
+                </>
+              ) : null}
+              <div className="planner-view-toolbar">
+                <div
+                  className="planner-view-switch"
+                  role="group"
+                  aria-label={t("planView")}
+                >
+                  <button
+                    aria-pressed={plannerView === "calendar"}
+                    onClick={() => setPlannerView("calendar")}
+                  >
+                    {t("calendarView")}
+                  </button>
+                  <button
+                    aria-pressed={plannerView === "board"}
+                    onClick={() => setPlannerView("board")}
+                  >
+                    {t("boardView")}
+                  </button>
+                </div>
+                <label className="planner-week-jump">
+                  <span>{t("chooseWeek")}</span>
+                  <input
+                    type="date"
+                    value={start}
+                    onChange={(event) => {
+                      if (event.target.value) {
+                        close();
+                        navigate(weekStart(event.target.value));
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+              {plannerView === "calendar" ? (
+                <Suspense fallback={<p role="status">{t("loading")}</p>}>
+                  <CalendarPlanner
+                    key={store.scope + start + activeFilter}
+                    start={start}
+                    projects={shown}
+                    ended={week.ended}
+                    todayDate={date}
+                    mobile={mobile}
+                    selectedDay={selectedDay}
+                    onSelectDay={setSelectedDay}
+                    onAddTask={newBacklogTask}
+                    onBulkAdd={bulkAddTasks}
+                    onEditTask={editTask}
+                    onToggleTask={toggleTask}
+                    onPomodoro={openTaskPomodoro}
+                    onSchedule={openSchedule}
+                    onEditSession={editSession}
+                    onChooseSlot={chooseSlot}
+                    onReschedule={(stepId, day, minute) => {
+                      if (!week.ended)
+                        mutate((next) => {
+                          for (const project of next.projects)
+                            for (const task of project.tasks)
+                              if (
+                                task.subtasks.some((s) => s.id === stepId) &&
+                                task.source?.kind === "recurrence"
+                              )
+                                task.source.detached = true;
+                          next.projects = rescheduleSession(
+                            next.projects,
+                            stepId,
+                            day,
+                            minute,
+                          );
+                        });
+                    }}
+                  />
+                </Suspense>
+              ) : !week.projects.length ? (
+                <div className="onboarding">
+                  <div className="onboarding-mark">
+                    <CalendarDays size={29} />
+                  </div>
+                  <h2>{t(guide ? "guideTitle" : "emptyWeek")}</h2>
+                  <p>{t("guideText")}</p>
+                  {guide ? (
+                    <ol>
+                      <li>{t("guideStep1")}</li>
+                      <li>{t("guideStep2")}</li>
+                      <li>{t("guideStep3")}</li>
+                    </ol>
+                  ) : null}
+                  <button
+                    className="primary"
+                    onClick={() => setDialog({ kind: "project" })}
+                  >
+                    <Plus size={17} />
+                    {t("newProject")}
+                  </button>
+                  {guide ? (
+                    <button
+                      className="text-button"
+                      onClick={() => {
+                        setGuide(false);
+                        localStorage.setItem("weekdam:guide", "no");
+                      }}
+                    >
+                      {t("skipGuide")}
+                    </button>
+                  ) : null}
+                </div>
+              ) : (
+                <Suspense fallback={<p role="status">{t("loading")}</p>}>
+                  <Board
+                    key={
+                      store.scope +
+                      start +
+                      activeFilter +
+                      (week.ended ? "-closed" : "-open") +
+                      (mobile ? "-mobile" : "-desktop")
+                    }
+                    mobile={mobile}
+                    onFocus={(day) => {
+                      setSelectedDay(day);
+                      if (!mobile) setFocus(day);
+                    }}
+                    onShowWeek={() => setFocus(null)}
+                    projects={shown}
+                    start={start}
+                    ended={week.ended}
+                    todayDate={date}
+                    focus={mobile ? selectedDay : focus}
+                    onCheck={(sid) =>
+                      mutate((w) => {
+                        for (const p of w.projects)
+                          for (const task of p.tasks) {
+                            const step = task.subtasks.find(
+                              (s) => s.id === sid,
+                            );
+                            if (step) {
+                              step.done = !step.done;
+                              task.done = taskDone(task);
+                            }
+                          }
+                      })
+                    }
+                    onEdit={editTask}
+                    onPomodoro={openTaskPomodoro}
+                    onMove={openMove}
+                    onAdd={(day) => newTask(day)}
+                    onClearMissed={(sid, day) =>
+                      mutate((w) => {
+                        for (const p of w.projects)
+                          for (const task of p.tasks) {
+                            const step = task.subtasks.find(
+                              (s) => s.id === sid,
+                            );
+                            if (step)
+                              step.missed = step.missed.filter(
+                                (d) => d !== day,
+                              );
+                          }
+                      })
+                    }
+                    onDrop={moveStep}
+                  />
+                </Suspense>
+              )}
+            </>
+          ) : route === "pomodoro" ? (
+            <Suspense fallback={<p role="status">{t("loading")}</p>}>
+              <PomodoroPage
+                runtime={pomodoro.runtime}
+                projects={week.projects}
+                sessions={store.plan.pomodoroSessions ?? []}
+                onAction={pomodoro.action}
+                onEnableNotifications={pomodoro.enableNotifications}
+                onRetry={pomodoro.retry}
+                error={pomodoro.error}
+                notice={pomodoro.notice}
+              />
+            </Suspense>
+          ) : route === "stats" ? (
+            <Suspense fallback={<p>{t("loading")}</p>}>
+              <Stats plan={store.plan} onWeek={navigate} />
+            </Suspense>
           ) : (
+            <div className="weeks-page">
+              {!store.plan.weeks.length ? (
+                <p className="page-empty">{t("emptyWeeks")}</p>
+              ) : (
+                [...store.plan.weeks]
+                  .sort((a, b) => b.start.localeCompare(a.start))
+                  .map((w) => {
+                    const p = progress(w.projects);
+                    return (
+                      <article className="week-history" key={w.id}>
+                        <div className="history-heading">
+                          <span className="muted">{w.start.slice(0, 4)}</span>
+                          <button
+                            className="history-title"
+                            onClick={() => navigate(w.start)}
+                          >
+                            {range(w.start)}
+                          </button>
+                        </div>
+                        <div className="history-progress">
+                          <p>
+                            {p.done}/{p.total} {t("units")}{" "}
+                            <strong>{p.percent}%</strong>
+                          </p>
+                          <div
+                            className="progress-track"
+                            role="progressbar"
+                            aria-label={range(w.start)}
+                            aria-valuenow={p.percent}
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                          >
+                            <span
+                              style={{
+                                transform: `scaleX(${p.percent / 100})`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <span
+                          className={
+                            "history-status" + (w.ended ? " is-ended" : "")
+                          }
+                        >
+                          {w.ended ? t("ended") : t("openWeek")}
+                        </span>
+                        <div className="history-actions">
+                          <button
+                            className="secondary"
+                            onClick={() => navigate(w.start)}
+                          >
+                            {t("view")}
+                          </button>
+                          <button
+                            className="icon-button"
+                            aria-label={t("copy") + " " + w.start}
+                            onClick={() =>
+                              setDialog({ kind: "copy", source: w })
+                            }
+                          >
+                            <Copy size={18} />
+                          </button>
+                          <button
+                            className="text-button danger"
+                            onClick={() =>
+                              store.commit(
+                                {
+                                  ...store.plan,
+                                  weeks: store.plan.weeks.filter(
+                                    (old) => old.id !== w.id,
+                                  ),
+                                },
+                                "deleted",
+                              )
+                            }
+                          >
+                            {t("delete")}
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })
+              )}
+            </div>
+          )}
+        </main>
+        <nav className="mobile-nav" aria-label={t("plan")}>
+          {nav.map(({ key, icon: Icon }) => (
+            <button
+              key={key}
+              className={route === key ? "active" : ""}
+              aria-current={route === key ? "page" : undefined}
+              onClick={() => setRoute(key)}
+            >
+              <Icon size={20} />
+              <span>{t(key)}</span>
+            </button>
+          ))}
+        </nav>
+        {store.notice &&
+        !(dialog?.kind === "settings" && store.notice === "loginCancelled") ? (
+          <div className="toast" role="status">
+            <Check size={17} />
+            <span>{t(store.notice)}</span>
+            {store.undoCount ? (
+              <button onClick={store.undo}>
+                <Undo2 size={16} />
+                {t("undo")}
+              </button>
+            ) : null}
+            <button
+              className="toast-dismiss"
+              aria-label={t("close")}
+              onClick={() => store.setNotice("")}
+            >
+              ×
+            </button>
+          </div>
+        ) : null}
+        {needRefresh ? (
+          <div className="update-banner">
+            <span>{t("newVersion")}</span>
+            <button
+              className="primary"
+              onClick={() => void updateServiceWorker(true)}
+            >
+              {t("updateApp")}
+            </button>
+          </div>
+        ) : null}
+        {store.mergeRequest ? (
+          <Modal title={t("merge")} onClose={() => void store.logout()}>
+            <p>{t("mergeHint")}</p>
+            <div className="action-list">
+              <button
+                className="primary"
+                onClick={() => store.resolveMerge(true)}
+              >
+                {t("merge")}
+              </button>
+              <button
+                className="secondary"
+                onClick={() => store.resolveMerge(false)}
+              >
+                {t("useCloud")}
+              </button>
+            </div>
+          </Modal>
+        ) : null}
+        <Suspense
+          fallback={
+            <p className="sr-only" role="status">
+              {t("loading")}
+            </p>
+          }
+        >
+          {dialog?.kind === "project" ? (
+            <ProjectEditor
+              project={dialog.project}
+              onClose={close}
+              onSave={(p) => {
+                mutate((w) => {
+                  const index = w.projects.findIndex((old) => old.id === p.id);
+                  if (index < 0) w.projects.push(p);
+                  else w.projects[index] = p;
+                });
+                close();
+              }}
+              onDelete={
+                dialog.project
+                  ? () => {
+                      mutate(
+                        (w) =>
+                          (w.projects = w.projects.filter(
+                            (p) => p.id !== dialog.project!.id,
+                          )),
+                        "deleted",
+                      );
+                      setFilter("");
+                      close();
+                    }
+                  : undefined
+              }
+            />
+          ) : null}
+          {dialog?.kind === "task" ? (
+            <TaskEditor
+              calendarMode={plannerView === "calendar"}
+              task={dialog.task!}
+              projectId={dialog.pid!}
+              projects={week.projects}
+              onClose={close}
+              onSave={saveTask}
+              onDelete={
+                week.projects.some((p) =>
+                  p.tasks.some((task) => task.id === dialog.task?.id),
+                )
+                  ? () => {
+                      mutate(
+                        (w) =>
+                          w.projects.forEach(
+                            (p) =>
+                              (p.tasks = p.tasks.filter(
+                                (task) => task.id !== dialog.task!.id,
+                              )),
+                          ),
+                        "deleted",
+                      );
+                      close();
+                    }
+                  : undefined
+              }
+            />
+          ) : null}
+          {dialog?.kind === "schedule" && dialog.schedule ? (
+            <ScheduleEditor
+              start={start}
+              projects={week.projects}
+              initial={dialog.schedule}
+              onClose={close}
+              onSave={saveSession}
+              onDelete={
+                dialog.schedule.step
+                  ? () => changeSession(dialog.schedule!.step!.id, true)
+                  : undefined
+              }
+              onUntime={
+                dialog.schedule.step?.startTime
+                  ? () => changeSession(dialog.schedule!.step!.id, false)
+                  : undefined
+              }
+            />
+          ) : null}
+          {dialog?.kind === "projects" ? (
+            <ProjectsManager
+              onCreate={() => setDialog({ kind: "project" })}
+              projects={week.projects}
+              ended={week.ended}
+              onClose={close}
+              onEdit={(p) =>
+                week.ended
+                  ? setDialog({ kind: "reopen" })
+                  : setDialog({ kind: "project", project: p })
+              }
+              onAdd={(pid) => {
+                if (plannerView === "calendar")
+                  setDialog({
+                    kind: week.ended ? "reopen" : "task",
+                    task: blankTask(),
+                    pid,
+                  });
+                else newTask(selectedDay, pid);
+              }}
+              onTask={editTask}
+              onToggle={toggleTask}
+              onReorder={(key, target, kind, parent) =>
+                mutate((w) => {
+                  const previous = clone(w.projects);
+                  if (kind === "project")
+                    w.projects = arrayMove(
+                      w.projects,
+                      w.projects.findIndex((p) => p.id === key),
+                      w.projects.findIndex((p) => p.id === target),
+                    );
+                  else {
+                    const p = w.projects.find((p) => p.id === parent);
+                    if (p)
+                      p.tasks = arrayMove(
+                        p.tasks,
+                        p.tasks.findIndex((task) => task.id === key),
+                        p.tasks.findIndex((task) => task.id === target),
+                      );
+                  }
+                  w.projects = preserveBoardOrder(previous, w.projects);
+                })
+              }
+            />
+          ) : null}
+        </Suspense>
+        {dialog?.kind === "copy" ? (
+          <CopyDialog
+            source={dialog.source ?? week}
+            onClose={close}
+            onCopy={async (projects) => {
+              await navigator.clipboard.writeText(
+                JSON.stringify(
+                  {
+                    format: "weekdam.plan.v1",
+                    sourceWeek: (dialog.source ?? week).start,
+                    projects,
+                  },
+                  null,
+                  2,
+                ),
+              );
+              close();
+              store.setNotice("copied");
+            }}
+          />
+        ) : null}
+        {dialog?.kind === "paste" ? (
+          <PasteDialog
+            error={store.error ? t(store.error) : undefined}
+            start={start}
+            onClose={close}
+            onPaste={paste}
+          />
+        ) : null}
+        {dialog?.kind === "manage" ? (
+          <Modal
+            title={t("manage")}
+            onClose={close}
+            error={store.error ? t(store.error) : undefined}
+          >
+            <div className="action-list">
+              {mobile && week.projects.length > 1 ? (
+                <label className="menu-project-filter">
+                  {t("projectFilter")}
+                  {projectSelector}
+                </label>
+              ) : null}
+              <button
+                disabled={!week.projects.length}
+                onClick={() => setDialog({ kind: "copy" })}
+              >
+                {t("copy")}
+                <Copy size={18} />
+              </button>
+              {!week.ended ? (
+                <button onClick={() => setDialog({ kind: "paste" })}>
+                  {t("paste")}
+                  <ClipboardPaste size={18} />
+                </button>
+              ) : null}
+
+              {week.ended ? (
+                <button onClick={() => setDialog({ kind: "reopen" })}>
+                  {t("reopen")}
+                  <ArrowRight size={18} />
+                </button>
+              ) : (
+                <>
+                  <button
+                    disabled={!week.projects.length}
+                    onClick={() => {
+                      setTarget(shiftDate(start, 7));
+                      setDialog({ kind: "move" });
+                    }}
+                  >
+                    {t("moveWork")}
+                    <ArrowRight size={18} />
+                  </button>
+                  <button
+                    disabled={
+                      !week.projects.length ||
+                      start > currentStart ||
+                      store.plan.weeks.some(
+                        (w) =>
+                          w.start < start && !w.ended && w.projects.length > 0,
+                      )
+                    }
+                    onClick={() => setDialog({ kind: "end" })}
+                  >
+                    {t("endWeek")}
+                    <ArrowRight size={18} />
+                  </button>
+                  <button
+                    className="danger"
+                    disabled={!week.projects.length}
+                    onClick={() => setDialog({ kind: "clear" })}
+                  >
+                    {t("clearBoard")}
+                  </button>
+                </>
+              )}
+            </div>
+          </Modal>
+        ) : null}
+        {dialog?.kind === "end" ||
+        dialog?.kind === "reopen" ||
+        dialog?.kind === "clear" ? (
+          <Modal
+            title={t(
+              dialog.kind === "end"
+                ? "endWeek"
+                : dialog.kind === "reopen"
+                  ? "reopen"
+                  : "clearBoard",
+            )}
+            onClose={close}
+            error={store.error ? t(store.error) : undefined}
+          >
+            <p>
+              {t(
+                dialog.kind === "end"
+                  ? "endHint"
+                  : dialog.kind === "reopen"
+                    ? "reopenHint"
+                    : "clearHint",
+              )}
+            </p>
+            {dialog.kind === "end" ? (
+              <div className="action-list">
+                {count.done < count.total ? (
+                  <button
+                    className="primary"
+                    onClick={() => {
+                      try {
+                        store.commit(endWeek(store.plan, start, true));
+                        navigate(shiftDate(start, 7));
+                        close();
+                      } catch {
+                        store.setError("occupied");
+                      }
+                    }}
+                  >
+                    {t("carry")}
+                  </button>
+                ) : null}
+                <button
+                  className="secondary"
+                  onClick={() => {
+                    store.commit(endWeek(store.plan, start, false));
+                    navigate(shiftDate(start, 7));
+                    close();
+                  }}
+                >
+                  {t(count.done === count.total ? "endWeek" : "noCarry")}
+                </button>
+              </div>
+            ) : (
+              <footer className="dialog-actions">
+                <button className="secondary" onClick={close}>
+                  {t("cancel")}
+                </button>
+                <button
+                  className="primary"
+                  onClick={() => {
+                    if (dialog.kind === "reopen")
+                      mutate((w) => (w.ended = false));
+                    else
+                      store.commit(
+                        {
+                          ...store.plan,
+                          weeks: store.plan.weeks.filter(
+                            (w) => w.start !== start,
+                          ),
+                        },
+                        "deleted",
+                      );
+                    close();
+                  }}
+                >
+                  {t(dialog.kind === "reopen" ? "reopen" : "delete")}
+                </button>
+              </footer>
+            )}
+          </Modal>
+        ) : null}
+        {dialog?.kind === "move" ? (
+          <Modal
+            title={t("moveWork")}
+            onClose={close}
+            error={store.error ? t(store.error) : undefined}
+          >
+            <form
+              onSubmit={(e: FormEvent) => {
+                e.preventDefault();
+                try {
+                  const dest = weekStart(target);
+                  store.commit(moveWeek(store.plan, start, dest));
+                  navigate(dest);
+                  close();
+                } catch {
+                  store.setError("occupied");
+                }
+              }}
+            >
+              <label>
+                {t("targetWeek")}
+                <input
+                  required
+                  type="date"
+                  value={target}
+                  onChange={(e) => setTarget(e.target.value)}
+                />
+              </label>
+              <p className="muted">{target ? range(weekStart(target)) : ""}</p>
+              <footer className="dialog-actions">
+                <button type="button" className="secondary" onClick={close}>
+                  {t("cancel")}
+                </button>
+                <button className="primary">{t("move")}</button>
+              </footer>
+            </form>
+          </Modal>
+        ) : null}
+        {dialog?.kind === "move-day" ? (
+          <Modal
+            title={t("moveDay")}
+            onClose={close}
+            error={store.error ? t(store.error) : undefined}
+          >
+            <label>
+              {t("moveDay")}
+              <select
+                value={moveDay}
+                onChange={(e) => setMoveDay(Number(e.target.value))}
+              >
+                {dayNames.map((name, i) => (
+                  <option key={i} value={i}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="check-label">
+              <input
+                type="checkbox"
+                checked={markMissed}
+                onChange={(e) => setMarkMissed(e.target.checked)}
+              />
+              {t("markMissed")}
+            </label>
             <footer className="dialog-actions">
               <button className="secondary" onClick={close}>
                 {t("cancel")}
@@ -1554,256 +1726,182 @@ export default function App({
               <button
                 className="primary"
                 onClick={() => {
-                  if (dialog.kind === "reopen")
-                    mutate((w) => (w.ended = false));
-                  else
-                    store.commit(
-                      {
-                        ...store.plan,
-                        weeks: store.plan.weeks.filter(
-                          (w) => w.start !== start,
-                        ),
-                      },
-                      "deleted",
-                    );
+                  moveStep(dialog.stepId!, moveDay, undefined, markMissed);
                   close();
                 }}
               >
-                {t(dialog.kind === "reopen" ? "reopen" : "delete")}
+                {t("move")}
               </button>
             </footer>
-          )}
-        </Modal>
-      ) : null}
-      {dialog?.kind === "move" ? (
-        <Modal
-          title={t("moveWork")}
-          onClose={close}
-          error={store.error ? t(store.error) : undefined}
-        >
-          <form
-            onSubmit={(e: FormEvent) => {
-              e.preventDefault();
-              try {
-                const dest = weekStart(target);
-                store.commit(moveWeek(store.plan, start, dest));
-                navigate(dest);
-                close();
-              } catch {
-                store.setError("occupied");
-              }
-            }}
+          </Modal>
+        ) : null}
+        {dialog?.kind === "settings" ? (
+          <Modal
+            title={t("settings")}
+            onClose={close}
+            error={store.error ? t(store.error) : undefined}
           >
             <label>
-              {t("targetWeek")}
-              <input
-                required
-                type="date"
-                value={target}
-                onChange={(e) => setTarget(e.target.value)}
-              />
-            </label>
-            <p className="muted">{target ? range(weekStart(target)) : ""}</p>
-            <footer className="dialog-actions">
-              <button type="button" className="secondary" onClick={close}>
-                {t("cancel")}
-              </button>
-              <button className="primary">{t("move")}</button>
-            </footer>
-          </form>
-        </Modal>
-      ) : null}
-      {dialog?.kind === "move-day" ? (
-        <Modal
-          title={t("moveDay")}
-          onClose={close}
-          error={store.error ? t(store.error) : undefined}
-        >
-          <label>
-            {t("moveDay")}
-            <select
-              value={moveDay}
-              onChange={(e) => setMoveDay(Number(e.target.value))}
-            >
-              {dayNames.map((name, i) => (
-                <option key={i} value={i}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="check-label">
-            <input
-              type="checkbox"
-              checked={markMissed}
-              onChange={(e) => setMarkMissed(e.target.checked)}
-            />
-            {t("markMissed")}
-          </label>
-          <footer className="dialog-actions">
-            <button className="secondary" onClick={close}>
-              {t("cancel")}
-            </button>
-            <button
-              className="primary"
-              onClick={() => {
-                moveStep(dialog.stepId!, moveDay, undefined, markMissed);
-                close();
-              }}
-            >
-              {t("move")}
-            </button>
-          </footer>
-        </Modal>
-      ) : null}
-      {dialog?.kind === "settings" ? (
-        <Modal
-          title={t("settings")}
-          onClose={close}
-          error={store.error ? t(store.error) : undefined}
-        >
-          <label>
-            {t("language")}
-            <select
-              aria-label={t("language")}
-              value={i18n.language}
-              onChange={(e) => {
-                void i18n.changeLanguage(e.target.value);
-                localStorage.setItem("weekdam:language", e.target.value);
-              }}
-            >
-              <option value="vi">Tiếng Việt</option>
-              <option value="en">English</option>
-            </select>
-          </label>
-          <label>
-            {t("theme")}
-            <select
-              aria-label={t("theme")}
-              value={theme}
-              onChange={(e) => setTheme(e.target.value)}
-            >
-              {["light", "dark", "system"].map((value) => (
-                <option key={value} value={value}>
-                  {t(value)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="check-label">
-            <input
-              type="checkbox"
-              checked={guide}
-              onChange={(e) => {
-                setGuide(e.target.checked);
-                localStorage.setItem(
-                  "weekdam:guide",
-                  e.target.checked ? "yes" : "no",
-                );
-              }}
-            />
-            {t("guide")}
-          </label>
-          <a
-            className="secondary"
-            href="/guide"
-            onClick={(event) => navigateSite(event, "/guide")}
-          >
-            <BookOpen size={17} aria-hidden="true" />
-            {english ? "Open user guide" : "Mở hướng dẫn sử dụng"}
-          </a>
-          <div className="settings-section">
-            <h3>{t("backup")}</h3>
-            <div className="button-row">
-              <button className="secondary" onClick={exportBackup}>
-                {t("export")}
-              </button>
-              <button
-                className="secondary"
-                onClick={() => {
-                  setBackupText("");
-                  setDialog({ kind: "backup" });
+              {t("language")}
+              <select
+                aria-label={t("language")}
+                value={i18n.language}
+                onChange={(e) => {
+                  void i18n.changeLanguage(e.target.value);
+                  localStorage.setItem("weekdam:language", e.target.value);
                 }}
               >
-                {t("import")}
-              </button>
-            </div>
-          </div>
-          <div className="settings-section">
-            <h3>{store.profile?.name || t("google")}</h3>
-            <p className="muted">
-              {t(store.configured ? "syncHint" : "syncUnavailable")}
-            </p>
-            {store.notice === "loginCancelled" ? (
-              <p className="muted" role="status">
-                {t(store.notice)}
-              </p>
-            ) : null}
-            {store.profile ? (
-              <button className="secondary" onClick={() => void store.logout()}>
-                {t("logout")}
-              </button>
-            ) : (
-              <button
-                className="secondary"
-                disabled={!store.loginReady}
-                onClick={() => store.login(i18n.language)}
+                <option value="vi">Tiếng Việt</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+            <label>
+              {t("theme")}
+              <select
+                aria-label={t("theme")}
+                value={theme}
+                onChange={(e) => setTheme(e.target.value)}
               >
-                {t("google")}
-              </button>
-            )}
-          </div>
-        </Modal>
-      ) : null}
-      {dialog?.kind === "backup" ? (
-        <Modal
-          title={t("import")}
-          onClose={close}
-          error={store.error ? t(store.error) : undefined}
-        >
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              try {
-                store.commit(mergePlans(store.plan, parseBackup(backupText)));
-                close();
-              } catch {
-                store.setError("invalid");
-              }
-            }}
+                {["light", "dark", "system"].map((value) => (
+                  <option key={value} value={value}>
+                    {t(value)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="check-label">
+              <input
+                type="checkbox"
+                checked={guide}
+                onChange={(e) => {
+                  setGuide(e.target.checked);
+                  localStorage.setItem(
+                    "weekdam:guide",
+                    e.target.checked ? "yes" : "no",
+                  );
+                }}
+              />
+              {t("guide")}
+            </label>
+            <a
+              className="secondary"
+              href="/guide"
+              onClick={(event) => navigateSite(event, "/guide")}
+            >
+              <BookOpen size={17} aria-hidden="true" />
+              {english ? "Open user guide" : "Mở hướng dẫn sử dụng"}
+            </a>
+            <div className="settings-section">
+              <h3>{t("backup")}</h3>
+              <div className="button-row">
+                <button className="secondary" onClick={exportBackup}>
+                  {t("export")}
+                </button>
+                <button
+                  className="secondary"
+                  onClick={() => {
+                    setBackupText("");
+                    setDialog({ kind: "backup" });
+                  }}
+                >
+                  {t("import")}
+                </button>
+              </div>
+            </div>
+            <div className="settings-section">
+              <h3>{store.profile?.name || t("google")}</h3>
+              <p className="muted">
+                {t(store.configured ? "syncHint" : "syncUnavailable")}
+              </p>
+              {store.notice === "loginCancelled" ? (
+                <p className="muted" role="status">
+                  {t(store.notice)}
+                </p>
+              ) : null}
+              {store.profile ? (
+                <button
+                  className="secondary"
+                  onClick={() => void store.logout()}
+                >
+                  {t("logout")}
+                </button>
+              ) : (
+                <button
+                  className="secondary"
+                  disabled={!store.loginReady}
+                  onClick={() => store.login(i18n.language)}
+                >
+                  {t("google")}
+                </button>
+              )}
+            </div>
+          </Modal>
+        ) : null}
+        {dialog?.kind === "backup" ? (
+          <Modal
+            title={t("import")}
+            onClose={close}
+            error={store.error ? t(store.error) : undefined}
           >
-            <p className="muted">{t("importHint")}</p>
-            <input
-              type="file"
-              accept="application/json,.json"
-              aria-label={t("import")}
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  if (file.size > 5_000_000) store.setError("invalid");
-                  else setBackupText(await file.text());
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                try {
+                  store.commit(mergePlans(store.plan, parseBackup(backupText)));
+                  close();
+                } catch {
+                  store.setError("invalid");
                 }
               }}
-            />
-            <label>
-              JSON
-              <textarea
-                required
-                rows={8}
-                maxLength={5_000_000}
-                value={backupText}
-                onChange={(e) => setBackupText(e.target.value)}
+            >
+              <p className="muted">{t("importHint")}</p>
+              <input
+                type="file"
+                accept="application/json,.json"
+                aria-label={t("import")}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    if (file.size > 5_000_000) store.setError("invalid");
+                    else setBackupText(await file.text());
+                  }
+                }}
               />
-            </label>
-            <footer className="dialog-actions">
-              <button type="button" className="secondary" onClick={close}>
-                {t("cancel")}
-              </button>
-              <button className="primary">{t("merge")}</button>
-            </footer>
-          </form>
-        </Modal>
+              <label>
+                JSON
+                <textarea
+                  required
+                  rows={8}
+                  maxLength={5_000_000}
+                  value={backupText}
+                  onChange={(e) => setBackupText(e.target.value)}
+                />
+              </label>
+              <footer className="dialog-actions">
+                <button type="button" className="secondary" onClick={close}>
+                  {t("cancel")}
+                </button>
+                <button className="primary">{t("merge")}</button>
+              </footer>
+            </form>
+          </Modal>
+        ) : null}
+      </div>
+      {!store.ready && !store.mergeRequest ? (
+        <div
+          className="loading-screen"
+          role="status"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            background: "var(--bg)",
+          }}
+        >
+          <img src="/icon.svg" width={48} height={48} alt="" />
+          <p>{t("loading")}</p>
+        </div>
       ) : null}
-    </div>
+    </>
   );
 }

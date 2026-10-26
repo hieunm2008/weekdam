@@ -26,6 +26,7 @@ if (!env.JAVA_HOME && fs.existsSync(local)) {
   }
 }
 const mode = process.argv[2];
+const start = mode === "start";
 const script =
   mode === "sync"
     ? "playwright test --config playwright.sync.config.ts"
@@ -34,12 +35,12 @@ const result = spawnSync(
   process.execPath,
   [
     path.join(root, "node_modules/firebase-tools/lib/bin/firebase.js"),
-    "emulators:exec",
+    start ? "emulators:start" : "emulators:exec",
     "--only",
-    mode === "sync" ? "auth,firestore" : "firestore",
+    start || mode === "sync" ? "auth,firestore" : "firestore",
     "--project",
-    "demo-weekdam",
-    script,
+    "demo-weekdam-pro",
+    ...(start ? [] : [script]),
   ],
   { cwd: root, env, stdio: "inherit" },
 );

@@ -19,7 +19,7 @@ export default defineConfig({
     timeout: 120000,
     env: {
       VITE_USE_FIREBASE_EMULATORS: "true",
-      VITE_FIREBASE_PROJECT_ID: "demo-weekdam",
+      VITE_FIREBASE_PROJECT_ID: "demo-weekdam-pro",
     },
   },
 });

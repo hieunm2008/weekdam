@@ -21,6 +21,7 @@ import { GripVertical, Plus, Trash2 } from "lucide-react";
 import {
   clone,
   id,
+  taskDone,
   type Task,
   type Project,
   type Subtask,
@@ -133,7 +134,10 @@ export function TaskEditor({
   calendarMode?: boolean;
 }) {
   const { t } = useTranslation();
-  const [draft, setDraft] = useState(() => clone(task)),
+  const [draft, setDraft] = useState(() => ({
+      ...clone(task),
+      done: taskDone(task),
+    })),
     [pid, setPid] = useState(projectId);
   const names = t("dayNames").split(",");
   const sensors = useSensors(
